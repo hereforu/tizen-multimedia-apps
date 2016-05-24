@@ -1,0 +1,21 @@
+/*
+ * frame.h
+ *
+ *  Created on: May 24, 2016
+ *      Author: Jason
+ */
+
+#ifndef FRAME_H_
+#define FRAME_H_
+
+
+class FrameWindow
+{
+public:
+	FrameWindow();
+	~FrameWindow();
+
+};
+
+
+#endif /* FRAME_H_ */

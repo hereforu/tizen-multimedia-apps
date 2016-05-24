@@ -1,0 +1,36 @@
+/*
+ * frame.h
+ *
+ *  Created on: May 24, 2016
+ *      Author: Jason
+ */
+
+#ifndef FRAME_H_
+#define FRAME_H_
+
+#include <Elementary.h>
+class FrameWindow
+{
+public:
+	FrameWindow();
+	~FrameWindow();
+
+	bool CreateBaseFrame();
+
+
+private:
+	Evas_Object* createframewindow();
+	Evas_Object* createconformation(Evas_Object* parentwnd);
+	static void deleterequestcb(void *data, Evas_Object *obj, void *event_info);
+	void handledeleterequest
+
+
+private:
+	Evas_Object* m_win;
+	Evas_Object* m_conform;
+
+
+};
+
+
+#endif /* FRAME_H_ */

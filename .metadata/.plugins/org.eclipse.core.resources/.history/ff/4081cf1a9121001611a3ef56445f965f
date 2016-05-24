@@ -1,0 +1,22 @@
+/*
+ * multimediaapp.h
+ *
+ *  Created on: May 24, 2016
+ *      Author: Jason
+ */
+
+#ifndef MULTIMEDIAAPP_H_
+#define MULTIMEDIAAPP_H_
+
+class MultimediaApp
+{
+public:
+	MultimediaApp();
+	~MultimediaApp();
+
+	bool Create();
+};
+
+
+
+#endif /* MULTIMEDIAAPP_H_ */

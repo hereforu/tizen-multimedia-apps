@@ -1,0 +1,25 @@
+/*
+ * view.h
+ *
+ *  Created on: May 24, 2016
+ *      Author: Jason
+ */
+
+#ifndef VIEW_H_
+#define VIEW_H_
+
+#include <Elementary.h>
+
+class View
+{
+public:
+	View();
+	~View();
+
+	bool CreateView(Evas_Object* framewnd, Evas_Object* conformant);
+private:
+	Evas_Object* m_layout;
+};
+
+
+#endif /* VIEW_H_ */

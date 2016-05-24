@@ -1,0 +1,23 @@
+/*
+ * view.h
+ *
+ *  Created on: May 24, 2016
+ *      Author: Jason
+ */
+
+#ifndef VIEW_H_
+#define VIEW_H_
+
+
+class View
+{
+public:
+	View();
+	~View();
+
+private:
+	Evas_Object* m_layout;
+};
+
+
+#endif /* VIEW_H_ */
