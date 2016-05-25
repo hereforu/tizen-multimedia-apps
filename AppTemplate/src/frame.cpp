@@ -5,6 +5,7 @@
  *      Author: Jason
  */
 
+#include "base.h"
 #include "apptemplate.h"
 #include "frame.h"
 
@@ -16,7 +17,8 @@ FrameWindow::FrameWindow()
 }
 FrameWindow::~FrameWindow()
 {
-
+	//delete frame window & conformant
+	//delete all views
 }
 
 bool FrameWindow::CreateBaseFrame()
@@ -35,9 +37,45 @@ bool FrameWindow::CreateBaseFrame()
 	return true;
 }
 
+View* FrameWindow::GetView(int viewid)
+{
+	View* pview = findview(viewid);
+	baseassert(pview!=NULL);
+	return pview;
+}
+
+bool FrameWindow::AddView(int viewid, View* view)
+{
+	baseassert(m_framewnd!= NULL && m_conformant!=NULL);
+	if(findview(viewid) != NULL)
+	{
+		dlog_print(DLOG_FATAL, "FrameWindow", "duplicated view id");
+		return false;
+	}
+
+	bool created = view->CreateView(m_framewnd, m_conformant);
+	if(created == false)
+	{
+		return false;
+	}
+	m_viewmap[viewid] = (View*)view;
+	return true;
+}
+
 void FrameWindow::Show()
 {
 	evas_object_show(m_framewnd);
+}
+
+View* FrameWindow::findview(int viewid)
+{
+	std::map<int, View*>::iterator it;
+	it = m_viewmap.find(viewid);
+	if(it!=m_viewmap.end())
+	{
+		return it->second;
+	}
+	return NULL;
 }
 
 Evas_Object* FrameWindow::createframewindow()

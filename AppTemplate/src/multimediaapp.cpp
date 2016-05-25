@@ -22,6 +22,9 @@ void MultimediaApp::HandlerAppCreate()
 	//create frame
 	m_FrameWnd = new FrameWindow;
 	m_FrameWnd->CreateBaseFrame();
+	//for test
+	m_FrameWnd->AddView(0, ViewFactory<View>::CreateInstance());
+	m_FrameWnd->Show();
 	//create view
 	//show frame
 }

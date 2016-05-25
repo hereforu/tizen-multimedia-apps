@@ -1,13 +1,6 @@
 #include "apptemplate.h"
 #include "multimediaapp.h"
 
-typedef struct appdata{
-	Evas_Object* win;
-	Evas_Object* layout;
-	Evas_Object* conform;
-} appdata_s;
-
-
 
 
 static bool
