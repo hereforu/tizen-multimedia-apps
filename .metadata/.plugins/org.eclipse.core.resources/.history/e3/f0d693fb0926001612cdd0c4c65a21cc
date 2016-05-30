@@ -1,0 +1,35 @@
+/*
+ * FirstView.cpp
+ *
+ *  Created on: May 26, 2016
+ *      Author: Jason
+ */
+#include "FirstView.h"
+
+FirstView::FirstView()
+{
+
+}
+
+FirstView::~FirstView()
+{
+
+}
+
+const char* FirstView::getedcfilename()
+{
+	return "edje/firstview.edj";
+}
+bool FirstView::decorateview(Evas_Object* box)
+{
+	Evas_Object* btn = elm_button_add(layout);
+	elm_object_text_set(btn, "btn for first view");
+	evas_object_show(btn);
+	evas_object_size_hint_align_set(btn, EVAS_HINT_FILL, EVAS_HINT_FILL);
+
+
+	return true;
+}
+
+
+

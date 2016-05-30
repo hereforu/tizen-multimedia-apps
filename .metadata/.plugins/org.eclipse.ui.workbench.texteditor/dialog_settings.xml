@@ -2,18 +2,20 @@
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="false" key="isRegEx"/>
-		<item value="elm_win_util_standard_" key="selection"/>
+		<item value="event_callback" key="selection"/>
 		<item value="false" key="casesensitive"/>
 		<item value="false" key="incremental"/>
 		<item value="true" key="wrap"/>
 		<item value="false" key="wholeword"/>
 		<list key="findhistory">
-			<item value="elm_win_util_standard_"/>
-			<item value="app_event_handler"/>
-			<item value="handlers"/>
-			<item value="base_scale_set"/>
-			<item value="win_create"/>
-			<item value="view1_button1_onclicked"/>
+			<item value="event_callback"/>
+			<item value="m_frameitem"/>
+			<item value="add"/>
+			<item value="change_page"/>
+			<item value="get_view"/>
+			<item value="create"/>
+			<item value="naviframe"/>
+			<item value="elm_win_util_standard_add"/>
 		</list>
 		<list key="replacehistory">
 		</list>

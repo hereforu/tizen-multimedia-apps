@@ -11,7 +11,7 @@
 #include <assert.h>
 
 Model::Model()
-:m_created(false)
+	:m_created(false)
 {
 
 }
@@ -24,14 +24,14 @@ Model::~Model()
 
 bool Model::Create()
 {
-//	m_created = creatspecificmodel();
+	m_created = creatspecificmodel();
 	m_created = true;
 	return m_created;
 }
 
 void Model::Destroy()
 {
-//	destroyspecificmodel();
+	destroyspecificmodel();
 	m_created = false;
 }
 

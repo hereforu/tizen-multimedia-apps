@@ -9,9 +9,8 @@
 #define FRAME_H_
 
 #include <Elementary.h>
-#include <map>
+#include <vector>
 #include "view.h"
-
 
 template<typename TView>
 class ViewFactory
@@ -31,29 +30,36 @@ public:
 	~FrameWindow();
 
 	bool CreateBaseFrame();
+	void AddView(View* view);
 
-	//it returns the view id
-	bool AddView(int viewid, View* view);
-	View* GetView(int viewid);
+
+	View* GetCurrentView();
+	bool MoveNextView();
+	bool MovePrevView();
+	bool ActivateFirstView();
+
 	void Show();
 
 
 private:
+	bool pushview(View* view);
+	void popview(View* view);
+	void deleteallviews();
 	Evas_Object* createframewindow();
 	Evas_Object* createconformation(Evas_Object* parentwnd);
+	Evas_Object* createnaviframe(Evas_Object* conformant);
 	void handledeleterequest(Evas_Object *obj, void *event_info);
 
 	//for callback
 	static void delete_request_cb(void *data, Evas_Object *obj, void *event_info);
-	View* findview(int viewid);
 
 
 private:
 	Evas_Object* m_framewnd;
 	Evas_Object* m_conformant;
-	std::map<int, View*> m_viewmap;
-
-
+	Evas_Object* m_naviframe;
+	std::vector<View*> m_views;
+	int m_currentviewindex;
 };
 
 

@@ -7,17 +7,22 @@
 
 #include "frame.h"
 #include "model.h"
-#include "view.h"
+#include "templatesingleton.h"
 
 #ifndef MULTIMEDIAAPP_H_
 #define MULTIMEDIAAPP_H_
 
-class MultimediaApp
+class MultimediaApp : public TemplateSingleton<MultimediaApp>
 {
 public:
 	MultimediaApp();
 	~MultimediaApp();
 
+	//change view
+	void MoveNextView();
+	void MovePrevView();
+
+	//event handler
 	void HandlerAppCreate();
 	void HandlerAppTerminate();
 	void HandlerAppPause();
@@ -32,7 +37,6 @@ public:
 private:
 	FrameWindow* m_FrameWnd;
 	Model* m_Model;
-	View* m_View;
 
 };
 

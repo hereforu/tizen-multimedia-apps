@@ -1,0 +1,32 @@
+/*
+ * secondview.cpp
+ *
+ *  Created on: May 27, 2016
+ *      Author: Jason
+ */
+
+#include "SecondView.h"
+
+SecondView::SecondView()
+{
+
+}
+
+SecondView::~SecondView()
+{
+
+}
+
+const char* FirstView::getedcfilename()
+{
+	return "edje/secondview.edj";
+}
+
+bool SecondView::decorateview(Evas_Object* layout)
+{
+	return true;
+}
+
+
+
+

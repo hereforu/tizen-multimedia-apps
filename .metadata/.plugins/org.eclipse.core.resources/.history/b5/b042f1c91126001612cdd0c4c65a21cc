@@ -1,0 +1,27 @@
+/*
+ * secondview.h
+ *
+ *  Created on: May 26, 2016
+ *      Author: Jason
+ */
+
+#ifndef SECONDVIEW_H_
+#define SECONDVIEW_H_
+
+
+#include "view.h"
+
+class SecondView : public View
+{
+public:
+	SecondView();
+	~SecondView();
+
+protected:
+	const char* getedcfilename();
+	bool decorateview(Evas_Object* box);
+
+};
+
+
+#endif /* SECONDVIEW_H_ */

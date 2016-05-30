@@ -1,0 +1,25 @@
+/*
+ * firstview.h
+ *
+ *  Created on: May 26, 2016
+ *      Author: Jason
+ */
+
+#ifndef FIRSTVIEW_H_
+#define FIRSTVIEW_H_
+
+#include "view.h"
+
+class FirstView : public View
+{
+public:
+	FirstView();
+	~FirstView();
+
+	bool decorateview(Evas_Object* layout);
+
+};
+
+
+
+#endif /* FIRSTVIEW_H_ */
