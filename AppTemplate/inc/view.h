@@ -17,17 +17,15 @@ public:
 	View();
 	virtual ~View();
 
-	bool CreateView(Evas_Object* naviframe, Evas_Object* conformant);
+	void CreateView(Evas_Object* naviframe, Evas_Object* conformant);
 	void DestroyView();
 	bool IsCreated();
-	void Show();
 
 protected:
-	virtual bool decorateview(Evas_Object* box) = 0;
+	virtual void decorateview(Evas_Object* box) = 0;
 	//do not delete elm objects which are attached to the box
 	virtual void destroyremains()=0;
 	virtual const char* getedcfilename() = 0;
-	virtual void showremains()=0;
 
 private:
 	Evas_Object* createbox(Evas_Object* naviframe, Evas_Object* conformant);

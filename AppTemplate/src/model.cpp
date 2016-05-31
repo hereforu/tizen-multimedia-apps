@@ -19,19 +19,19 @@ Model::Model()
 
 Model::~Model()
 {
-	baseassert(m_created==false);
+	AppTool::Assert(m_created==false);
 }
 
 bool Model::Create()
 {
-	m_created = creatspecificmodel();
+	m_created = creatspecifics();
 	m_created = true;
 	return m_created;
 }
 
 void Model::Destroy()
 {
-	destroyspecificmodel();
+	destroyspecifics();
 	m_created = false;
 }
 

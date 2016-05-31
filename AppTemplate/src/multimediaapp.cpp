@@ -9,11 +9,13 @@
 #include "multimediaapp.h"
 #include "firstview.h"
 #include "secondview.h"
+#include "samplemodel.h"
+#include <stdexcept>
 
 
 
 MultimediaApp::MultimediaApp()
-	:m_FrameWnd(NULL), m_Model(NULL)
+	:m_frame(NULL), m_model(NULL)
 {
 
 }
@@ -24,36 +26,51 @@ MultimediaApp::~MultimediaApp()
 
 void MultimediaApp::MoveNextView()
 {
-	baseassert(m_FrameWnd!= NULL);
-	m_FrameWnd->MoveNextView();
+	AppTool::Assert(m_frame!= NULL);
+	m_frame->MoveNextView();
 
 }
+
 void MultimediaApp::MovePrevView()
 {
-	baseassert(m_FrameWnd!= NULL);
-	m_FrameWnd->MovePrevView();
+	AppTool::Assert(m_frame!= NULL);
+	m_frame->MovePrevView();
+}
+
+Model* MultimediaApp::GetModel()
+{
+	return m_model;
 }
 
 void MultimediaApp::HandlerAppCreate()
 {
-	//create frame
-	m_FrameWnd = new FrameWindow;
-	m_FrameWnd->CreateBaseFrame();
-
-	m_FrameWnd->AddView(ViewFactory<FirstView>::CreateInstance());
-	m_FrameWnd->AddView(ViewFactory<SecondView>::CreateInstance());
-	m_FrameWnd->ActivateFirstView();
-	m_FrameWnd->Show();
-	//create view
-	//show frame
+	//todo: add exception handling
+	try
+	{
+		m_model = (Model*)new SampleModel;
+		m_model->Create();
+		//create frame
+		m_frame = new FrameWindow;
+		m_frame->CreateBaseFrame();
+		m_frame->AddView(AppTool::ObjectFactory<FirstView>::CreateInstance());
+		m_frame->AddView(AppTool::ObjectFactory<SecondView>::CreateInstance());
+		m_frame->ActivateFirstView();
+		m_frame->Show();
+	}
+	catch(const std::runtime_error& e)
+	{
+		std::string msg = "fail to create App because ";
+		msg += e.what();
+		dlog_print(DLOG_FATAL, "FrameWindow", msg.c_str());
+	}
 }
 
 void MultimediaApp::HandlerAppTerminate()
 {
-	delete m_FrameWnd;
-	m_FrameWnd = NULL;
-	delete m_Model;
-	m_Model = NULL;
+	delete m_frame;
+	m_frame = NULL;
+	delete m_model;
+	m_model = NULL;
 }
 void MultimediaApp::HandlerAppPause()
 {

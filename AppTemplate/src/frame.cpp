@@ -8,6 +8,7 @@
 #include "base.h"
 #include "apptemplate.h"
 #include "frame.h"
+#include <stdexcept>
 
 
 FrameWindow::FrameWindow()
@@ -22,7 +23,7 @@ FrameWindow::~FrameWindow()
 	deleteallviews();
 }
 
-bool FrameWindow::CreateBaseFrame()
+void FrameWindow::CreateBaseFrame()
 {
 	try
 	{
@@ -30,18 +31,18 @@ bool FrameWindow::CreateBaseFrame()
 		m_conformant = createconformation(m_framewnd);
 		m_naviframe = createnaviframe(m_conformant);
 	}
-	catch(const char* msg)
+	catch(const std::runtime_error& e)
 	{
 		//how to delete evas_object ?
-		dlog_print(DLOG_FATAL, "FrameWindow", msg);
-		return false;
+		std::string msg = "fail to create the frame wnd because ";
+		msg += e.what();
+		throw std::runtime_error(msg);
 	}
-	return true;
 }
 
 void FrameWindow::AddView(View* view)
 {
-	baseassert(m_framewnd!= NULL && m_conformant!=NULL);
+	AppTool::Assert(m_framewnd!= NULL && m_conformant!=NULL);
 	m_views.push_back(view);
 
 }
@@ -51,55 +52,55 @@ View* FrameWindow::GetCurrentView()
 	return m_views[m_currentviewindex];
 }
 
-bool FrameWindow::ActivateFirstView()
+void FrameWindow::ActivateFirstView()
 {
-	if(m_views.size()==0)
+	if(m_views.size()==0 || m_currentviewindex != -1)
 	{
-		dlog_print(DLOG_FATAL, "FrameWindow", "There is no view");
-		return false;
+		dlog_print(DLOG_DEBUG, "FrameWindow", "no view or m_currentviewindex is -1");
+		return;
 	}
-	if(m_currentviewindex != -1)
+
+	try
 	{
-		dlog_print(DLOG_FATAL, "FrameWindow", "This function is called only once");
-		return false;
-	}
-	if(pushview(m_views[0]))
-	{
+		pushview(m_views[0]);
 		m_currentviewindex = 0;
-		return true;
 	}
-	return false;
-}
-
-bool FrameWindow::MoveNextView()
-{
-	unsigned int num_views = m_views.size();
-
-	if(m_currentviewindex+1 < num_views)
+	catch(const std::runtime_error& e)
 	{
-		if(pushview(m_views[m_currentviewindex+1]))
-		{
-			++m_currentviewindex;
-			return true;
-		}
+		dlog_print(DLOG_FATAL, "FrameWindow", e.what());
 	}
-	else
-		dlog_print(DLOG_FATAL, "FrameWindow", "No more views");
-	return false;
 }
 
-bool FrameWindow::MovePrevView()
+void FrameWindow::MoveNextView()
+{
+	try
+	{
+		unsigned int num_views = m_views.size();
+		if(m_currentviewindex+1 < num_views)
+		{
+			pushview(m_views[m_currentviewindex+1]);
+			{
+				++m_currentviewindex;
+			}
+		}
+		else
+			dlog_print(DLOG_FATAL, "FrameWindow", "No more views");
+	}
+	catch(const std::runtime_error& e)
+	{
+		dlog_print(DLOG_FATAL, "FrameWindow", e.what());
+	}
+}
+
+void FrameWindow::MovePrevView()
 {
 	if(m_currentviewindex > 0)
 	{
 		popview(m_views[m_currentviewindex]);
 		--m_currentviewindex;
-		m_views[m_currentviewindex]->Show();
-		return true;
 	}
 	else
 		dlog_print(DLOG_FATAL, "FrameWindow", "this is the first view");
-	return false;
 }
 
 
@@ -107,15 +108,15 @@ void FrameWindow::Show()
 {
 	evas_object_show(m_framewnd);
 }
-bool FrameWindow::pushview(View* view)
+void FrameWindow::pushview(View* view)
 {
 	if(view->IsCreated())
 	{
 		dlog_print(DLOG_FATAL, "FrameWindow", "this view is already activated");
-		baseassert(false);
-		return false;
+		AppTool::Assert(false);
+
 	}
-	return view->CreateView(m_naviframe, m_conformant);
+	view->CreateView(m_naviframe, m_conformant);
 }
 
 void FrameWindow::popview(View* view)
@@ -123,10 +124,10 @@ void FrameWindow::popview(View* view)
 	if(!view->IsCreated())
 	{
 		dlog_print(DLOG_FATAL, "FrameWindow", "this view is already deactivated");
-		baseassert(false);
-		return;
+		AppTool::Assert(false);
+
 	}
-	return view->DestroyView();
+	view->DestroyView();
 }
 void FrameWindow::deleteallviews()
 {
@@ -145,7 +146,7 @@ Evas_Object* FrameWindow::createframewindow()
 	pframewnd = elm_win_util_standard_add(PACKAGE, PACKAGE);
 	if(pframewnd == NULL)
 	{
-		throw "fail to create frame window";
+		throw std::runtime_error("fail to create frame window");
 	}
 	elm_win_conformant_set(pframewnd, EINA_TRUE);
 	elm_win_autodel_set(pframewnd, EINA_TRUE);
@@ -166,7 +167,7 @@ void FrameWindow::delete_request_cb(void *data, Evas_Object *obj, void *event_in
 	if(framewnd != NULL)
 	{
 		framewnd->handledeleterequest(obj, event_info);
-		return;
+
 	}
 	//assert
 }
@@ -184,7 +185,7 @@ Evas_Object* FrameWindow::createconformation(Evas_Object* parentwnd)
 	pconformation = elm_conformant_add(parentwnd);
 	if(pconformation == NULL)
 	{
-		throw "fail to create conformant window";
+		throw std::runtime_error("fail to create conformant window");
 	}
 	elm_win_indicator_mode_set(parentwnd, ELM_WIN_INDICATOR_SHOW);
 	elm_win_indicator_opacity_set(parentwnd, ELM_WIN_INDICATOR_OPAQUE);
@@ -199,7 +200,7 @@ Evas_Object* FrameWindow::createnaviframe(Evas_Object* conformant)
 	Evas_Object* pNaviframe = elm_naviframe_add(conformant);
 	if(pNaviframe == NULL)
 	{
-		throw "fail to create navi frame";
+		throw std::runtime_error("fail to create navi frame");
 	}
 	elm_object_part_content_set(conformant, "elm.swallow.content", pNaviframe);
 	elm_object_content_set(conformant, pNaviframe);

@@ -21,6 +21,7 @@ public:
 	//change view
 	void MoveNextView();
 	void MovePrevView();
+	Model* GetModel();
 
 	//event handler
 	void HandlerAppCreate();
@@ -35,11 +36,12 @@ public:
 	void HandleRegionFormatChangedEvent();
 
 private:
-	FrameWindow* m_FrameWnd;
-	Model* m_Model;
+	FrameWindow* m_frame;
+	Model* m_model;
 
 };
 
-
+#define MOVE_NEXTVIEW MultimediaApp::GetInstance()->MoveNextView()
+#define MOVE_PREVVIEW MultimediaApp::GetInstance()->MovePrevView()
 
 #endif /* MULTIMEDIAAPP_H_ */

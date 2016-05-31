@@ -9,7 +9,7 @@
 #include "base.h"
 #include <assert.h>
 
-void baseassert(bool condition)
+void AppTool::Assert(bool condition)
 {
 	assert(condition);
 }

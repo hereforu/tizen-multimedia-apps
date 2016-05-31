@@ -4,7 +4,7 @@
 <SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"></SignatureMethod>
 <Reference URI="bin%2Fapptemplate">
 <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"></DigestMethod>
-<DigestValue>J7qX8iNJE7gFQ58+xNAF0pUfQmQ4UL1YQ40SJcd6Uf4=</DigestValue>
+<DigestValue>mhu02cUvcS5L08YUKZl5UiQlR9AFXaB3eQFdrnYqrFE=</DigestValue>
 </Reference>
 <Reference URI="res%2Fedje%2Fapptemplate.edj">
 <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"></DigestMethod>
@@ -35,9 +35,9 @@
 </Reference>
 </SignedInfo>
 <SignatureValue>
-G3LEdJrqJXJ/w6a88m4EH0htwtSUov2WZ08Vp3rc098lVPYAUEF6Hh3Nxq9oOK7ufKrfYok/oavP
-PWQn2gdtTzarH02XWk1MMMbpu0ZahoZdxwnthMIbLk00WnVznn1GKimibOciU8vyLiPQKswca7yd
-EYGmytus6ZoVaU9ekY0=
+SLDfmpFA/6P+POdAigWZZE2szpVmLhrXD4SOhtF9beAUvbYdrlLtJ4hx2VEj8vF+N5mAVvhxuvQi
+Gy1qZv3kyjbEjvrGjXynx2OHcqMpS3YuamyMwvpEaU42TbPspuLHxSo+ekdFL+JKxSvFeHf+2hH3
+efk2XBHPx9901UcPvOQ=
 </SignatureValue>
 <KeyInfo>
 <X509Data>

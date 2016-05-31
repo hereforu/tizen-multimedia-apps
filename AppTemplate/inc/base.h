@@ -9,7 +9,24 @@
 #define BASE_H_
 
 
-void baseassert(bool condition);
+namespace AppTool
+{
 
+	template<typename TClass>
+	class ObjectFactory
+	{
+	public:
+		static TClass* CreateInstance()
+		{
+			TClass* pobject = new TClass;
+			return pobject;
+		}
+	};
+
+
+
+
+	void Assert(bool condition);
+}
 
 #endif /* BASE_H_ */

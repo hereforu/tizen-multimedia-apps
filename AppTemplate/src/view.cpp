@@ -7,6 +7,7 @@
 
 #include "apptemplate.h"
 #include "view.h"
+#include <stdexcept>
 
 View::View()
 	:m_box(NULL), m_layout(NULL), m_naviframe(NULL), m_conformant(NULL), m_Naviitem(NULL)
@@ -18,29 +19,28 @@ View::~View()
 	//how to delete layout??
 }
 
-bool View::CreateView(Evas_Object* naviframe, Evas_Object* conformant)
+void View::CreateView(Evas_Object* naviframe, Evas_Object* conformant)
 {
-	//m_layout
 	try
 	{
 		m_naviframe = naviframe;
 		m_conformant = conformant;
 		m_box = createbox(naviframe, conformant);
-
 	//	m_layout = createlayout(framewnd, conformant);
-		return decorateview(m_box);
+		decorateview(m_box);
 	}
-	catch(const char* msg)
+	catch(const std::runtime_error& e)
 	{
 		//how to delete evas_object ?
-		dlog_print(DLOG_FATAL, "View", msg);
-		return false;
+		std::string msg = "fail to create view becuase ";
+		msg += e.what();
+		throw std::runtime_error(msg);
 	}
-	return true;
 }
+
 void View::DestroyView()
 {
-	//elm_box_clear(m_box);
+	elm_box_clear(m_box);
 	elm_naviframe_item_pop(m_naviframe);
 	m_box = NULL;
 	m_naviframe = NULL;
@@ -54,18 +54,15 @@ bool View::IsCreated()
 	return (m_box)?true:false;
 }
 
-void View::Show()
-{
-	if(m_box)
-	{
-		evas_object_show(m_box);
-		showremains();
-	}
-}
+
 
 Evas_Object* View::createbox(Evas_Object* naviframe, Evas_Object* conformant)
 {
 	Evas_Object *box = elm_box_add(conformant);
+	if(box == NULL)
+	{
+		throw std::runtime_error("fail to create a box in a view");
+	}
 	evas_object_size_hint_weight_set(box, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
 	m_Naviitem = elm_naviframe_item_push(naviframe, getedcfilename(), NULL, NULL, box, NULL);
 	evas_object_show(box);
@@ -83,7 +80,7 @@ Evas_Object* View::createlayout(Evas_Object* framewnd, Evas_Object* conformant)
 	layout = elm_layout_add(framewnd);
 	if(layout == NULL)
 	{
-		throw "fail to create layout";
+		throw std::runtime_error("fail to create a layout in a view");
 	}
 	elm_layout_file_set(layout, edj_path, GRP_MAIN);
 	elm_object_part_text_set(layout, "txt_title", "hello tizen");
@@ -97,7 +94,7 @@ Evas_Object* View::createlayout(Evas_Object* framewnd, Evas_Object* conformant)
 void View::handlelayoutevent(Evas_Object *obj, void *event_info)
 {
 	/* Let window go to hide state. */
-//	elm_win_lower(m_box);
+	elm_win_lower(obj);
 }
 
 void View::layout_back_cb(void *data, Evas_Object *obj, void *event_info)

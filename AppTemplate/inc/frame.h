@@ -12,16 +12,7 @@
 #include <vector>
 #include "view.h"
 
-template<typename TView>
-class ViewFactory
-{
-public:
-	static TView* CreateInstance()
-	{
-		TView* pview = new TView;
-		return pview;
-	}
-};
+
 
 class FrameWindow
 {
@@ -29,20 +20,20 @@ public:
 	FrameWindow();
 	~FrameWindow();
 
-	bool CreateBaseFrame();
+	void CreateBaseFrame();
 	void AddView(View* view);
 
 
 	View* GetCurrentView();
-	bool MoveNextView();
-	bool MovePrevView();
-	bool ActivateFirstView();
+	void MoveNextView();
+	void MovePrevView();
+	void ActivateFirstView();
 
 	void Show();
 
 
 private:
-	bool pushview(View* view);
+	void pushview(View* view);
 	void popview(View* view);
 	void deleteallviews();
 	Evas_Object* createframewindow();

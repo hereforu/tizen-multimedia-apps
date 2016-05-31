@@ -24,8 +24,8 @@ public:
 
 
 protected:
-	virtual bool creatspecificmodel() = 0;
-	virtual void destroyspecificmodel() = 0;
+	virtual bool creatspecifics() = 0;
+	virtual void destroyspecifics() = 0;
 
 private:
 	bool m_created;

@@ -7,6 +7,7 @@
 
 #include "SecondView.h"
 #include "multimediaapp.h"
+#include <stdexcept>
 
 SecondView::SecondView()
 :m_label(NULL)
@@ -18,20 +19,17 @@ SecondView::~SecondView()
 {
 
 }
-void SecondView::showremains()
-{
 
-}
 const char* SecondView::getedcfilename()
 {
 	return "edje/secondview.edj";
 }
 
-bool SecondView::decorateview(Evas_Object* box)
+void SecondView::decorateview(Evas_Object* box)
 {
 	Evas_Object * label = elm_label_add(box);
 	if(label == NULL)
-		throw "fail to decorate the second view";
+		throw std::runtime_error("fail to decorate the second view");
 	evas_object_size_hint_weight_set(label, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
 	evas_object_size_hint_align_set(label, EVAS_HINT_FILL, 0.5);
 	elm_object_text_set(label, "This is the second view");
@@ -47,12 +45,11 @@ bool SecondView::decorateview(Evas_Object* box)
 	elm_box_pack_end(box, btn);
 	evas_object_show(btn);
 
-	return true;
 }
 
 void SecondView::clicked_cb_in_secondview(void *data, Evas_Object *obj, void *event_info)
 {
-	MultimediaApp::GetInstance()->MovePrevView();
+	MOVE_PREVVIEW;
 }
 
 void SecondView::destroyremains()

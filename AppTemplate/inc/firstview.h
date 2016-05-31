@@ -18,9 +18,8 @@ public:
 
 protected:
 	const char* getedcfilename();
-	bool decorateview(Evas_Object* box);
+	void decorateview(Evas_Object* box);
 	void destroyremains();
-	void showremains();
 
 private:
 	static void clicked_cb(void *data, Evas_Object *obj, void *event_info);

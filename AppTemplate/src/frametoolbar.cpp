@@ -6,6 +6,7 @@
  */
 
 #include "frametoolbar.h"
+#include <stdexcept>
 
 frametoolbar::frametoolbar()
 	:m_toolbar(NULL)
@@ -22,8 +23,7 @@ void frametoolbar::Create(Evas_Object* framewnd, Evas_Object* conformant)
 	Evas_Object* toolbar = elm_toolbar_add(framewnd);
 	if(toolbar == NULL)
 	{
-		throw "fail to create toolbar in framewnd";
-		return;
+		throw std::runtime_error("fail to create toolbar in framewnd");
 	}
 	elm_box_pack_end(framewnd, toolbar);
 	evas_object_show(toolbar);
