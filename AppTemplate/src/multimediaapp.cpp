@@ -9,6 +9,7 @@
 #include "multimediaapp.h"
 #include "firstview.h"
 #include "secondview.h"
+#include "srcSelectionView.h"
 #include "samplemodel.h"
 #include <stdexcept>
 
@@ -53,6 +54,7 @@ void MultimediaApp::HandlerAppCreate()
 		m_frame = new FrameWindow;
 		m_frame->CreateBaseFrame();
 		m_frame->AddView(AppTool::ObjectFactory<FirstView>::CreateInstance());
+		m_frame->AddView(AppTool::ObjectFactory<SrcSelectionView>::CreateInstance());
 		m_frame->AddView(AppTool::ObjectFactory<SecondView>::CreateInstance());
 		m_frame->ActivateFirstView();
 		m_frame->Show();
