@@ -8,6 +8,8 @@
 #ifndef MODEL_H_
 #define MODEL_H_
 
+#include <vector>
+#include <string>
 
 class Model{
 
@@ -23,12 +25,18 @@ public:
 	bool Load();
 
 
+	void AddSrcToList(const char* srcFileName);
+	const char* GetSrcFromList(int index);
+	int GetSizeOfList();
+
+
 protected:
 	virtual bool creatspecifics() = 0;
 	virtual void destroyspecifics() = 0;
 
 private:
 	bool m_created;
+	std::vector<std::string> m_SrcList;
 
 };
 
