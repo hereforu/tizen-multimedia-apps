@@ -1,9 +1,0 @@
-#delete
-#add
-#modify
-author-signature.xml
-signature1.xml
-bin/apptemplate
-res/edje/apptemplate.edj
-res/edje/firstview.edj
-res/edje/secondview.edj

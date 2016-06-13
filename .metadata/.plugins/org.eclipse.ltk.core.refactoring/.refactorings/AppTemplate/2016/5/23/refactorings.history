@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<session version="1.0">
-<refactoring comment="Rename resource &apos;AppTemplate/src/FirstView.cpp&apos; to &apos;firstview.cpp&apos;" description="Rename resource &apos;FirstView.cpp&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="src/FirstView.cpp" name="firstview.cpp" stamp="1464574709710" updateReferences="true"/>
-</session>
