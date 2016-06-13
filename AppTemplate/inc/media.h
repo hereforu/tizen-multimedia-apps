@@ -18,23 +18,23 @@ public:
 	void CreateMedia();
 
 	// get methods
-	char** getMediatype();
-	char** getFileName();
-	char** getFilePath();
+	string getMediatype(); //enum으로 TODO: sournd, audio, video, image, others
+	string getFileName();
+	string getFilePath();
 	int getFileSize();
-	char** getFileDate();
-	char** getThumbnailPath();
+	string getFileDate();
+	string getThumbnailPath();
 
 protected:
 	virtual void setMediaInfo() = 0;
 
 private:
-	char** m_mediatype;
-	char** m_filename;
-	char** m_filepath;
+	string m_mediatype;
+	string m_filename;
+	string m_filepath;
 	int m_filesize;		// TODO: size unit? byte 단위?
-	char** m_filedate; // TODO: check date type in tizen
-	char** m_thumbnailpath;
+	string m_filedate; // TODO: check date type in tizen
+	string m_thumbnailpath;
 };
 
 

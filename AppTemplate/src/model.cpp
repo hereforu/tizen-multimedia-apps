@@ -45,5 +45,18 @@ bool Model::Load()
 {
 	return true;
 }
+void Model::AddSrcToList(const char* srcFileName)
+{
+	m_SrcList.push_back(std::string(srcFileName));
+}
+const char* Model::GetSrcFromList(int index)
+{
+	return m_SrcList[index].c_str();
+}
+/*
+unsigned int Model::GetSizeOfList()
+{
+	return m_SrcList.size();
+}*/
 
 
