@@ -9,6 +9,8 @@
 #ifndef MEDIA_H_
 #define MEDIA_H_
 
+#include <string>
+
 class Media
 {
 public:
@@ -18,23 +20,23 @@ public:
 	void CreateMedia();
 
 	// get methods
-	string getMediatype(); //enum으로 TODO: sournd, audio, video, image, others
-	string getFileName();
-	string getFilePath();
+	std::string getMediatype(); //enum으로 TODO: sournd, audio, video, image, others
+	std::string getFileName();
+	std::string getFilePath();
 	int getFileSize();
-	string getFileDate();
-	string getThumbnailPath();
+	std::string getFileDate();
+	std::string getThumbnailPath();
 
 protected:
 	virtual void setMediaInfo() = 0;
 
 private:
-	string m_mediatype;
-	string m_filename;
-	string m_filepath;
+	std::string m_mediatype;
+	std::string m_filename;
+	std::string m_filepath;
 	int m_filesize;		// TODO: size unit? byte 단위?
-	string m_filedate; // TODO: check date type in tizen
-	string m_thumbnailpath;
+	std::string m_filedate; // TODO: check date type in tizen
+	std::string m_thumbnailpath;
 };
 
 

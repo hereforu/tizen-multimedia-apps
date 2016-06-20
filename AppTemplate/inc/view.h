@@ -9,6 +9,7 @@
 #define VIEW_H_
 
 #include <Elementary.h>
+#include "model.h"
 #include <string>
 
 class View
@@ -17,7 +18,7 @@ public:
 	View();
 	virtual ~View();
 
-	void CreateView(Evas_Object* naviframe, Evas_Object* conformant);
+	void CreateView(Evas_Object* naviframe, Evas_Object* conformant, Model* model);
 	void DestroyView();
 	bool IsCreated();
 
@@ -36,8 +37,11 @@ private:
 	//for callback
 	static void layout_back_cb(void *data, Evas_Object *obj, void *event_info);
 
-private:
+protected:
+	Model* m_model;
 	Evas_Object* m_box;
+
+private:
 	Evas_Object* m_layout;
 	Evas_Object* m_naviframe;
 	Evas_Object* m_conformant;
