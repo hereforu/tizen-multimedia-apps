@@ -19,6 +19,7 @@
 #include <map>
 
 typedef std::vector<std::string> AudioPathVector;
+typedef std::vector<unsigned int> SelectedSourceIdxVec;
 
 struct OBJECT {
 	Source source;
@@ -37,18 +38,24 @@ public:
 	~AudioManagerModel();
 
 	AudioPathVector GetAudioListinDB();
+	SelectedSourceIdxVec GetSelectedSourceIdx();
 	void UpdateSource(std::vector<unsigned int> index);
 	void PlaySources();
 	void StopSources();
-	void LocateSource(unsigned int index, float x, float y, float z);
-	void LocateListener(float x, float y, float z);
+	void LocateSource(unsigned int index, int x, int y, int z);
+	void LocateListener(int x, int y, int z);
 
 protected:
+	bool creatspecifics();
+	void destroyspecifics();
 
 private:
 	Context m_context;
 	OBJECTVEC m_obj;
 	AudioPathVector m_audioList;
+	const ALCchar * m_defaultDeviceName;
+	ALCdevice * m_device;
+	ALCcontext* m_contextID;
 };
 
 #endif /* AUDIOMANAGERMODEL_H_ */

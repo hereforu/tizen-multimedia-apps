@@ -9,10 +9,10 @@
 
 AudioManagerModel::AudioManagerModel()
 {
-	const ALCchar * defaultDeviceName = alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER);
-	ALCdevice * device = alcOpenDevice(defaultDeviceName);
-	ALCcontext* context = alcCreateContext(device, NULL);
-	alcMakeContextCurrent(context);
+	m_defaultDeviceName = alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER);
+	m_device = alcOpenDevice(m_defaultDeviceName);
+	m_contextID = alcCreateContext(m_device, NULL);
+	alcMakeContextCurrent(m_contextID);
 	m_context = Context();
 }
 
@@ -23,11 +23,14 @@ AudioManagerModel::~AudioManagerModel()
 		m_obj.objVec[i].source.Destroy();
 		m_obj.objVec[i].buffer.Destroy();
 	}
+	alcMakeContextCurrent(NULL);
+	alcDestroyContext(m_contextID);
+	alcCloseDevice(m_device);
 }
 
 AudioPathVector AudioManagerModel::GetAudioListinDB()
 {
-	MediaContentController::getContentFromDB(0, m_audioList);
+	MediaContentController::getContentsByCondition(m_audioList);
 	return m_audioList;
 }
 
@@ -68,14 +71,35 @@ void AudioManagerModel::StopSources()
 	m_context.Stop();
 }
 
-void AudioManagerModel::LocateSource(unsigned int index, float x, float y, float z)
+void AudioManagerModel::LocateSource(unsigned int index, int x, int y, int z)
 {
 	unsigned int pos = m_obj.indexMap.find(index)->second;
 	if(pos == MAXNUM) return;
 	m_context.setSourcePos(m_obj.objVec[pos].source.GetSourceId(), x, y, z);
 }
 
-void AudioManagerModel::LocateListener(float x, float y, float z)
+void AudioManagerModel::LocateListener(int x, int y, int z)
 {
 	m_context.setListenerPos(x, y, z);
+}
+
+SelectedSourceIdxVec AudioManagerModel::GetSelectedSourceIdx()
+{
+	SelectedSourceIdxVec ret;
+	map<unsigned int, unsigned int>::iterator i;
+	for(i = m_obj.indexMap.begin() ; i != m_obj.indexMap.end() ; i++)
+	{
+		ret.push_back(i->first);
+	}
+	return ret;
+}
+
+bool AudioManagerModel::creatspecifics()
+{
+	return true;
+}
+
+void AudioManagerModel::destroyspecifics()
+{
+
 }

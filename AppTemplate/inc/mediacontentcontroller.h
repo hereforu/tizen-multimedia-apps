@@ -31,8 +31,8 @@ typedef bool(* media_info_cb)(media_info_h media, void *user_data);
 namespace MediaContentController
 {
 
-	static int getContentsByCondition(std::vector<string> &Audiolist);
-	static bool checkFileExistence(char *path);
+	int getContentsByCondition(std::vector<string> &Audiolist);
+	bool checkFileExistence(char *path);
 
 	int getContentFromDB(filter_h filter, std::vector<string> &Audiolist);
 	bool gallery_media_item_cb(media_info_h media, void *user_data);

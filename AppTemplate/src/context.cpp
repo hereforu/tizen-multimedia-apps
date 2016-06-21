@@ -29,20 +29,23 @@ void Context::ResetSource()
 	m_ImportSourceIdx.clear();
 }
 
-void Context::setSourcePos(ALuint source, float x, float y, float z)
+void Context::setSourcePos(ALuint source, int x, int y, int z)
 {
-	alSource3f(source, AL_POSITION, x, y, z);
+	//return when float overflow
+	alSource3i(source, AL_POSITION, x, y, z);
 }
 
-void Context::setListenerPos(float x, float y, float z)
+void Context::setListenerPos(int x, int y, int z)
 {
-	alListener3f(AL_POSITION, x, y, z);
+	//return when float overflow
+	alListener3i(AL_POSITION, x, y, z);
 }
 
 void Context::Play()
 {
 	ALuint source[MAXNUM];
 	ConvertVecToArr(source);
+	//check each source state
 	alSourcePlayv(m_ImportSourceIdx.size(), source);
 }
 
@@ -50,6 +53,7 @@ void Context::Stop()
 {
 	ALuint source[MAXNUM];
 	ConvertVecToArr(source);
+	//check each source state
 	alSourceStopv(m_ImportSourceIdx.size(), source);
 }
 
