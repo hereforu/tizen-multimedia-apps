@@ -54,11 +54,10 @@ void MultimediaApp::HandlerAppCreate()
 		m_model->Create();
 		//create frame
 		m_frame = new FrameWindow;
-		m_frame->CreateBaseFrame(m_model);
+		m_frame->CreateBaseFrame();
 		m_frame->AddView(AppTool::ObjectFactory<FirstView>::CreateInstance());
 		m_frame->AddView(AppTool::ObjectFactory<AudioRoomView>::CreateInstance());
 		m_frame->AddView(AppTool::ObjectFactory<SrcSelectionView>::CreateInstance());
-		m_frame->AddView(AppTool::ObjectFactory<SecondView>::CreateInstance());
 		m_frame->ActivateFirstView();
 		m_frame->Show();
 	}

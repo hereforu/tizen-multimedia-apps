@@ -12,7 +12,7 @@
 
 
 FrameWindow::FrameWindow()
-:m_framewnd(NULL), m_conformant(NULL),  m_naviframe(NULL), m_currentviewindex(-1), m_model(NULL)
+:m_framewnd(NULL), m_conformant(NULL),  m_naviframe(NULL), m_currentviewindex(-1)
 {
 
 }
@@ -23,11 +23,10 @@ FrameWindow::~FrameWindow()
 	deleteallviews();
 }
 
-void FrameWindow::CreateBaseFrame(Model* model)
+void FrameWindow::CreateBaseFrame()
 {
 	try
 	{
-		m_model = model;
 		m_framewnd = createframewindow();
 		m_conformant = createconformation(m_framewnd);
 		m_naviframe = createnaviframe(m_conformant);
@@ -119,7 +118,7 @@ void FrameWindow::pushview(View* view)
 		AppTool::Assert(false);
 
 	}
-	view->CreateView(m_naviframe, m_conformant, m_model);
+	view->CreateView(m_naviframe, m_conformant);
 }
 
 void FrameWindow::popview(View* view)

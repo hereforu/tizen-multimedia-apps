@@ -63,6 +63,9 @@ private:
 	void createPlayList();
 	void updatePlayList();
 	void setDefaultPlayItem(PlayItem* pItem, int idx);
+	//TODO
+	void putSrc(int idx);
+	bool isInRoomArea();
 
 	// selection
 	void createSelectionFrame(Evas_Object* box);
@@ -81,6 +84,9 @@ private:
 	void createToolbar(Evas_Object* box);
 	void addToolbarItems(Evas_Object *toolbar);
 	void updateToolbarItems(Evas_Object *toolbar);
+
+	// toolbar cb
+
 
 	// request data to model
 	std::vector<unsigned int> getSelectedSrc(); // make m_sources

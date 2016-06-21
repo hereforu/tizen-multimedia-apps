@@ -20,7 +20,7 @@ public:
 	FrameWindow();
 	~FrameWindow();
 
-	void CreateBaseFrame(Model* model);
+	void CreateBaseFrame();
 	void AddView(View* view);
 
 
@@ -51,7 +51,6 @@ private:
 	Evas_Object* m_naviframe;
 	std::vector<View*> m_views;
 	int m_currentviewindex;
-	Model* m_model;
 };
 
 

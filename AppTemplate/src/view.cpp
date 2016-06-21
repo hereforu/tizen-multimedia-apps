@@ -10,7 +10,7 @@
 #include <stdexcept>
 
 View::View()
-	:m_model(NULL), m_box(NULL), m_layout(NULL), m_naviframe(NULL), m_conformant(NULL), m_Naviitem(NULL)
+	:m_box(NULL), m_layout(NULL), m_naviframe(NULL), m_conformant(NULL), m_Naviitem(NULL)
 {
 
 }
@@ -19,11 +19,10 @@ View::~View()
 	//how to delete layout??
 }
 
-void View::CreateView(Evas_Object* naviframe, Evas_Object* conformant, Model* model)
+void View::CreateView(Evas_Object* naviframe, Evas_Object* conformant)
 {
 	try
 	{
-		m_model = model;
 		m_naviframe = naviframe;
 		m_conformant = conformant;
 		m_box = createbox(naviframe, conformant);

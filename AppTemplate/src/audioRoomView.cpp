@@ -36,7 +36,7 @@ void AudioRoomView::decorateview(Evas_Object* box)
 
 	createAudioRoom(box);
 	createToolbar(box);
-	//createSelectionFrame(box);
+	//TODO createSelectionFrame(box);
 	createButtons(box);
 }
 
@@ -57,7 +57,7 @@ void AudioRoomView::updateview()
 /* source: used to make toolbar item list */
 std::vector<unsigned int> AudioRoomView::getSelectedSrc()
 {
-	AudioManagerModel* amm = static_cast<AudioManagerModel*>(m_model);
+	AudioManagerModel* amm = static_cast<AudioManagerModel*>(MODEL);
 	if(amm == NULL)
 	{
 		throw std::runtime_error("fail to cast model");
@@ -67,13 +67,13 @@ std::vector<unsigned int> AudioRoomView::getSelectedSrc()
 
 StrVec AudioRoomView::getSrcNameList()
 {
-	AudioManagerModel* amm = static_cast<AudioManagerModel*>(m_model);
+	AudioManagerModel* amm = static_cast<AudioManagerModel*>(MODEL);
 	if(amm == NULL)
 	{
 		throw std::runtime_error("fail to cast model");
 	}
 
-	return amm->GetAudioListinDB();
+	return amm->GetAudioList();
 }
 
 
@@ -85,7 +85,8 @@ void AudioRoomView::createItemList()
 	m_selectedNum = selected.size();
 	m_itemNum = m_selectedNum + 2; // sources + clear + delete
 
-	StrVec list_srcName = getSrcNameList();
+	StrVec list_srcName;
+	if(m_selectedNum) list_srcName= getSrcNameList();
 
 	/* make item list */
 	m_list_item = new ToolbarItem[m_itemNum];
@@ -209,7 +210,7 @@ void AudioRoomView::createAudioRoom(Evas_Object *box)
 	evas_object_size_hint_weight_set(room, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
 	evas_object_size_hint_align_set(room, EVAS_HINT_FILL, EVAS_HINT_FILL);
 
-	/*
+	/*check
 	evas_object_event_callback_add(draw_area, EVAS_CALLBACK_MOUSE_DOWN, __mouse_down_cb, NULL);
 	evas_object_event_callback_add(draw_area, EVAS_CALLBACK_MOUSE_UP, __mouse_up_cb, NULL);
 	evas_object_event_callback_add(draw_area, EVAS_CALLBACK_MOUSE_MOVE, __mouse_move_cb, NULL);
@@ -242,7 +243,10 @@ void AudioRoomView::createPlayList()
 
 	m_list_play = new PlayItem[m_selectedNum+1]; // sources + listener
 	for(int i=0; i<=m_selectedNum; i++)
+	{
 		setDefaultPlayItem(&m_list_play[i], i);
+		putSrc(i);
+	}
 
 	// TODO set on the canvas
 }
@@ -263,14 +267,36 @@ void AudioRoomView::setDefaultPlayItem(PlayItem* pItem, int idx)
 	m_selectedNum = 5;
 	/* get rand # */
 	srand(time(NULL));
-	int xx = rand()%m_selectedNum +1; // 1 ~ m_selectedNum
-	int yy = rand()%m_selectedNum +1;
+	int xx = rand()%m_selectedNum + 1; // 1 ~ m_selectedNum
+	int yy = rand()%m_selectedNum + 1;
 
 	/* set default */
 	pItem->id = idx;
 	pItem->x = (int)(w/(m_selectedNum+1)*xx);
 	pItem->y = (int)(h/(m_selectedNum+1)*yy);
 	pItem->z = 0;
+}
+
+void AudioRoomView::putSrc(int idx)
+{
+	/* get room geometry */
+	int x = 0, y = 0, w = 0, h = 0;
+	evas_object_geometry_get(m_room, &x, &y, &w, &h);
+
+	/* get item */
+
+
+}
+
+void createImg()
+{
+
+}
+
+bool AudioRoomView::isInRoomArea()
+{
+
+	return false;
 }
 
 
@@ -339,7 +365,7 @@ void AudioRoomView::playBtnclicked_cb(void *data, Evas_Object *obj, void *event_
 		throw std::runtime_error("fail to cast audioRoomView");
 	}
 
-	AudioManagerModel* amm = static_cast<AudioManagerModel*>(arv->m_model);
+	AudioManagerModel* amm = static_cast<AudioManagerModel*>(MODEL);
 	if(amm == NULL)
 	{
 		throw std::runtime_error("fail to cast model");

@@ -18,7 +18,7 @@ public:
 	View();
 	virtual ~View();
 
-	void CreateView(Evas_Object* naviframe, Evas_Object* conformant, Model* model);
+	void CreateView(Evas_Object* naviframe, Evas_Object* conformant);
 	virtual void updateview() = 0; // ex. view_1 -> view_2 -> view_1, update view_1 if needed
 	void DestroyView();
 	bool IsCreated();
@@ -39,7 +39,6 @@ private:
 	static void layout_back_cb(void *data, Evas_Object *obj, void *event_info);
 
 protected:
-	Model* m_model;
 	Evas_Object* m_box;
 
 private:

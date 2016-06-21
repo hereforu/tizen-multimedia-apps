@@ -54,7 +54,7 @@ void SrcSelectionView::destroyremains()
 		if(m_list_selectedSrc[i])
 			selected.push_back(i+1);
 
-	AudioManagerModel* amm = static_cast<AudioManagerModel*>(m_model);
+	AudioManagerModel* amm = static_cast<AudioManagerModel*>(MODEL);
 	if(amm == NULL)
 	{
 		throw std::runtime_error("fail to cast model");
@@ -77,7 +77,7 @@ void SrcSelectionView::updateview()
 /* source */
 void SrcSelectionView::getSelectedSrc()
 {
-	AudioManagerModel* amm = static_cast<AudioManagerModel*>(m_model);
+	AudioManagerModel* amm = static_cast<AudioManagerModel*>(MODEL);
 	if(amm == NULL)
 	{
 		throw std::runtime_error("fail to cast model");
@@ -94,13 +94,13 @@ void SrcSelectionView::getSelectedSrc()
 
 StrVec SrcSelectionView::getSrcNameList()
 {
-	AudioManagerModel* amm = static_cast<AudioManagerModel*>(m_model);
+	AudioManagerModel* amm = static_cast<AudioManagerModel*>(MODEL);
 	if(amm == NULL)
 	{
 		throw std::runtime_error("fail to cast model");
 	}
 
-	return amm->GetAudioListinDB();
+	return amm->GetAudioList();
 }
 
 
