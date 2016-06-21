@@ -4,11 +4,12 @@
  *  Created on: June 3, 2016
  *      Author: Hyunjin
  */
+
 #include "srcSelectionView.h"
-#include "multimediaapp.h"
+
+std::vector<unsigned int> g_selected; //temp TODO
 
 
-std::vector<int> g_selected; //temp TODO
 
 int SrcSelectionView::m_selectedNum = 0;
 int SrcSelectionView::m_maxSelection = 5;
@@ -49,13 +50,17 @@ void SrcSelectionView::decorateview(Evas_Object* box)
 void SrcSelectionView::destroyremains()
 {
 	/* send current selected list to model */
-	std::vector<int> selected;
+	std::vector<unsigned int> selected;
 	for(int i=0; i<m_srcNum; i++)
 		if(m_list_selectedSrc[i])
-			selected.push_back(i);
-	// TODO
+			selected.push_back(i+1);
+
 	//m_model->updateSelectedList(selected);
-	g_selected = selected;
+	//g_selected = selected; check
+
+	AudioManagerModel* amm = (AudioManagerModel*) m_model;
+	amm->UpdateSource(selected);
+
 
 	/* destruction */
 	delete[] m_list_selectedSrc;
@@ -64,26 +69,34 @@ void SrcSelectionView::destroyremains()
 	m_list_usrData = NULL;
 }
 
+void SrcSelectionView::updateview()
+{
+
+}
+
+
+/* source */
 void SrcSelectionView::getSelectedSrc()
 {
-	std::vector<int> selected = g_selected;// = m_model->getSelectedList(); // TODO
+	std::vector<unsigned int> selected = g_selected;// = m_model->getSelectedList(); // TODO
+
 
 	m_list_selectedSrc = new Eina_Bool[m_srcNum];
 	for(int i=0; i<m_srcNum; i++)
 		m_list_selectedSrc[i] = 0;
 
 	for(int i=0; i<selected.size(); i++)
-		m_list_selectedSrc[selected[i]] = EINA_TRUE;
+		m_list_selectedSrc[selected[i]-1] = EINA_TRUE;
 }
 
-
-/* source */
 StrVec SrcSelectionView::getSrcNameList()
 {
-	// temp, TODO
-	StrVec list_srcName;
-	for(int i=0; i<10; i++)
-		list_srcName.push_back("audio");
+	// check
+	AudioManagerModel* amm = (AudioManagerModel*) m_model;
+	StrVec list_srcName = amm->GetAudioListinDB();
+
+/*	for(int i=0; i<10; i++)
+		list_srcName.push_back("audio");*/
 
 	return list_srcName;
 }
@@ -156,7 +169,7 @@ Evas_Object* SrcSelectionView::genlist_content_get_cb(void *data, Evas_Object *o
 
 		return checkbox;
 	}
-	/* TODO no icon! don't know why
+	/* TODO no icon!
 	if (!strcmp(part, "elm.swallow.icon"))
 	{
 		Evas_Object *img = elm_image_add(obj);
@@ -202,10 +215,8 @@ void SrcSelectionView::createList(Evas_Object* box)
 
 	for(int i=0; i<m_srcNum; i++)
 	{
-		UsrData ud;
-		ud.idx = i;
-		ud.ssv = this;
-		m_list_usrData[i] = ud;
+		m_list_usrData[i].idx = i;
+		m_list_usrData[i].ssv = this;
 
 		elm_genlist_item_append(list, itc, &(m_list_usrData[i]), NULL, ELM_GENLIST_ITEM_NONE, NULL, NULL);
 	}
@@ -233,7 +244,7 @@ void SrcSelectionView::createBackBtn(Evas_Object* box)
 	elm_object_text_set(btn, "Back to Audio Room");
 
 	evas_object_size_hint_align_set(btn, EVAS_HINT_FILL, EVAS_HINT_FILL);
-	evas_object_smart_callback_add(btn, "clicked", backBtnclicked_cb, this);
+	evas_object_smart_callback_add(btn, "clicked", backBtnclicked_cb, NULL);
 	elm_box_pack_end(box, btn);
 	evas_object_show(btn);
 }

@@ -57,6 +57,11 @@ void SecondView::destroyremains()
 
 }
 
+void SecondView::updateview()
+{
+
+}
+
 
 
 

@@ -54,6 +54,11 @@ void FirstView::destroyremains()
 
 }
 
+void FirstView::updateview()
+{
+
+}
+
 void FirstView::clicked_cb(void *data, Evas_Object *obj, void *event_info)
 {
 	MOVE_NEXTVIEW;

@@ -19,6 +19,7 @@ public:
 	virtual ~View();
 
 	void CreateView(Evas_Object* naviframe, Evas_Object* conformant, Model* model);
+	virtual void updateview() = 0;
 	void DestroyView();
 	bool IsCreated();
 

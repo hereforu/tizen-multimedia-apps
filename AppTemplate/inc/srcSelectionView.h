@@ -10,6 +10,8 @@
 #define SRCSELECTIONVIEW_H_
 
 #include "view.h"
+#include "multimediaapp.h"
+#include "audioManagerModel.h"
 #include <stdexcept>
 #include <assert.h>
 #include <vector>
@@ -24,11 +26,14 @@ typedef struct
 
 } UsrData;
 
+
 class SrcSelectionView : public View
 {
 public:
 	SrcSelectionView();
 	~SrcSelectionView();
+
+	void updateview();
 
 protected:
 	const char* getedcfilename();
@@ -64,9 +69,9 @@ private:
 	static int m_maxSelection;
 
 	StrVec m_list_srcName;
-	Eina_Bool* m_list_selectedSrc;
+	Eina_Bool *m_list_selectedSrc;
 
-	UsrData* m_list_usrData;
+	UsrData *m_list_usrData;
 };
 
 
