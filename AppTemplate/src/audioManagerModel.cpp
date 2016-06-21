@@ -6,7 +6,7 @@
  */
 #include "audioManagerModel.h"
 #include "mediacontentcontroller.h"
-
+#include <app_common.h>//
 AudioManagerModel::AudioManagerModel()
 {
 	m_defaultDeviceName = alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER);
@@ -14,6 +14,7 @@ AudioManagerModel::AudioManagerModel()
 	m_contextID = alcCreateContext(m_device, NULL);
 	alcMakeContextCurrent(m_contextID);
 	m_context = Context();
+	GetAudioListinDB();
 }
 
 AudioManagerModel::~AudioManagerModel()
@@ -28,9 +29,48 @@ AudioManagerModel::~AudioManagerModel()
 	alcCloseDevice(m_device);
 }
 
-AudioPathVector AudioManagerModel::GetAudioListinDB()
+void AudioManagerModel::GetAudioListinDB()
 {
-	MediaContentController::getContentsByCondition(m_audioList);
+	//MediaContentController::getContentsByCondition(m_audioList);
+	char* resource_path = app_get_resource_path();
+	std::string path = resource_path;
+
+	std::string wav_file_name = "1.wav";
+	path = path + wav_file_name;
+	m_audioList->push_back(path);
+	path = resource_path;
+
+	wav_file_name = "2.wav";
+	path = path + wav_file_name;
+	m_audioList->push_back(path);
+	path = resource_path;
+
+	wav_file_name = "3.wav";
+	path = path + wav_file_name;
+	m_audioList->push_back(path);
+	path = resource_path;
+
+	wav_file_name = "five.wav";
+	path = path + wav_file_name;
+	m_audioList->push_back(path);
+	path = resource_path;
+
+	wav_file_name = "four.wav";
+	path = path + wav_file_name;
+	m_audioList->push_back(path);
+	path = resource_path;
+
+	wav_file_name = "seven.wav";
+	path = path + wav_file_name;
+	m_audioList->push_back(path);
+	path = resource_path;
+
+	wav_file_name = "six.wav";
+	path = path + wav_file_name;
+	m_audioList->push_back(path);
+}
+AudioPathVector* AudioManagerModel::GetAudioList()
+{
 	return m_audioList;
 }
 
@@ -49,9 +89,9 @@ void AudioManagerModel::UpdateSource(std::vector<unsigned int> index)
 		OBJECT object;
 		object.buffer = Buffer();
 		object.source = Source();
-		if(!object.buffer.GenBuffer(m_audioList[index[i] - 1]))
+		if(!object.buffer.GenBuffer((*m_audioList)[index[i] - 1]))
 		{
-			std::string msg = m_audioList[index[i] - 1] + "   <error>";
+			std::string msg = (*m_audioList)[index[i] - 1] + "   <error>";
 			dlog_print(DLOG_FATAL, "AudioManagerModel", msg.c_str());
 			continue;
 		}

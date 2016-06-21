@@ -37,7 +37,7 @@ public:
 	AudioManagerModel();
 	~AudioManagerModel();
 
-	AudioPathVector GetAudioListinDB();
+	AudioPathVector* GetAudioList();
 	SelectedSourceIdxVec GetSelectedSourceIdx();
 	void UpdateSource(std::vector<unsigned int> index);
 	void PlaySources();
@@ -50,9 +50,11 @@ protected:
 	void destroyspecifics();
 
 private:
+	void GetAudioListinDB();
+
 	Context m_context;
 	OBJECTVEC m_obj;
-	AudioPathVector m_audioList;
+	AudioPathVector* m_audioList;
 	const ALCchar * m_defaultDeviceName;
 	ALCdevice * m_device;
 	ALCcontext* m_contextID;
