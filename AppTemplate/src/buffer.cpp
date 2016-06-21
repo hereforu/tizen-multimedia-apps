@@ -15,8 +15,7 @@ Buffer::Buffer()
 
 Buffer::~Buffer()
 {
-	if(m_waveFile != NULL)
-		fclose(m_waveFile);
+
 }
 
 void Buffer::Destroy()
@@ -62,7 +61,7 @@ void Buffer::OpenFile(std::string pWavFilePath)
 void Buffer::ReadRiffHeader()
 {
 	std::string msg;
-	int ret = fread(&m_riffHeader, sizeof(struct RIFF_Header), 1, m_waveFile);
+	fread(&m_riffHeader, sizeof(struct RIFF_Header), 1, m_waveFile);
 	if ((m_riffHeader.chunkID[0] != 'R' ||
 		 m_riffHeader.chunkID[1] != 'I' ||
 		 m_riffHeader.chunkID[2] != 'F' ||
@@ -75,28 +74,18 @@ void Buffer::ReadRiffHeader()
 		msg = "Invalid RIFF or WAVE Header";
 		throw msg;
 	}
-	if(ret < sizeof(struct RIFF_Header))
-	{
-		msg = "not read enough";
-		throw msg;
-	}
 }
 
 void Buffer::ReadWaveFormat()
 {
 	std::string msg;
-	int ret = fread(&m_waveFormat, sizeof(struct WAVE_Format), 1, m_waveFile);
+	fread(&m_waveFormat, sizeof(struct WAVE_Format), 1, m_waveFile);
 	if (m_waveFormat.subChunkID[0] != 'f' ||
 		m_waveFormat.subChunkID[1] != 'm' ||
 		m_waveFormat.subChunkID[2] != 't' ||
 		m_waveFormat.subChunkID[3] != ' ')
 	{
 		msg = "Invalid Wave Format";
-		throw msg;
-	}
-	if(ret < sizeof(struct WAVE_Format))
-	{
-		msg = "not read enough";
 		throw msg;
 	}
 }
@@ -106,7 +95,7 @@ void Buffer::ReadWaveDataInfo()
 	std::string msg;
 	if (m_waveFormat.subChunkSize > 16)
 		fseek(m_waveFile, sizeof(short), SEEK_CUR);
-	int ret = fread(&m_waveData, sizeof(struct WAVE_Data), 1, m_waveFile);
+	fread(&m_waveData, sizeof(struct WAVE_Data), 1, m_waveFile);
 	if (m_waveData.subChunkID[0] != 'd' ||
 		m_waveData.subChunkID[1] != 'a' ||
 		m_waveData.subChunkID[2] != 't' ||
@@ -115,21 +104,11 @@ void Buffer::ReadWaveDataInfo()
 		msg = "Invalid data header";
 		throw msg;
 	}
-	if(ret < sizeof(struct WAVE_Data))
-	{
-		msg = "not read enough";
-		throw msg;
-	}
 }
 
 void Buffer::ReadWaveData(void* buf)
 {
-	int ret = fread(buf, m_waveData.subChunk2Size, 1, m_waveFile);
-	if(ret < m_waveData.subChunk2Size)
-	{
-		std::string msg = "not read enough";
-		throw msg;
-	}
+	fread(buf, m_waveData.subChunk2Size, 1, m_waveFile);
 }
 
 bool Buffer::ParseWave(std::string waveFilePath)
@@ -143,10 +122,12 @@ bool Buffer::ParseWave(std::string waveFilePath)
 
 		m_waveBuf = (void*)new char[GetDataSize()];
 		ReadWaveData(m_waveBuf);
+		if(m_waveFile != NULL)
+			fclose(m_waveFile);
 	}
 	catch(std::string msg)
 	{
-		dlog_print(DLOG_FATAL, "Wave", msg.c_str());
+		dlog_print(DLOG_FATAL, "Buffer", msg.c_str());
 		return false;
 	}
 	return true;

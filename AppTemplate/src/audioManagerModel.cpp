@@ -83,6 +83,7 @@ void AudioManagerModel::UpdateSource(std::vector<unsigned int> index)
 		m_obj.objVec[i].source.Destroy();
 		m_obj.objVec[i].buffer.Destroy();
 	}
+	m_obj.objVec.clear();
 	m_obj.indexMap.clear();
 	for(int i = 0 ; i < index.size() ; i++)
 	{
