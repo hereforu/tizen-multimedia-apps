@@ -7,9 +7,6 @@
 
 #include "srcSelectionView.h"
 
-std::vector<unsigned int> g_selected; //check
-
-
 
 int SrcSelectionView::m_selectedNum = 0;
 int SrcSelectionView::m_maxSelection = 5;
@@ -38,6 +35,8 @@ void SrcSelectionView::decorateview(Evas_Object* box)
 	/* construction */
 	m_list_srcName = getSrcNameList();
 	m_srcNum = m_list_srcName.size();
+	if(!m_srcNum)
+		popAlarm("No audio files");
 	m_list_usrData = new UsrData[m_srcNum];
 
 	getSelectedSrc(); // get from model
@@ -55,11 +54,8 @@ void SrcSelectionView::destroyremains()
 		if(m_list_selectedSrc[i])
 			selected.push_back(i+1);
 
-	//m_model->updateSelectedList(selected);
-	//g_selected = selected; check
-
 	AudioManagerModel* amm = static_cast<AudioManagerModel*>(m_model);
-	if(amm != NULL)
+	if(amm == NULL)
 	{
 		throw std::runtime_error("fail to cast model");
 	}
@@ -81,8 +77,12 @@ void SrcSelectionView::updateview()
 /* source */
 void SrcSelectionView::getSelectedSrc()
 {
-	std::vector<unsigned int> selected = g_selected;// = m_model->getSelectedList(); // TODO
-
+	AudioManagerModel* amm = static_cast<AudioManagerModel*>(m_model);
+	if(amm == NULL)
+	{
+		throw std::runtime_error("fail to cast model");
+	}
+	std::vector<unsigned int> selected = amm->GetSelectedSourceIdx();
 
 	m_list_selectedSrc = new Eina_Bool[m_srcNum];
 	for(int i=0; i<m_srcNum; i++)
@@ -94,21 +94,13 @@ void SrcSelectionView::getSelectedSrc()
 
 StrVec SrcSelectionView::getSrcNameList()
 {
-	// check
 	AudioManagerModel* amm = static_cast<AudioManagerModel*>(m_model);
-	if(amm != NULL)
+	if(amm == NULL)
 	{
-			throw std::runtime_error("fail to cast model");
+		throw std::runtime_error("fail to cast model");
 	}
 
 	return amm->GetAudioListinDB();
-
-	//StrVec list_srcName;
-
-/*	for(int i=0; i<10; i++)
-		list_srcName.push_back("audio");*/
-
-	//return list_srcName;
 }
 
 

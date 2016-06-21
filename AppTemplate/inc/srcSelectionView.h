@@ -42,7 +42,6 @@ protected:
 
 private:
 	void createList(Evas_Object* box);
-	void popAlarm(const char* str);
 
 	// genlist
 	static char* genlist_text_get_cb(void *data, Evas_Object *obj, const char *part);
@@ -58,6 +57,7 @@ private:
 
 	// popup
 	static void popupTimeout_cb(void *data, Evas_Object *obj, void *event_info);
+	void popAlarm(const char* str);
 
 	// request data to model
 	StrVec getSrcNameList();

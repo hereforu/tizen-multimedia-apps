@@ -57,28 +57,18 @@ void AudioRoomView::updateview()
 /* source: used to make toolbar item list */
 std::vector<unsigned int> AudioRoomView::getSelectedSrc()
 {
-	std::vector<unsigned int> selected;
-	// = m_model->getSelectedList(); // TODO
-	selected.push_back(1);
-	selected.push_back(3);
-	selected.push_back(5);
-	selected.push_back(7);
-	selected.push_back(9);
-
-	return selected;
+	AudioManagerModel* amm = static_cast<AudioManagerModel*>(m_model);
+	if(amm == NULL)
+	{
+		throw std::runtime_error("fail to cast model");
+	}
+	return amm->GetSelectedSourceIdx();
 }
 
 StrVec AudioRoomView::getSrcNameList()
-{/*
-	StrVec list_srcName;
-	for(int i=0; i<10; i++)
-		list_srcName.push_back("audio"); // get source name listfrom model
-
-	return list_srcName;*/
-
-	// check
+{
 	AudioManagerModel* amm = static_cast<AudioManagerModel*>(m_model);
-	if(amm != NULL)
+	if(amm == NULL)
 	{
 		throw std::runtime_error("fail to cast model");
 	}
@@ -248,6 +238,8 @@ void AudioRoomView::createSelectionFrame(Evas_Object* box)
 
 void AudioRoomView::createPlayList()
 {
+	if(!m_selectedNum) return;
+
 	m_list_play = new PlayItem[m_selectedNum+1]; // sources + listener
 	for(int i=0; i<=m_selectedNum; i++)
 		setDefaultPlayItem(&m_list_play[i], i);
@@ -268,8 +260,9 @@ void AudioRoomView::setDefaultPlayItem(PlayItem* pItem, int idx)
 	int x = 0, y = 0, w = 0, h = 0;
 	evas_object_geometry_get(m_room, &x, &y, &w, &h);
 
+	m_selectedNum = 5;
 	/* get rand # */
-	srand(time(NULL)); //check
+	srand(time(NULL));
 	int xx = rand()%m_selectedNum +1; // 1 ~ m_selectedNum
 	int yy = rand()%m_selectedNum +1;
 
@@ -341,14 +334,13 @@ void AudioRoomView::selectSrcBtnclicked_cb(void *data, Evas_Object *obj, void *e
 void AudioRoomView::playBtnclicked_cb(void *data, Evas_Object *obj, void *event_info)
 {
 	AudioRoomView* arv = static_cast<AudioRoomView*>(data);
-	if(arv != NULL)
+	if(arv == NULL)
 	{
 		throw std::runtime_error("fail to cast audioRoomView");
 	}
 
-	// check
 	AudioManagerModel* amm = static_cast<AudioManagerModel*>(arv->m_model);
-	if(amm != NULL)
+	if(amm == NULL)
 	{
 		throw std::runtime_error("fail to cast model");
 	}
@@ -387,8 +379,6 @@ evas_object_hide(s_info.selection_frame);
 //__move_object(void)
 
 //__create_circle_part
-
-//__update_freehand(void)
 
 // void __toolbar_selected_item_del_cb(void *data, Evas_Object *obj, void *event_info)
 //__win_rotation_cb(void *data, Evas_Object *obj, void *event_info)
