@@ -73,7 +73,7 @@ StrVec AudioRoomView::getSrcNameList()
 		throw std::runtime_error("fail to cast model");
 	}
 
-	return amm->GetAudioListinDB();
+	return *(amm->GetAudioList());
 }
 
 

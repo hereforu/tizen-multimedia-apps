@@ -60,7 +60,7 @@ private:
 	void popAlarm(const char* str);
 
 	// request data to model
-	StrVec getSrcNameList();
+	StrVec* getSrcNameList();
 	void getSelectedSrc();
 
 private:
@@ -68,7 +68,7 @@ private:
 	static int m_selectedNum;
 	static int m_maxSelection;
 
-	StrVec m_list_srcName;
+	StrVec* m_list_srcName;
 	Eina_Bool *m_list_selectedSrc;
 
 	UsrData *m_list_usrData;

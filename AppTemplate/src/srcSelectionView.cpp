@@ -12,7 +12,7 @@ int SrcSelectionView::m_selectedNum = 0;
 int SrcSelectionView::m_maxSelection = 5;
 
 SrcSelectionView::SrcSelectionView()
-	:m_srcNum(0), m_list_selectedSrc(NULL), m_list_usrData(NULL)
+	:m_srcNum(0), m_list_srcName(NULL), m_list_selectedSrc(NULL), m_list_usrData(NULL)
 {
 
 }
@@ -34,7 +34,7 @@ void SrcSelectionView::decorateview(Evas_Object* box)
 {
 	/* construction */
 	m_list_srcName = getSrcNameList();
-	m_srcNum = m_list_srcName.size();
+	m_srcNum = m_list_srcName->size();
 	if(!m_srcNum)
 		popAlarm("No audio files");
 	m_list_usrData = new UsrData[m_srcNum];
@@ -92,7 +92,7 @@ void SrcSelectionView::getSelectedSrc()
 		m_list_selectedSrc[selected[i]-1] = EINA_TRUE;
 }
 
-StrVec SrcSelectionView::getSrcNameList()
+StrVec* SrcSelectionView::getSrcNameList()
 {
 	AudioManagerModel* amm = static_cast<AudioManagerModel*>(m_model);
 	if(amm == NULL)
@@ -100,7 +100,7 @@ StrVec SrcSelectionView::getSrcNameList()
 		throw std::runtime_error("fail to cast model");
 	}
 
-	return amm->GetAudioListinDB();
+	return amm->GetAudioList();
 }
 
 
@@ -135,7 +135,7 @@ char* SrcSelectionView::genlist_text_get_cb(void *data, Evas_Object *obj, const 
 		{
 			SrcSelectionView *ssv = (SrcSelectionView*) ud->ssv;
 
-			return strdup((ssv->m_list_srcName[ud->idx]).c_str());
+			return strdup((ssv->m_list_srcName->at(ud->idx)).c_str());
 			/* strdup: After the text is set to the part,
 			 * it is freed automatically (do not free it manually) */
 		}
