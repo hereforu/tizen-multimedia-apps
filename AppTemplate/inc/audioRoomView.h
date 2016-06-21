@@ -14,6 +14,8 @@
 #include "apptemplate.h"
 #include "audioManagerModel.h"
 #include <app_common.h>
+#include <stdlib.h>
+#include <time.h>
 #include <stdexcept>
 #include <assert.h>
 
@@ -59,8 +61,8 @@ private:
 	// audio room
 	void createAudioRoom(Evas_Object *box);
 	void createPlayList();
-	void updatePlayItems();
-	void setDefaultPos();
+	void updatePlayList();
+	void setDefaultPlayItem(PlayItem* pItem, int idx);
 
 	// selection
 	void createSelectionFrame(Evas_Object* box);
@@ -85,11 +87,12 @@ private:
 	StrVec getSrcNameList(); // get source name -> from m_sources idx로 list 만들기
 
 private:
-	int m_selectedNum; 	// 0~5 according to srcSelectionView
+	int m_selectedNum;		// 0~5 according to srcSelectionView
 	StrVec m_list_selectedSrcName;
-	int m_itemNum; 		// length of m_list_item
+	PlayItem* m_list_play; 	// idx 0 is listener
+
+	int m_itemNum; 			// length of m_list_item
 	ToolbarItem *m_list_item;
-	PlayItem* m_list_play;
 
 	Evas_Object *m_room;
 	Evas_Object *m_toolbar;

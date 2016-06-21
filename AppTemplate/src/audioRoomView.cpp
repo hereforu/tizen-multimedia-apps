@@ -10,7 +10,7 @@
 
 
 AudioRoomView::AudioRoomView()
-	:m_selectedNum(0), m_itemNum(0), m_list_item(NULL), m_list_play(NULL), m_toolbar(NULL), m_room(NULL)
+	:m_selectedNum(0), m_list_play(NULL), m_itemNum(0), m_list_item(NULL), m_room(NULL), m_toolbar(NULL), m_playBtn(NULL)
 {
 
 }
@@ -44,12 +44,13 @@ void AudioRoomView::destroyremains()
 {
 	deleteItemList();
 	delete[] m_list_play;
+	m_list_play = NULL;
 }
 
 void AudioRoomView::updateview()
 {
 	updateToolbarItems(m_toolbar);
-	//TODO updatePlayItems();
+	updatePlayList();
 }
 
 
@@ -68,13 +69,21 @@ std::vector<unsigned int> AudioRoomView::getSelectedSrc()
 }
 
 StrVec AudioRoomView::getSrcNameList()
-{
-	// temp, TODO
+{/*
 	StrVec list_srcName;
 	for(int i=0; i<10; i++)
 		list_srcName.push_back("audio"); // get source name listfrom model
 
-	return list_srcName;
+	return list_srcName;*/
+
+	// check
+	AudioManagerModel* amm = static_cast<AudioManagerModel*>(m_model);
+	if(amm != NULL)
+	{
+		throw std::runtime_error("fail to cast model");
+	}
+
+	return amm->GetAudioListinDB();
 }
 
 
@@ -240,24 +249,35 @@ void AudioRoomView::createSelectionFrame(Evas_Object* box)
 void AudioRoomView::createPlayList()
 {
 	m_list_play = new PlayItem[m_selectedNum+1]; // sources + listener
-	// listener
+	for(int i=0; i<=m_selectedNum; i++)
+		setDefaultPlayItem(&m_list_play[i], i);
 
-
-
-	m_list_play[0].id = 0;
-	//TODO m_list_play[0].x =
-
-
-	AudioManagerModel* amm = (AudioManagerModel*) m_model;
-	//amm->LocateSource();
-	//amm->LocateListener();
+	// TODO set on the canvas
 }
 
-void AudioRoomView::setDefaultPos()
+void AudioRoomView::updatePlayList()
 {
-	for(int i=1; i<m_selectedNum; i++);
+	delete[] m_list_play;
+	m_list_play = NULL;
+	createPlayList();
+}
 
+void AudioRoomView::setDefaultPlayItem(PlayItem* pItem, int idx)
+{
+	/* get room geometry */
+	int x = 0, y = 0, w = 0, h = 0;
+	evas_object_geometry_get(m_room, &x, &y, &w, &h);
 
+	/* get rand # */
+	srand(time(NULL)); //check
+	int xx = rand()%m_selectedNum +1; // 1 ~ m_selectedNum
+	int yy = rand()%m_selectedNum +1;
+
+	/* set default */
+	pItem->id = idx;
+	pItem->x = (int)(w/(m_selectedNum+1)*xx);
+	pItem->y = (int)(h/(m_selectedNum+1)*yy);
+	pItem->z = 0;
 }
 
 
@@ -320,7 +340,23 @@ void AudioRoomView::selectSrcBtnclicked_cb(void *data, Evas_Object *obj, void *e
 
 void AudioRoomView::playBtnclicked_cb(void *data, Evas_Object *obj, void *event_info)
 {
-	//  TODO: request model to play
+	AudioRoomView* arv = static_cast<AudioRoomView*>(data);
+	if(arv != NULL)
+	{
+		throw std::runtime_error("fail to cast audioRoomView");
+	}
+
+	// check
+	AudioManagerModel* amm = static_cast<AudioManagerModel*>(arv->m_model);
+	if(amm != NULL)
+	{
+		throw std::runtime_error("fail to cast model");
+	}
+
+	amm->LocateListener(arv->m_list_play[0].x, arv->m_list_play[0].y, arv->m_list_play[0].z);
+
+	for(int i=1; i<=arv->m_selectedNum; i++)
+		amm->LocateSource(arv->m_list_play[i].id, arv->m_list_play[i].x, arv->m_list_play[i].y, arv->m_list_play[i].z);
 }
 
 

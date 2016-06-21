@@ -7,7 +7,7 @@
 
 #include "srcSelectionView.h"
 
-std::vector<unsigned int> g_selected; //temp TODO
+std::vector<unsigned int> g_selected; //check
 
 
 
@@ -58,9 +58,12 @@ void SrcSelectionView::destroyremains()
 	//m_model->updateSelectedList(selected);
 	//g_selected = selected; check
 
-	AudioManagerModel* amm = (AudioManagerModel*) m_model;
+	AudioManagerModel* amm = static_cast<AudioManagerModel*>(m_model);
+	if(amm != NULL)
+	{
+		throw std::runtime_error("fail to cast model");
+	}
 	amm->UpdateSource(selected);
-
 
 	/* destruction */
 	delete[] m_list_selectedSrc;
@@ -92,13 +95,20 @@ void SrcSelectionView::getSelectedSrc()
 StrVec SrcSelectionView::getSrcNameList()
 {
 	// check
-	AudioManagerModel* amm = (AudioManagerModel*) m_model;
-	StrVec list_srcName = amm->GetAudioListinDB();
+	AudioManagerModel* amm = static_cast<AudioManagerModel*>(m_model);
+	if(amm != NULL)
+	{
+			throw std::runtime_error("fail to cast model");
+	}
+
+	return amm->GetAudioListinDB();
+
+	//StrVec list_srcName;
 
 /*	for(int i=0; i<10; i++)
 		list_srcName.push_back("audio");*/
 
-	return list_srcName;
+	//return list_srcName;
 }
 
 
