@@ -19,7 +19,7 @@
 #include <dlog.h>
 //else dlog_print(DLOG_ERROR, LOG_TAG, "no m_list_item %d", i); check
 
-#define TOOLBAR_ICON_SIZE 54
+#define ICON_SIZE 54
 #define FRAME_BORDER 3
 #define BOX_PAD 10
 typedef std::vector<std::string> StrVec;
@@ -65,8 +65,14 @@ private:
 	void createPlayItemList();
 	void deletePlayItemList();
 	void setDefaultPlayItem(PlayItem* pItem, int idx);
+
 	//TODO
-	void putSrc(int idx);
+	// operation in audio room
+	Evas_Object* createImage(const char* icon_path, Evas_Object* canvas);
+
+	void putPlayItem(int idx);
+	void deletePlayItem(int idx);
+
 	bool isInRoomArea();
 	// selection
 	void createSelectionFrame(Evas_Object* box);
@@ -100,7 +106,7 @@ private:
 
 private:
 	int m_playItemNum;		// 0~5 according to srcSelectionView
-	PlayItem* m_list_playItem; 	// 0th item is listener
+	PlayItem* m_list_playItem; 	// last item is listener
 
 	int m_toolbarItemNum; 	// length of m_list_toolbarItem
 	ToolbarItem *m_list_toolbarItem;

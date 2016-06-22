@@ -52,7 +52,7 @@ void SrcSelectionView::destroyremains()
 	std::vector<unsigned int> selected;
 	for(int i=0; i<m_srcNum; i++)
 		if(m_list_selectedSrc[i])
-			selected.push_back(i+1);
+			selected.push_back(i);
 
 	AudioManagerModel* amm = static_cast<AudioManagerModel*>(MODEL);
 	if(amm == NULL)
@@ -89,7 +89,7 @@ void SrcSelectionView::getSelectedSrc()
 		m_list_selectedSrc[i] = 0;
 
 	for(int i=0; i<selected.size(); i++)
-		m_list_selectedSrc[selected[i]-1] = EINA_TRUE;
+		m_list_selectedSrc[selected[i]] = EINA_TRUE;
 }
 
 StrVec SrcSelectionView::getSrcNameList()
