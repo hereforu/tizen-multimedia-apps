@@ -86,7 +86,8 @@ void AudioRoomView::createItemList()
 	m_itemNum = m_selectedNum + 2; // sources + clear + delete
 
 	StrVec list_srcName;
-	if(m_selectedNum) list_srcName= getSrcNameList();
+	if(m_selectedNum)
+		list_srcName= getSrcNameList();
 
 	/* make item list */
 	m_list_item = new ToolbarItem[m_itemNum];
@@ -139,7 +140,7 @@ void AudioRoomView::createToolbar(Evas_Object* box)
 
 void AudioRoomView::deleteItemList()
 {
-	for(int i=0; i<=m_itemNum; i++)
+	for(int i=0; i<m_itemNum; i++)
 		elm_object_item_del(m_list_item[i].item);
 
 	delete[] m_list_item;
@@ -349,7 +350,13 @@ Evas_Object* AudioRoomView::createBtn(Evas_Object* box, Evas_Smart_Cb click_func
 
 void AudioRoomView::closeBtnclicked_cb(void *data, Evas_Object *obj, void *event_info)
 {
-	ui_app_exit();
+	AudioRoomView* arv = static_cast<AudioRoomView*>(data);
+		if(arv == NULL)
+		{
+			throw std::runtime_error("fail to cast audioRoomView");
+		}
+	arv->updateview();
+	//ui_app_exit();
 }
 
 void AudioRoomView::selectSrcBtnclicked_cb(void *data, Evas_Object *obj, void *event_info)

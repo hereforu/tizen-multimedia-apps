@@ -233,6 +233,7 @@ void SrcSelectionView::createList(Evas_Object* box)
 void SrcSelectionView::backBtnclicked_cb(void *data, Evas_Object *obj, void *event_info)
 {
 	MOVE_PREVVIEW;
+
 }
 
 void SrcSelectionView::createBackBtn(Evas_Object* box)
