@@ -14,15 +14,15 @@
 #include "apptemplate.h"
 #include "audioManagerModel.h"
 #include <app_common.h>
-#include <stdlib.h>
-#include <time.h>
 #include <stdexcept>
 #include <assert.h>
+#include <dlog.h>
 
 #define TOOLBAR_ICON_SIZE 54
 #define FRAME_BORDER 3
 #define BOX_PAD 10
 typedef std::vector<std::string> StrVec;
+typedef std::string String;
 typedef struct
 {
 	unsigned int id; // id by which communicates with model (0: listener)
@@ -35,8 +35,8 @@ typedef struct
 typedef struct
 {
 	unsigned int id; // id by which communicates with model (0: listener)
-	const char* name;
-	const char* icon_img;
+	String name;
+	String icon_file;
 	Elm_Object_Item * item;
 
 } ToolbarItem;
@@ -94,7 +94,7 @@ private:
 
 private:
 	int m_selectedNum;		// 0~5 according to srcSelectionView
-	StrVec m_list_selectedSrcName;
+	//StrVec m_list_selectedSrcName;
 	PlayItem* m_list_play; 	// idx 0 is listener
 
 	int m_itemNum; 			// length of m_list_item

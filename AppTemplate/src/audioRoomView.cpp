@@ -57,12 +57,16 @@ void AudioRoomView::updateview()
 /* source: used to make toolbar item list */
 std::vector<unsigned int> AudioRoomView::getSelectedSrc()
 {
+
 	AudioManagerModel* amm = static_cast<AudioManagerModel*>(MODEL);
 	if(amm == NULL)
 	{
 		throw std::runtime_error("fail to cast model");
 	}
-	return amm->GetSelectedSourceIdx();
+	return amm->GetSelectedSourceIdx();/*
+	std::vector<unsigned int> test;
+	test.push_back(1); test.push_back(2); test.push_back(3);
+	return test;*/
 }
 
 StrVec AudioRoomView::getSrcNameList()
@@ -74,6 +78,11 @@ StrVec AudioRoomView::getSrcNameList()
 	}
 
 	return amm->GetAudioList();
+	/*
+	StrVec test;
+	for(int i=0; i<7; i++)
+		test.push_back("audio");
+	return test;*/
 }
 
 
@@ -87,7 +96,7 @@ void AudioRoomView::createItemList()
 
 	StrVec list_srcName;
 	if(m_selectedNum)
-		list_srcName= getSrcNameList();
+		list_srcName = getSrcNameList();
 
 	/* make item list */
 	m_list_item = new ToolbarItem[m_itemNum];
@@ -95,20 +104,20 @@ void AudioRoomView::createItemList()
 	for(int i=1; i<=m_selectedNum; i++)
 	{
 		m_list_item[i].id = selected[i-1];
-		m_list_selectedSrcName.push_back(list_srcName[selected[i-1]-1]);
-		m_list_item[i].name = (m_list_selectedSrcName[i-1]).c_str();
-		m_list_item[i].icon_img = "images/audio.png";
+		//m_list_selectedSrcName.push_back();
+		m_list_item[i].name = (list_srcName[selected[i-1]-1]).c_str();//(m_list_selectedSrcName[i-1]).c_str();
+		m_list_item[i].icon_file = "images/audio.png";
 		m_list_item[i].item = NULL;
 	}
 	// clear btn
 	m_list_item[0].id = -1;
 	m_list_item[0].name = "Clear All";
-	m_list_item[0].icon_img = "images/new.png";
+	m_list_item[0].icon_file = "images/new.png";
 	m_list_item[0].item = NULL;
 	// delete btn
 	m_list_item[m_itemNum-1].id = -1;
 	m_list_item[m_itemNum-1].name = "Delete";
-	m_list_item[m_itemNum-1].icon_img = "images/remove.png";
+	m_list_item[m_itemNum-1].icon_file = "images/remove.png";
 	m_list_item[m_itemNum-1].item = NULL;
 
 }
@@ -142,6 +151,8 @@ void AudioRoomView::deleteItemList()
 {
 	for(int i=0; i<m_itemNum; i++)
 		elm_object_item_del(m_list_item[i].item);
+		//else dlog_print(DLOG_ERROR, LOG_TAG, "no m_list_item %d", i);
+	m_itemNum = 0;
 
 	delete[] m_list_item;
 	m_list_item = NULL;
@@ -183,17 +194,17 @@ void AudioRoomView::appendToolbarItem(Evas_Object *toolbar, int idx, Evas_Smart_
 	{
 		throw std::runtime_error("invalid item idx");
 	}
-	getResource(m_list_item[idx].icon_img, path, (int)PATH_MAX);
+	getResource(m_list_item[idx].icon_file.c_str(), path, (int)PATH_MAX);
 
 	/* add item */
-	Elm_Object_Item *it = elm_toolbar_item_append(toolbar, path, m_list_item[idx].name, func, data);
+	Elm_Object_Item *it = elm_toolbar_item_append(toolbar, path, m_list_item[idx].name.c_str(), func, data);
 	if (!it)
 	{
 		throw std::runtime_error("fail to append an item to the toolbar");
 	}
 
 	/* set tooltip */
-	elm_object_item_tooltip_text_set(it, m_list_item[idx].name);
+	elm_object_item_tooltip_text_set(it, m_list_item[idx].name.c_str());
 
 	m_list_item[idx].item = it;
 }
@@ -243,7 +254,7 @@ void AudioRoomView::createPlayList()
 	if(!m_selectedNum) return;
 
 	m_list_play = new PlayItem[m_selectedNum+1]; // sources + listener
-	for(int i=0; i<=m_selectedNum; i++)
+	for(int i=0; i<m_selectedNum+1; i++)
 	{
 		setDefaultPlayItem(&m_list_play[i], i);
 		putSrc(i);
@@ -265,16 +276,10 @@ void AudioRoomView::setDefaultPlayItem(PlayItem* pItem, int idx)
 	int x = 0, y = 0, w = 0, h = 0;
 	evas_object_geometry_get(m_room, &x, &y, &w, &h);
 
-	m_selectedNum = 5;
-	/* get rand # */
-	srand(time(NULL));
-	int xx = rand()%m_selectedNum + 1; // 1 ~ m_selectedNum
-	int yy = rand()%m_selectedNum + 1;
-
 	/* set default */
 	pItem->id = idx;
-	pItem->x = (int)(w/(m_selectedNum+1)*xx);
-	pItem->y = (int)(h/(m_selectedNum+1)*yy);
+	pItem->x = (int)(w/(m_selectedNum+1)*idx);
+	pItem->y = (int)(h/2);
 	pItem->z = 0;
 }
 
@@ -382,6 +387,9 @@ void AudioRoomView::playBtnclicked_cb(void *data, Evas_Object *obj, void *event_
 
 	for(int i=1; i<=arv->m_selectedNum; i++)
 		amm->LocateSource(arv->m_list_play[i].id, arv->m_list_play[i].x, arv->m_list_play[i].y, arv->m_list_play[i].z);
+
+	//amm->
+	//amm->PlaySources();
 }
 
 
