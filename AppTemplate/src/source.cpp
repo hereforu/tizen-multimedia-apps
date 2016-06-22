@@ -30,7 +30,7 @@ void Source::GenerateSource(ALuint buffer)
 	}
 	m_source = source;
 	//alGenSources(1, &m_source);
-	alSourcef(m_source, AL_GAIN, 1);
+	alSourcef(m_source, AL_GAIN, 50);
 	alSource3f(m_source, AL_POSITION, 0, 0, 0);
 	alSourcei(m_source, AL_BUFFER, m_buffer);
 }

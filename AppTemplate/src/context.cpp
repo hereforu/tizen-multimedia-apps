@@ -5,6 +5,7 @@
  *      Author: Hotak
  */
 #include "context.h"
+#include <dlog.h>
 
 Context::Context()
 {
@@ -33,12 +34,22 @@ void Context::setSourcePos(ALuint source, int x, int y, int z)
 {
 	//return when float overflow
 	alSource3i(source, AL_POSITION, x, y, z);
+	ALenum ret = alGetError();
+	if (ret != AL_NO_ERROR)
+	{
+		dlog_print(DLOG_FATAL, "Context setSourcePos", "error");
+	}
 }
 
 void Context::setListenerPos(int x, int y, int z)
 {
 	//return when float overflow
 	alListener3i(AL_POSITION, x, y, z);
+	ALenum ret = alGetError();
+	if (ret != AL_NO_ERROR)
+	{
+		dlog_print(DLOG_FATAL, "Context setListenerPos", "error");
+	}
 }
 
 void Context::Play()
