@@ -34,9 +34,7 @@ void FrameWindow::CreateBaseFrame()
 	catch(const std::runtime_error& e)
 	{
 		//how to delete evas_object ?
-		std::string msg = "fail to create the frame wnd because ";
-		msg += e.what();
-		throw std::runtime_error(msg);
+		throw std::runtime_error(std::string("fail to create the frame wnd because ") +  e.what());
 	}
 }
 
