@@ -10,7 +10,7 @@ Buffer::Buffer()
 {
 	m_waveFile = NULL;
 	m_waveBuf = NULL;
-	m_buffer = NULL;
+	m_buffer = 0;
 }
 
 Buffer::~Buffer()
@@ -132,7 +132,8 @@ bool Buffer::ParseWave(std::string waveFilePath)
 	}
 	return true;
 }
-bool Buffer::GenBuffer(std::string waveFilePath)
+
+bool Buffer::GenerateBuffer(std::string waveFilePath)
 {
 	if(!ParseWave(waveFilePath))
 	{
@@ -140,7 +141,15 @@ bool Buffer::GenBuffer(std::string waveFilePath)
 		dlog_print(DLOG_FATAL, "Buffer", msg.c_str());
 		return false;
 	}
-	alGenBuffers(1, &m_buffer);
+	ALuint buffer;
+	alGenBuffers(1, &buffer);
+	ALenum ret = alGetError();
+	if (ret != AL_NO_ERROR)
+	{
+		dlog_print(DLOG_FATAL, "GenerateBuffer", "error");
+	}
+	m_buffer = buffer;
+	//alGenBuffers(1, &m_buffer);
 	alBufferData(m_buffer, GetFormat(), m_waveBuf, GetDataSize(), GetFrequency());
 	return true;
 }

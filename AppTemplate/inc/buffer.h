@@ -52,7 +52,7 @@ public:
 	int GetFrequency();
 	int GetFormat();
 
-	bool GenBuffer(std::string waveFilePath);
+	bool GenerateBuffer(std::string waveFilePath);
 	ALuint GetBufferID();
 protected:
 

@@ -17,7 +17,7 @@ public:
 	Source();
 	~Source();
 
-	void GenSource(ALuint buffer);
+	void GenerateSource(ALuint buffer);
 	void Destroy();
 	ALuint GetSourceId();
 protected:

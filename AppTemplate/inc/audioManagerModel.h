@@ -22,8 +22,8 @@ typedef std::vector<std::string> AudioPathVector;
 typedef std::vector<unsigned int> SelectedSourceIdxVec;
 
 struct OBJECT {
-	Source source;
-	Buffer buffer;
+	Source* source;
+	Buffer* buffer;
 };
 
 struct OBJECTVEC {
@@ -39,11 +39,13 @@ public:
 
 	AudioPathVector GetAudioList();
 	SelectedSourceIdxVec GetSelectedSourceIdx();
-	void UpdateSource(std::vector<unsigned int> index);
+	void UpdateSource(std::vector<unsigned int> selectedSourceIdx);
 	void PlaySources();
 	void StopSources();
 	void LocateSource(unsigned int index, int x, int y, int z);
 	void LocateListener(int x, int y, int z);
+	void PushSource(unsigned int index);
+	void PopSource(unsigned int index);
 
 protected:
 	bool creatspecifics();
