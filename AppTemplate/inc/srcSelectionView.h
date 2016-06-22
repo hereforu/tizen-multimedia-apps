@@ -10,6 +10,22 @@
 #define SRCSELECTIONVIEW_H_
 
 #include "view.h"
+#include "multimediaapp.h"
+#include "audioManagerModel.h"
+#include <stdexcept>
+#include <assert.h>
+#include <vector>
+#include <string>
+
+typedef std::string String;
+typedef std::vector<std::string> StrVec;
+typedef struct
+{
+	View* ssv;
+	int idx;
+
+} UsrData;
+
 
 class SrcSelectionView : public View
 {
@@ -17,42 +33,46 @@ public:
 	SrcSelectionView();
 	~SrcSelectionView();
 
-	void initSelectedSrc();
+	void updateview();
 
 protected:
 	const char* getedcfilename();
 	void decorateview(Evas_Object* box);
 	void destroyremains();
 
-	char* strToChar(std::string str);
-
 private:
+	void createList(Evas_Object* box);
+
+	// genlist
 	static char* genlist_text_get_cb(void *data, Evas_Object *obj, const char *part);
 	static Evas_Object* genlist_content_get_cb(void *data, Evas_Object *obj, const char *part);
 	Elm_Genlist_Item_Class* createItc();
 
-	//Evas_Object* createIcon(Evas_Object* box, std::string iconPath);
-
-	// list
-	static void selected_cb(void *data, Evas_Object *obj, void *event_info);
-	void createList(Evas_Object* box);
+	// checkbox
+	static void src_selected_cb(void *data, Evas_Object *obj, void *event_info);
 
 	// button
 	static void backBtnclicked_cb(void *data, Evas_Object *obj, void *event_info);
 	void createBackBtn(Evas_Object* box);
 
-	// request data to model
-	int getSrcNum();
-	const char* getSrcNameByIdx(int idx);
+	// popup
+	static void popupTimeout_cb(void *data, Evas_Object *obj, void *event_info);
+	void popAlarm(const char* str);
 
-	//Eina_List* getList_selected(); //request to itself?
+	// request data to model
+	StrVec getSrcNameList();
+	void getSelectedSrc();
 
 private:
 	int m_srcNum;
-	int* m_list_selectedSrcIdx;
-	int m_maxSelection;
-};
+	static int m_selectedNum;
+	static int m_maxSelection;
 
+	StrVec m_list_srcName;
+	Eina_Bool *m_list_selectedSrc;
+
+	UsrData *m_list_usrData;
+};
 
 
 #endif /* SRCSELECTIONVIEW_H_ */

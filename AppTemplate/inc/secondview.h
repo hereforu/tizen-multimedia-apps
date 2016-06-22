@@ -17,6 +17,8 @@ public:
 	SecondView();
 	~SecondView();
 
+	void updateview();
+
 protected:
 	const char* getedcfilename();
 	void decorateview(Evas_Object* box);
