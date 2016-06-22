@@ -68,7 +68,7 @@ void SrcSelectionView::destroyremains()
 	m_list_usrData = NULL;
 }
 
-void SrcSelectionView::updateview()
+void SrcSelectionView::UpdateView()
 {
 
 }

@@ -54,7 +54,7 @@ void FirstView::destroyremains()
 
 }
 
-void FirstView::updateview()
+void FirstView::UpdateView()
 {
 
 }

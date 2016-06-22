@@ -97,7 +97,7 @@ void FrameWindow::MovePrevView()
 		popview(m_views[m_currentviewindex]);
 		--m_currentviewindex;
 
-		//m_views[m_currentviewindex]->updateview();
+		m_views[m_currentviewindex]->UpdateView();
 	}
 	else
 		dlog_print(DLOG_FATAL, "FrameWindow", "this is the first view");

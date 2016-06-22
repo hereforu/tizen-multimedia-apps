@@ -16,7 +16,7 @@ public:
 	FirstView();
 	~FirstView();
 
-	void updateview();
+	void UpdateView();
 
 protected:
 	const char* getedcfilename();

@@ -17,6 +17,7 @@
 #include <stdexcept>
 #include <assert.h>
 #include <dlog.h>
+//else dlog_print(DLOG_ERROR, LOG_TAG, "no m_list_item %d", i); check
 
 #define TOOLBAR_ICON_SIZE 54
 #define FRAME_BORDER 3
@@ -25,7 +26,7 @@ typedef std::vector<std::string> StrVec;
 typedef std::string String;
 typedef struct
 {
-	unsigned int id; // id by which communicates with model (0: listener)
+	unsigned int id; // id by which communicates with model
 	int x;
 	int y;
 	int z;
@@ -34,7 +35,7 @@ typedef struct
 
 typedef struct
 {
-	unsigned int id; // id by which communicates with model (0: listener)
+	int id; // id by which communicates with model, -1: not a source
 	String name;
 	String icon_file;
 	Elm_Object_Item * item;
@@ -48,7 +49,7 @@ public:
 	AudioRoomView();
 	~AudioRoomView();
 
-	void updateview();
+	void UpdateView();
 
 protected:
 	const char* getedcfilename();
@@ -60,45 +61,49 @@ private:
 
 	// audio room
 	void createAudioRoom(Evas_Object *box);
-	void createPlayList();
-	void updatePlayList();
+	// play item in audio room
+	void createPlayItemList();
+	void deletePlayItemList();
 	void setDefaultPlayItem(PlayItem* pItem, int idx);
 	//TODO
 	void putSrc(int idx);
 	bool isInRoomArea();
-
 	// selection
 	void createSelectionFrame(Evas_Object* box);
 
 	// buttons
-	void createButtons(Evas_Object* box);
+	void createButtons(Evas_Object* box); // call crateBtn()
 	Evas_Object* createBtn(Evas_Object* box, Evas_Smart_Cb click_func, const char* label);
+
 	static void closeBtnclicked_cb(void *data, Evas_Object *obj, void *event_info);
 	static void selectSrcBtnclicked_cb(void *data, Evas_Object *obj, void *event_info);
 	static void playBtnclicked_cb(void *data, Evas_Object *obj, void *event_info);
 
 	// toolbar
-	void createItemList();
-	void deleteItemList();
-	void appendToolbarItem(Evas_Object* toolbar, int idx, Evas_Smart_Cb func, void *data);
 	void createToolbar(Evas_Object* box);
-	void addToolbarItems(Evas_Object *toolbar);
-	void updateToolbarItems(Evas_Object *toolbar);
+	void updateToolbar(Evas_Object *toolbar);
 
-	// toolbar cb
+	// toolbar item
+	void createToolbarItemList();
+	void deleteToolbarItemList();
+	void setDefaultToolbarItem(int list_idx, int sourceId, String name, String icon_path);
+
+	void addToolbarItems(Evas_Object *toolbar); // call appendToolbarItem()
+	void appendToolbarItem(Evas_Object* toolbar, int idx, Evas_Smart_Cb func, void *data);
+
+	// toolbar item cb
 
 
-	// request data to model
-	std::vector<unsigned int> getSelectedSrc(); // make m_sources
-	StrVec getSrcNameList(); // get source name -> from m_sources idx로 list 만들기
+	// request data to model: called from createItemList()
+	std::vector<unsigned int> getSelectedSrcIdx();
+	StrVec getSrcNameList(); // get selected source's name
 
 private:
-	int m_selectedNum;		// 0~5 according to srcSelectionView
-	//StrVec m_list_selectedSrcName;
-	PlayItem* m_list_play; 	// idx 0 is listener
+	int m_playItemNum;		// 0~5 according to srcSelectionView
+	PlayItem* m_list_playItem; 	// 0th item is listener
 
-	int m_itemNum; 			// length of m_list_item
-	ToolbarItem *m_list_item;
+	int m_toolbarItemNum; 	// length of m_list_toolbarItem
+	ToolbarItem *m_list_toolbarItem;
 
 	Evas_Object *m_room;
 	Evas_Object *m_toolbar;
@@ -106,8 +111,8 @@ private:
 
 	//TODO touch event
 	Evas_Coord_Point m_start; // Position in which the cursor was pressed
-	Evas_Coord_Point m_curr; // Current cursor position
-	Evas_Coord_Point m_prev; // Previous cursor position
+	Evas_Coord_Point m_curr;  // Current cursor position
+	Evas_Coord_Point m_prev;  // Previous cursor position
 	bool m_isDragging;
 
 };

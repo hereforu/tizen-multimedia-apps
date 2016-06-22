@@ -33,7 +33,7 @@ public:
 	SrcSelectionView();
 	~SrcSelectionView();
 
-	void updateview();
+	void UpdateView();
 
 protected:
 	const char* getedcfilename();
