@@ -24,9 +24,16 @@
 #define BOX_PAD 10
 typedef std::vector<std::string> StrVec;
 typedef std::string String;
+typedef struct ROOM
+{
+	Evas_Object * room;
+	int x, y, w, h;
+
+} Room;
+
 typedef struct
 {
-	unsigned int id; // id by which communicates with model
+	unsigned int id; // id by which communicate with model
 	int x;
 	int y;
 	int z;
@@ -35,7 +42,7 @@ typedef struct
 
 typedef struct
 {
-	int id; // id by which communicates with model, -1: not a source
+	int id; // id by which communicate with model, -1: not a source
 	String name;
 	String icon_file;
 	Elm_Object_Item * item;
@@ -61,20 +68,21 @@ private:
 
 	// audio room
 	void createAudioRoom(Evas_Object *box);
+	void setRoomGeometry();
+	bool isInRoomArea(int x, int y);
+
 	// play item in audio room
 	void createPlayItemList();
 	void deletePlayItemList();
 	void setDefaultPlayItem(PlayItem* pItem, int idx);
 
-	//TODO
 	// operation in audio room
 	Evas_Object* createImage(const char* icon_path, Evas_Object* canvas);
 
 	void putPlayItem(int idx);
-	void deletePlayItem(int idx);
+	void deletePlayItem(int idx); 	//TODO
 
-	bool isInRoomArea();
-	// selection
+	// item selection
 	void createSelectionFrame(Evas_Object* box);
 
 	// buttons
@@ -111,7 +119,7 @@ private:
 	int m_toolbarItemNum; 	// length of m_list_toolbarItem
 	ToolbarItem *m_list_toolbarItem;
 
-	Evas_Object *m_room;
+	Room m_room;
 	Evas_Object *m_toolbar;
 	Evas_Object *m_playBtn;
 

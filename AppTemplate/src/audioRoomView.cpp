@@ -10,9 +10,9 @@
 
 
 AudioRoomView::AudioRoomView()
-	:m_playItemNum(0), m_list_playItem(NULL), m_toolbarItemNum(0), m_list_toolbarItem(NULL), m_room(NULL), m_toolbar(NULL), m_playBtn(NULL)
+	:m_playItemNum(0), m_list_playItem(NULL), m_toolbarItemNum(0), m_list_toolbarItem(NULL), m_toolbar(NULL), m_playBtn(NULL)
 {
-
+	m_room.room = NULL;
 }
 
 AudioRoomView::~AudioRoomView()
@@ -49,6 +49,7 @@ void AudioRoomView::destroyremains()
 
 void AudioRoomView::UpdateView()
 {
+	setRoomGeometry();
 	updateToolbar(m_toolbar);
 	createPlayItemList();
 }
@@ -206,7 +207,7 @@ void AudioRoomView::appendToolbarItem(Evas_Object *toolbar, int list_idx, Evas_S
 void AudioRoomView::createAudioRoom(Evas_Object *box)
 {
 	Evas_Object* room = evas_object_rectangle_add(box);
-	m_room = room;
+	m_room.room = room;
 	if (!room) {
 		throw std::runtime_error("fail to create audio room");
 	}
@@ -222,6 +223,19 @@ void AudioRoomView::createAudioRoom(Evas_Object *box)
 
 	elm_box_pack_end(box, room);
 	evas_object_show(room);
+}
+
+void AudioRoomView::setRoomGeometry()
+{
+	// get room geometry
+	int x = 0, y = 0, w = 0, h = 0;
+	evas_object_geometry_get(m_room.room, &x, &y, &w, &h);
+
+	// set pad
+	x += (int)(ICON_SIZE/2);
+	y += (int)(ICON_SIZE/2);
+	w -= (int) ICON_SIZE;
+	h -= (int) ICON_SIZE;
 }
 
 void AudioRoomView::createSelectionFrame(Evas_Object* box)
@@ -251,10 +265,8 @@ void AudioRoomView::createPlayItemList()
 	for(int i=0; i<m_playItemNum+1; i++)
 	{
 		setDefaultPlayItem(&m_list_playItem[i], i);
-		//putSrc(i);
+		putPlayItem(i);
 	}
-
-	// TODO set on the canvas
 }
 
 void AudioRoomView::deletePlayItemList()
@@ -266,12 +278,11 @@ void AudioRoomView::deletePlayItemList()
 
 void AudioRoomView::setDefaultPlayItem(PlayItem* pItem, int idx)
 {
-	/* get room geometry */
-	int x = 0, y = 0, w = 0, h = 0;
-	evas_object_geometry_get(m_room, &x, &y, &w, &h);
+	pItem->id = idx;
+
+	int w = m_room.w, h = m_room.h;
 
 	/* set default position */
-	pItem->id = idx;
 	pItem->x = (int)(w/(m_playItemNum+1)*(idx+1));
 	pItem->y = (int)(h/2);
 	pItem->z = 0;
@@ -279,15 +290,25 @@ void AudioRoomView::setDefaultPlayItem(PlayItem* pItem, int idx)
 
 void AudioRoomView::putPlayItem(int idx)
 {
-	/* get room geometry */
-	int x = 0, y = 0, w = 0, h = 0;
-	evas_object_geometry_get(m_room, &x, &y, &w, &h);
+	/* get item position */
+	int ix = m_list_playItem[idx].x;
+	int iy = m_list_playItem[idx].y;
 
-	/* put item */
-	Evas_Object* pItemImg = createImage("images/audio.png", m_room);
-	evas_object_image_fill_set(pItemImg, m_list_playItem[idx].x, m_list_playItem[idx].y, ICON_SIZE, ICON_SIZE);
-	//여기 할차례
+	if(isInRoomArea(ix, iy))
+	{
+		/* put item */
+		Evas_Object* pItemImg = createImage("images/audio.png", m_room.room);
+		evas_object_image_fill_set(pItemImg, ix, iy, ICON_SIZE, ICON_SIZE);
+	}
+}
 
+bool AudioRoomView::isInRoomArea(int x, int y)
+{
+	if(x > m_room.x && x < m_room.x+m_room.w
+			&& y > m_room.y && y < m_room.y+m_room.h)
+		return true;
+
+	else return false;
 }
 
 Evas_Object* AudioRoomView::createImage(const char* icon_path, Evas_Object* canvas)
@@ -303,12 +324,6 @@ Evas_Object* AudioRoomView::createImage(const char* icon_path, Evas_Object* canv
 	evas_object_image_file_set(img, path, NULL);
 
 	return img;
-}
-
-bool AudioRoomView::isInRoomArea()
-{
-
-	return false;
 }
 
 
