@@ -7,7 +7,7 @@ collections
       {
          part
          {
-            name: "draw_area";
+            name: "room";
             type: SWALLOW;
             scale: 1;
             mouse_events: 1;
@@ -20,7 +20,7 @@ collections
                min: 0 0;
                visible: 1;
                rel1.relative: 0.0 0.0;
-               rel2.relative: 1.0 0.8;
+               rel2.relative: 1.0 0.7;
             }
          }
          part
@@ -37,20 +37,16 @@ collections
                visible: 1;
                rel1 {
                   relative: 0.0 1.0;
-                  to: "draw_area";
+                  to: "room";
                }
-               rel2.relative: 1.0 0.5;
-            }
-            description
-            {
-               state: "landscape" 0.0;
-               inherit: "default";
-               rel2.relative: 1.0 0.5;
+               rel2 {
+                  relative: 1.0 0.85;
+               }
             }
          }
          part
          {
-            name: "buttons";
+            name: "buttonBox";
             type: SWALLOW;
             scale: 1;
             mouse_events: 1;
@@ -62,34 +58,13 @@ collections
                visible: 1;
                rel1 {
                   relative: 0.0 1.0;
+                  offset: 0 05;
                   to: "toolbar";
                }
-               rel2.relative: 1.0 1.0;
+               rel2 {
+                  relative: 1.0 1.0;
+               }
             }
-            description
-            {
-               state: "landscape" 0.0;
-               inherit: "default";
-               rel2.relative: 1.0 1.0;
-            }
-         }
-      }
-      programs{
-         program { name: "rotation_landscape";
-            signal: SIGNAL_ROTATION_LANDSCAPE;
-            source: "toolbar";
-            source: "buttons";
-            action: STATE_SET "landscape" 0.0;
-            target: "toolbar";
-            target: "buttons";
-         }
-         program { name: "rotation_portrait";
-            signal: SIGNAL_ROTATION_PORTRAIT;
-            source: "toolbar";
-            source: "buttons";
-            action: STATE_SET "default" 0.0;
-            target: "toolbar";
-            target: "buttons";
          }
       }
    }
