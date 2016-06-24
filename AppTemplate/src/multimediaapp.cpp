@@ -7,9 +7,7 @@
 #include "base.h"
 #include "apptemplate.h"
 #include "multimediaapp.h"
-#include "firstview.h"
-#include "secondview.h"
-#include "audioRoomView.h"
+#include "mainview.h"
 #include "srcSelectionView.h"
 #include "samplemodel.h"
 #include "audioManagerModel.h"
@@ -55,8 +53,7 @@ void MultimediaApp::HandlerAppCreate()
 		//create frame
 		m_frame = new FrameWindow;
 		m_frame->CreateBaseFrame();
-		m_frame->AddView(AppTool::ObjectFactory<FirstView>::CreateInstance());
-		m_frame->AddView(AppTool::ObjectFactory<AudioRoomView>::CreateInstance());
+		m_frame->AddView(AppTool::ObjectFactory<MainView>::CreateInstance());
 		m_frame->AddView(AppTool::ObjectFactory<SrcSelectionView>::CreateInstance());
 		m_frame->ActivateFirstView();
 		m_frame->Show();
