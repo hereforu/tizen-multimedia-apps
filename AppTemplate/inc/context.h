@@ -10,6 +10,7 @@
 
 #include <AL/al.h>
 #include <AL/alc.h>
+#include "source.h"
 #include <vector>
 
 #define MAXNUM 5
@@ -24,15 +25,15 @@ public:
 	void setListenerPos(int x, int y, int z);
 	void Play();
 	void Stop();
-	void Push(ALuint source);
-	void Pop(ALuint source);
+	void Push(Source* source);
+	void Pop(Source* source);
 
 protected:
 
 private:
-	void ConvertVecToArr(ALuint* arr);
+	void convertVecToArr(ALuint* arr);
 
-	std::vector<ALuint> m_ImportSourceIdx;
+	std::vector<Source*> m_ImportSourceIdx;
 };
 
 #endif /* CONTEXT_H_ */

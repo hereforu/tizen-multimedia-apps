@@ -17,11 +17,11 @@ Context::~Context()
 
 }
 
-void Context::ConvertVecToArr(ALuint* arr)
+void Context::convertVecToArr(ALuint* arr)
 {
 	for(int i = 0 ; i < m_ImportSourceIdx.size() ; i++)
 	{
-		arr[i] = m_ImportSourceIdx[i];
+		arr[i] = m_ImportSourceIdx[i]->GetSourceId();
 	}
 }
 
@@ -32,7 +32,6 @@ void Context::ResetSource()
 
 void Context::setSourcePos(ALuint source, int x, int y, int z)
 {
-	//return when float overflow
 	alSource3i(source, AL_POSITION, x, y, z);
 	ALenum ret = alGetError();
 	if (ret != AL_NO_ERROR)
@@ -43,7 +42,6 @@ void Context::setSourcePos(ALuint source, int x, int y, int z)
 
 void Context::setListenerPos(int x, int y, int z)
 {
-	//return when float overflow
 	alListener3i(AL_POSITION, x, y, z);
 	ALenum ret = alGetError();
 	if (ret != AL_NO_ERROR)
@@ -55,25 +53,33 @@ void Context::setListenerPos(int x, int y, int z)
 void Context::Play()
 {
 	ALuint source[MAXNUM];
-	ConvertVecToArr(source);
-	//check each source state
+	convertVecToArr(source);
 	alSourcePlayv(m_ImportSourceIdx.size(), source);
+	ALenum ret = alGetError();
+	if (ret != AL_NO_ERROR)
+	{
+		dlog_print(DLOG_FATAL, "Context Play", "error");
+	}
 }
 
 void Context::Stop()
 {
 	ALuint source[MAXNUM];
-	ConvertVecToArr(source);
-	//check each source state
+	convertVecToArr(source);
 	alSourceStopv(m_ImportSourceIdx.size(), source);
+	ALenum ret = alGetError();
+	if (ret != AL_NO_ERROR)
+	{
+		dlog_print(DLOG_FATAL, "Context Stop", "error");
+	}
 }
 
-void Context::Push(ALuint source)
+void Context::Push(Source* source)
 {
 	m_ImportSourceIdx.push_back(source);
 }
 
-void Context::Pop(ALuint source)
+void Context::Pop(Source* source)
 {
 	for(int i = 0 ; i < m_ImportSourceIdx.size() ; i++)
 	{

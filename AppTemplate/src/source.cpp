@@ -10,7 +10,6 @@
 Source::Source()
 {
 	m_source = 0;
-	m_buffer = 0;
 }
 
 Source::~Source()
@@ -20,7 +19,6 @@ Source::~Source()
 
 void Source::GenerateSource(ALuint buffer)
 {
-	m_buffer = buffer;
 	ALuint source;
 	alGenSources(1, &source);
 	ALenum ret = alGetError();
@@ -29,15 +27,18 @@ void Source::GenerateSource(ALuint buffer)
 		dlog_print(DLOG_FATAL, "GenerateSource", "error");
 	}
 	m_source = source;
-	//alGenSources(1, &m_source);
-	alSourcef(m_source, AL_GAIN, 50);
+	alSourcef(m_source, AL_GAIN, 100);
 	alSource3f(m_source, AL_POSITION, 0, 0, 0);
-	alSourcei(m_source, AL_BUFFER, m_buffer);
+	alSourcei(m_source, AL_BUFFER, buffer);
+}
+
+void Source::Play()
+{
+	alSourcePlay(m_source);
 }
 
 void Source::Destroy()
 {
-	alDeleteBuffers(1, &m_buffer);
 	alDeleteSources(1, &m_source);
 }
 
