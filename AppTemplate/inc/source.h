@@ -18,13 +18,13 @@ public:
 	~Source();
 
 	void GenerateSource(ALuint buffer);
+	void Play();
 	void Destroy();
 	ALuint GetSourceId();
 protected:
 
 private:
 	ALuint m_source;
-	ALuint m_buffer;
 };
 
 #endif /* SOURCE_H_ */

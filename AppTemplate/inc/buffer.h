@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <audio_io.h>
 #include <string>
+#include <stdexcept>
 
 #define AL_FORMAT_MONO8                           0x1100
 #define AL_FORMAT_MONO16                          0x1101
@@ -42,6 +43,11 @@ struct WAVE_Data {
 	int subChunk2Size;
 };
 
+typedef struct _SUB_FORMAT_INFO {
+	int sampleRate;
+	int format;
+}SUB_FORMAT_INFO;
+
 class Buffer
 {
 public:
@@ -49,26 +55,22 @@ public:
 	~Buffer();
 	void Destroy();
 	int GetDataSize();
-	int GetFrequency();
-	int GetFormat();
+	int GetFormat(short numChannels, short bitsPerSample);
 
 	bool GenerateBuffer(std::string waveFilePath);
 	ALuint GetBufferID();
+
 protected:
 
 private:
-	void OpenFile(std::string pWavFilePath);
-	void ReadRiffHeader();
-	void ReadWaveFormat();
-	void ReadWaveDataInfo();
-	void ReadWaveData(void* buf);
-	bool ParseWave(std::string waveFilePath);
+	void readRiffHeader(FILE* waveFile);
+	int readWaveFormat(SUB_FORMAT_INFO* formatInfo, FILE* waveFile);
+	int getFormat(short numChannels, short bitsPerSample);
+	void readWaveDataInfo(int subChunkSize, FILE* waveFile);
+	void readWaveData(void* buf, FILE* waveFile);
+	bool parseWave(SUB_FORMAT_INFO* formatInfo, std::string waveFilePath);
 
-	FILE* m_waveFile;
-	struct RIFF_Header m_riffHeader;
-	struct WAVE_Format m_waveFormat;
-	struct WAVE_Data m_waveData;
-
+	int m_waveFileSize;
 	void* m_waveBuf;
 	ALuint m_buffer;
 };
