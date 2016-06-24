@@ -1,105 +1,194 @@
 /*
  * mediacontentcontroller.cpp
  *
- *  Created on: Jun 18, 2016
+ *  Created on: Jun 24, 2016
  *      Author: merci
  */
 
-
+#include <stdexcept>
+#include <string>
+#include <stdlib.h>
+#include "base.h"
 #include "mediacontentcontroller.h"
-using namespace MediaContentController;
+#include <dlog.h>
 
 
+#define MAKE_MEDIATYPE_STRING(addor, media_type) \
+	(addor)? std::string(" OR MEDIA_TYPE = ") + AppTool::ToString<int>(media_type) : std::string(" MEDIA_TYPE = ") + AppTool::ToString<int>(media_type)
 
-int MediaContentController::getContentsByCondition(std::vector<string> &Audiolist)
+#undef LOG_TAG
+#define LOG_TAG "APP_TAG"
+
+
+MediaContent::MediaContent()
+	:m_isconnected(false)
 {
-	int ret = MEDIA_CONTENT_ERROR_NONE;
+
+}
+
+MediaContent::~MediaContent()
+{
+
+}
+
+void MediaContent::ConnectDB()
+{
+	AppTool::Assert(m_isconnected == false);
+
+	int ret = media_content_connect();
+	if(ret != MEDIA_CONTENT_ERROR_NONE)
+	{
+		throw std::runtime_error(std::string("fail to connect to the media content DB with code:")+AppTool::ToString<int>(ret));
+	}
+	m_isconnected = true;
+	//register db update callback
+	if((ret = media_content_set_db_updated_cb(_noti_cb, NULL)) != MEDIA_CONTENT_ERROR_NONE)
+	{
+		throw std::runtime_error(std::string("fail to media_content_set_db_updated_db with code:") + AppTool::ToString<int>(ret));
+	}
+}
+
+void MediaContent::DisconnectDB()
+{
+	AppTool::Assert(m_isconnected == true);
+
+	// deregister db update callback
+	int ret = media_content_unset_db_updated_cb();
+	{
+		throw std::runtime_error(std::string("fail to media_content_unset_db_updated_cb with code:")+AppTool::ToString<int>(ret));
+	}
+	media_content_disconnect();
+	m_isconnected = false;
+
+
+}
+
+void MediaContent::GetItem(const MediaContentParam& param, std::vector<MediaContentItem>* itemlist)
+{
+	AppTool::Assert(m_isconnected == true);
+
 	filter_h filter = NULL;
-
-	ret = media_content_connect();
-	if(ret != MEDIA_CONTENT_ERROR_NONE)
+	try
 	{
-		dlog_print(DLOG_ERROR, LOG_TAG, "Connection is failed : %d", ret);
+		filter = createfilter(param);
+		getitemlist(filter, itemlist);
+		destroyfilter(filter);
 	}
-
-	ret = media_filter_create(&filter);
-	if(ret != MEDIA_CONTENT_ERROR_NONE)
+	catch(const std::runtime_error& e)
 	{
-		dlog_print(DLOG_ERROR, LOG_TAG, "Fail to create filter : %d", ret);
+		destroyfilter(filter);
 	}
-
-	ret = getContentFromDB(filter, Audiolist);
-
-	ret = media_filter_destroy(filter);
-	if(ret != MEDIA_CONTENT_ERROR_NONE)
-	{
-		dlog_print(DLOG_ERROR, LOG_TAG, "Fail to destroy filter : %d", ret);
-	}
-
-	ret = media_content_disconnect();
-	if(ret != MEDIA_CONTENT_ERROR_NONE)
-	{
-		dlog_print(DLOG_ERROR, LOG_TAG, "Disconnection is failed : %d", ret);
-	}
-
-	return ret;
 }
 
-int MediaContentController::getContentFromDB(filter_h filter, std::vector<string> &Audiolist)
+filter_h MediaContent::createfilter(const MediaContentParam& param)
 {
-	int ret = MEDIA_CONTENT_ERROR_NONE;
-	media_info_h media_handle = NULL;
-	GList *content_list = NULL;
-	char *media_path = NULL;
-	ret = media_filter_set_condition(filter, "MEDIA_TYPE = MEDIA_CONTENT_TYPE_SOUND OR MEDIA_TYPE = MEDIA_CONTENT_TYPE_MUSIC", MEDIA_CONTENT_COLLATE_DEFAULT);
-	if(ret != MEDIA_CONTENT_ERROR_NONE)
+	filter_h filter = NULL;
+	int ret;
+	if((ret = media_filter_create(&filter)) != MEDIA_CONTENT_ERROR_NONE)
 	{
-		dlog_print(DLOG_ERROR, LOG_TAG, "media_filter_set_condition() is failed : %d", ret);
-	}
-	ret = media_info_foreach_media_from_db(filter, gallery_media_item_cb, &content_list);
-	if(ret != MEDIA_CONTENT_ERROR_NONE)
-	{
-		dlog_print(DLOG_ERROR, LOG_TAG, "media_info_foreach_media_from_db() is failed : %d", ret);
+		throw std::runtime_error(std::string("fail to create filter with code:")+AppTool::ToString<int>(ret));
 	}
 
-	if(content_list)
+	media_content_collation_e collate_type = MEDIA_CONTENT_COLLATE_NOCASE;
+	std::string condition = createcondition(param.mediatype);
+	if((ret = media_filter_set_condition(filter, condition.c_str(), collate_type)) != MEDIA_CONTENT_ERROR_NONE)
 	{
-		int len = g_list_length(content_list);
-		for(int i=0; i<len; i++){
-			media_info_h media_handle = (media_info_h) g_list_nth_data(content_list, i);
-			ret = media_info_get_file_path(media_handle, &media_path);
-			if(ret != MEDIA_CONTENT_ERROR_NONE)
-			{
-				dlog_print(DLOG_ERROR, LOG_TAG, "media_info_get_file_path() is failed : %d", ret);
-			}
-			Audiolist.push_back(std::string(media_path));
-			if(media_path) free(media_path);
-		}
+		media_filter_destroy(filter);
+		throw std::runtime_error(std::string("fail to set condition to the filter with code:")+AppTool::ToString<int>(ret));
 	}
-	g_list_free(content_list);
-	free(media_handle);
 
-	return ret;
+	media_content_order_e order_type = (param.isASC)? MEDIA_CONTENT_ORDER_ASC:MEDIA_CONTENT_ORDER_DESC;
+	if((ret = media_filter_set_order(filter, order_type, param.order_keyword.c_str(), collate_type)) != MEDIA_CONTENT_ERROR_NONE)
+	{
+		media_filter_destroy(filter);
+		throw std::runtime_error(std::string("fail to set order type to the filter with code:")+AppTool::ToString<int>(ret));
+	}
+
+	return filter;
 }
 
-bool MediaContentController::gallery_media_item_cb(media_info_h media, void *user_data)
+
+bool MediaContent::media_cb(media_info_h media, void *user_data)
 {
-   media_info_h new_media = NULL;
-   media_info_clone(&new_media, media);
+	char* media_display_name = NULL;
+	media_info_get_display_name(media, &media_display_name);
 
-   GList **list = (GList**)user_data; // Include glib.h for this value
-   *list = g_list_append(*list, new_media);
-
-   return true;
+	if(media_display_name)
+	{
+		std::vector<MediaContentItem>* itemlist = (std::vector<MediaContentItem>*)user_data;
+		MediaContentItem Item;
+		Item.path = media_display_name;
+		itemlist->push_back(Item);
+		free(media_display_name);
+		media_display_name = NULL;
+	}
+	return true;
 }
-
-bool MediaContentController::checkFileExistence(char *path)
+void MediaContent::getitemlist(filter_h filter, std::vector<MediaContentItem>* itemlist)
 {
-    FILE *file = fopen(path, "r");
-    if (file == NULL) {
-        return false;
-    }
-    fclose(file);
-    return true;
+	int ret;
+	/*
+	 * media_info_foreach_media_from_db function is synchronous, and it blocks until the callback has been called for all items or the callback returns false.
+	 */
+	if((ret = media_info_foreach_media_from_db(filter, media_cb, (void*)itemlist)) != MEDIA_CONTENT_ERROR_NONE)
+	{
+		throw std::runtime_error(std::string("fail to media_info_foreach_media_from_db with code:")+AppTool::ToString<int>(ret));
+	}
 }
+void MediaContent::destroyfilter(filter_h& filter)
+{
+	if(filter)
+	{
+		media_filter_destroy(filter);
+		filter = NULL;
+	}
+}
+
+
+std::string MediaContent::createcondition(unsigned int mediatype)
+{
+	bool addor = false;
+	std::string condition("");
+	if(mediatype & MC_IMAGE_TYPE)
+	{
+		condition += MAKE_MEDIATYPE_STRING(addor, MEDIA_CONTENT_TYPE_IMAGE);
+		addor = true;
+	}
+	if(mediatype & MC_VIDEO_TYPE)
+	{
+		condition += MAKE_MEDIATYPE_STRING(addor, MEDIA_CONTENT_TYPE_VIDEO);
+		addor = true;
+	}
+	if(mediatype & MC_SOUND_TYPE)
+	{
+		condition += MAKE_MEDIATYPE_STRING(addor, MEDIA_CONTENT_TYPE_SOUND);
+		addor = true;
+	}
+	if(mediatype & MC_MUSIC_TYPE)
+	{
+		condition += MAKE_MEDIATYPE_STRING(addor, MEDIA_CONTENT_TYPE_MUSIC);
+		addor = true;
+	}
+	return condition;
+}
+
+
+void MediaContent::_noti_cb(media_content_error_e error, int pid,
+         media_content_db_update_item_type_e update_item,
+         media_content_db_update_type_e update_type,
+         media_content_type_e media_type,
+         char *uuid, char *path, char *mime_type, void *user_data)
+{
+   if (error == MEDIA_CONTENT_ERROR_NONE)
+   {
+      // Database was successfully updated
+      if (path)
+         dlog_print(DLOG_INFO, LOG_TAG, "path : %s", path);
+      if (uuid)
+         dlog_print(DLOG_INFO, LOG_TAG, "uuid : %s", uuid);
+      if (mime_type)
+         dlog_print(DLOG_INFO, LOG_TAG, "mime_type : %s", mime_type);
+   }
+}
+
 
