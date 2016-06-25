@@ -45,7 +45,6 @@ protected:
 	Evas_Object* m_box;
 
 private:
-	Evas_Object* m_layout;
 	Evas_Object* m_naviframe;
 	Evas_Object* m_conformant;
 	Elm_Object_Item * m_Naviitem;

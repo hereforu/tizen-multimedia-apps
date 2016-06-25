@@ -9,6 +9,7 @@
 #include "buttonpack.h"
 
 ButtonPack::ButtonPack()
+:m_parent(NULL)
 {
 
 }
@@ -17,22 +18,34 @@ ButtonPack::~ButtonPack()
 {
 
 }
-void ButtonPack::AddPacksHorizontally(Evas_Object* parent, std::vector<BTPackParam>& params)
+void ButtonPack::Create(Evas_Object* parent)
+{
+	m_parent = parent;
+}
+
+void ButtonPack::Destroy()
+{
+	ResetAllButtons();
+	m_parent = NULL;
+}
+
+
+void ButtonPack::AddPacksHorizontally(std::vector<BTPackParam>& params)
 {
 	BTPack pack;
 
-	pack.box = elm_box_add(parent);
+	pack.box = elm_box_add(m_parent);
 	elm_box_horizontal_set(pack.box, EINA_TRUE);
 	elm_box_homogeneous_set(pack.box, EINA_TRUE);
 	evas_object_size_hint_weight_set(pack.box, 0.0, 0.0);
 	evas_object_size_hint_align_set(pack.box,  EVAS_HINT_FILL, EVAS_HINT_FILL);
 	evas_object_show(pack.box);
-	elm_box_pack_end(parent, pack.box);
+	elm_box_pack_end(m_parent, pack.box);
 
 	unsigned int num_btns = params.size();
 	for(unsigned int i = 0; i < num_btns; ++i)
 	{
-		Evas_Object* btn = elm_button_add(parent);
+		Evas_Object* btn = elm_button_add(m_parent);
 		if(params[i].image_path.empty()==false)
 		{
 			std::string resource_path = app_get_resource_path();
@@ -43,7 +56,7 @@ void ButtonPack::AddPacksHorizontally(Evas_Object* parent, std::vector<BTPackPar
 			elm_object_part_content_set(btn, "icon", ic);
 			elm_object_style_set(btn,"circle");
 		}
-		else
+		if(params[i].text.empty()==false)
 		{
 			elm_object_text_set(btn, params[i].text.c_str());
 		}
@@ -58,15 +71,18 @@ void ButtonPack::AddPacksHorizontally(Evas_Object* parent, std::vector<BTPackPar
 	m_btpacks.push_back(pack);
 }
 
-void ButtonPack::DestroyAll()
+void ButtonPack::ResetAllButtons()
 {
 	for(unsigned int packidx = 0; packidx < m_btpacks.size(); ++packidx)
 	{
 		for(unsigned int btnidx = 0; btnidx < m_btpacks[packidx].btns.size(); ++btnidx)
 		{
-			//TODO:: delete all!!
+			evas_object_del(m_btpacks[packidx].btns[btnidx]);
 		}
+		m_btpacks[packidx].btns.clear();
+		evas_object_del(m_btpacks[packidx].box);
 	}
+	m_btpacks.clear();
 }
 
 

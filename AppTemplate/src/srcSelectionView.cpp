@@ -5,14 +5,13 @@
  *      Author: Hyunjin
  */
 
+#include "base.h"
 #include "srcSelectionView.h"
 
 
-int SrcSelectionView::m_selectedNum = 0;
-int SrcSelectionView::m_maxSelection = 5;
 
 SrcSelectionView::SrcSelectionView()
-	:m_srcNum(0), m_list_selectedSrc(NULL), m_list_usrData(NULL)
+	:m_srcNum(0), m_maxSelection(5), m_list_usrData(NULL)
 {
 
 }
@@ -33,10 +32,10 @@ const char* SrcSelectionView::getedcfilename()
 void SrcSelectionView::decorateview(Evas_Object* box)
 {
 	/* construction */
-	m_list_srcName = getSrcNameList();
-	m_srcNum = m_list_srcName.size();
+	m_srcNum = getModel()->GetNumAllMediaItems();
 	if(!m_srcNum)
 		popAlarm("No audio files");
+
 	m_list_usrData = new UsrData[m_srcNum];
 
 	getSelectedSrc(); // get from model
@@ -49,21 +48,9 @@ void SrcSelectionView::decorateview(Evas_Object* box)
 void SrcSelectionView::destroyremains()
 {
 	/* send current selected list to model */
-	std::vector<unsigned int> selected;
-	for(int i=0; i<m_srcNum; i++)
-		if(m_list_selectedSrc[i])
-			selected.push_back(i);
-
-	AudioManagerModel* amm = static_cast<AudioManagerModel*>(MODEL);
-	if(amm == NULL)
-	{
-		throw std::runtime_error("fail to cast model");
-	}
-	amm->UpdateSource(selected);
+	getModel()->UpdateSource(m_selectedidxvec);
 
 	/* destruction */
-	delete[] m_list_selectedSrc;
-	m_list_selectedSrc = NULL;
 	delete[] m_list_usrData;
 	m_list_usrData = NULL;
 }
@@ -77,53 +64,74 @@ void SrcSelectionView::UpdateView()
 /* source */
 void SrcSelectionView::getSelectedSrc()
 {
-	AudioManagerModel* amm = static_cast<AudioManagerModel*>(MODEL);
-	if(amm == NULL)
-	{
-		throw std::runtime_error("fail to cast model");
-	}
-	std::vector<unsigned int> selected = amm->GetSelectedSourceIdx();
-
-	m_list_selectedSrc = new Eina_Bool[m_srcNum];
-	for(int i=0; i<m_srcNum; i++)
-		m_list_selectedSrc[i] = 0;
-
-	for(int i=0; i<selected.size(); i++)
-		m_list_selectedSrc[selected[i]] = EINA_TRUE;
+	m_selectedidxvec.clear();
+	getModel()->GetSelectedSourceIdx(m_selectedidxvec);
 }
 
-StrVec SrcSelectionView::getSrcNameList()
+AudioManagerModel* SrcSelectionView::getModel()
 {
 	AudioManagerModel* amm = static_cast<AudioManagerModel*>(MODEL);
-	if(amm == NULL)
-	{
-		throw std::runtime_error("fail to cast model");
-	}
-
-	return amm->GetAudioList();
+	AppTool::Assert(amm != NULL);
+	return amm;
 }
 
 
 /* list */
+bool SrcSelectionView::delete_if_alreadyselected(int idx)
+{
+	std::vector<unsigned int>::iterator iter;
+	for(iter = m_selectedidxvec.begin(); iter != m_selectedidxvec.end(); ++iter)
+	{
+		if(*iter == idx)
+		{
+			m_selectedidxvec.erase(iter);
+			return true;
+		}
+	}
+	return false;
+}
+
+bool SrcSelectionView::isalreadyselected(int idx)
+{
+	std::vector<unsigned int>::iterator iter;
+	for(iter = m_selectedidxvec.begin(); iter != m_selectedidxvec.end(); ++iter)
+	{
+		if(*iter == idx)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+void SrcSelectionView::select_source(int idx, Evas_Object *obj)
+{
+	if(delete_if_alreadyselected(idx)==false)
+	{
+		if(m_selectedidxvec.size() >= m_maxSelection)
+		{
+			elm_check_state_set(obj, EINA_FALSE);
+			popAlarm("You can select up to 5.");
+		}
+		else
+		{
+			m_selectedidxvec.push_back(idx);
+		}
+	}
+}
+
 void SrcSelectionView::src_selected_cb(void *data, Evas_Object *obj, void *event_info)
 {
 	UsrData *ud = (UsrData*)data;
 	assert(ud != NULL);
 
 	SrcSelectionView *ssv = (SrcSelectionView*) ud->ssv;
-	Eina_Bool *check = ssv->m_list_selectedSrc + ud->idx;
+	ssv->select_source(ud->idx, obj);
+}
 
-	if(*check)
-		m_selectedNum++; // off -> on
-	else
-		m_selectedNum--; // on -> off
-
-	if(m_selectedNum > m_maxSelection)
-	{
-		ssv->popAlarm("You can select up to 5.");
-		m_selectedNum--;
-		elm_check_state_set(obj, EINA_FALSE);
-	}
+const char* SrcSelectionView::getsourcedisplayname(int idx)
+{
+	return getModel()->GetMediaInfo(idx).name.c_str();
 }
 
 char* SrcSelectionView::genlist_text_get_cb(void *data, Evas_Object *obj, const char *part)
@@ -134,52 +142,36 @@ char* SrcSelectionView::genlist_text_get_cb(void *data, Evas_Object *obj, const 
 		if(ud != NULL)
 		{
 			SrcSelectionView *ssv = (SrcSelectionView*) ud->ssv;
-
-			return strdup((ssv->m_list_srcName[ud->idx]).c_str());
-			/* strdup: After the text is set to the part,
-			 * it is freed automatically (do not free it manually) */
+			return strdup(ssv->getsourcedisplayname(ud->idx));
 		}
 	}
 	return NULL;
 }
+Evas_Object* SrcSelectionView::get_genlist_content(int idx, Evas_Object *obj, void *data)
+{
+	Evas_Object* checkbox = elm_check_add(obj);
+	elm_object_style_set(checkbox, "on&off"); //"default");
+
+	Eina_Bool checked = (isalreadyselected(idx))?EINA_TRUE:EINA_FALSE;
+	elm_check_state_set(checkbox, checked);
+
+	evas_object_smart_callback_add(checkbox, "changed", src_selected_cb, data);
+
+	evas_object_size_hint_align_set(checkbox, 0.7, EVAS_HINT_FILL);
+	evas_object_size_hint_weight_set(checkbox, 1, 1);
+
+	return checkbox;
+}
 
 Evas_Object* SrcSelectionView::genlist_content_get_cb(void *data, Evas_Object *obj, const char *part)
 {
-	Evas_Object *checkbox = NULL;
 	UsrData *ud = (UsrData*)data;
 
 	if (!strcmp(part, "elm.swallow.icon.1") && ud!=NULL)
 	{
 		SrcSelectionView *ssv = (SrcSelectionView*) ud->ssv;
-
-		checkbox = elm_check_add(obj);
-		if(checkbox == NULL)
-		{
-			throw std::runtime_error("fail to create checkbox");  // 이 throw를 받아주는 데는 어디?
-		}
-		elm_object_style_set(checkbox, "on&off"); //"default");
-
-		if(ssv->m_list_selectedSrc[ud->idx]) // reload selected list
-			elm_check_state_set(checkbox, EINA_TRUE);
-		else elm_check_state_set(checkbox, EINA_FALSE);
-
-		elm_check_state_pointer_set(checkbox, (ssv->m_list_selectedSrc)+ud->idx);
-		evas_object_smart_callback_add(checkbox, "changed", src_selected_cb, data);
-
-		evas_object_size_hint_align_set(checkbox, 0.7, EVAS_HINT_FILL);
-		evas_object_size_hint_weight_set(checkbox, 1, 1);
-
-		return checkbox;
+		return ssv->get_genlist_content(ud->idx, obj, data);
 	}
-	/* TODO no icon!
-	if (!strcmp(part, "elm.swallow.icon"))
-	{
-		Evas_Object *img = elm_image_add(obj);
-		elm_image_file_set(img, "audio.png", NULL);
-		evas_object_size_hint_aspect_set(img, EVAS_ASPECT_CONTROL_VERTICAL, 1, 1);
-
-		return img;
-	}*/
 	return NULL;
 }
 

@@ -9,12 +9,18 @@
 
 Context::Context()
 {
+	const ALCchar * m_defaultDeviceName = alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER);
+	m_device = alcOpenDevice(m_defaultDeviceName);
+	m_contextID = alcCreateContext(m_device, NULL);
+	alcMakeContextCurrent(m_contextID);
 
 }
 
 Context::~Context()
 {
-
+	alcMakeContextCurrent(NULL);
+	alcDestroyContext(m_contextID);
+	alcCloseDevice(m_device);
 }
 
 void Context::convertVecToArr(ALuint* arr)
@@ -33,20 +39,22 @@ void Context::ResetSource()
 void Context::setSourcePos(ALuint source, int x, int y, int z)
 {
 	alSource3i(source, AL_POSITION, x, y, z);
+	dlog_print(DLOG_DEBUG, "ALContext", "source:%d, (%d, %d, %d)", source, x, y, z);
 	ALenum ret = alGetError();
 	if (ret != AL_NO_ERROR)
 	{
-		dlog_print(DLOG_FATAL, "Context setSourcePos", "error");
+		dlog_print(DLOG_FATAL, "ALContext", "alSource3i error:%d", ret);
 	}
 }
 
 void Context::setListenerPos(int x, int y, int z)
 {
 	alListener3i(AL_POSITION, x, y, z);
+	dlog_print(DLOG_DEBUG, "ALContext", "listener:(%d, %d, %d)", x, y, z);
 	ALenum ret = alGetError();
 	if (ret != AL_NO_ERROR)
 	{
-		dlog_print(DLOG_FATAL, "Context setListenerPos", "error");
+		dlog_print(DLOG_FATAL, "ALContext", "alListener3i error:%d", ret);
 	}
 }
 
@@ -58,7 +66,7 @@ void Context::Play()
 	ALenum ret = alGetError();
 	if (ret != AL_NO_ERROR)
 	{
-		dlog_print(DLOG_FATAL, "Context Play", "error");
+		dlog_print(DLOG_FATAL, "ALContext", "alSourcePlayv error:%d", ret);
 	}
 }
 
@@ -70,7 +78,7 @@ void Context::Stop()
 	ALenum ret = alGetError();
 	if (ret != AL_NO_ERROR)
 	{
-		dlog_print(DLOG_FATAL, "Context Stop", "error");
+		dlog_print(DLOG_FATAL, "ALContext", "alSourceStopv error:%d", ret);
 	}
 }
 

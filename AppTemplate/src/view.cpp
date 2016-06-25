@@ -10,7 +10,7 @@
 #include <stdexcept>
 
 View::View()
-	:m_box(NULL), m_layout(NULL), m_naviframe(NULL), m_conformant(NULL), m_Naviitem(NULL)
+	:m_box(NULL),m_naviframe(NULL), m_conformant(NULL), m_Naviitem(NULL)
 {
 
 }
@@ -26,7 +26,6 @@ void View::CreateView(Evas_Object* naviframe, Evas_Object* conformant)
 		m_naviframe = naviframe;
 		m_conformant = conformant;
 		m_box = createbox(naviframe, conformant);
-	//	m_layout = createlayout(framewnd, conformant);
 		decorateview(m_box);
 	}
 	catch(const std::runtime_error& e)

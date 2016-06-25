@@ -54,6 +54,7 @@ void MediaContent::DisconnectDB()
 
 	// deregister db update callback
 	int ret = media_content_unset_db_updated_cb();
+	if(ret != MEDIA_CONTENT_ERROR_NONE)
 	{
 		throw std::runtime_error(std::string("fail to media_content_unset_db_updated_cb with code:")+AppTool::ToString<int>(ret));
 	}
@@ -111,17 +112,26 @@ filter_h MediaContent::createfilter(const MediaContentParam& param)
 bool MediaContent::media_cb(media_info_h media, void *user_data)
 {
 	char* media_display_name = NULL;
-	media_info_get_display_name(media, &media_display_name);
+	char* media_file_path = NULL;
 
+	media_info_get_display_name(media, &media_display_name);
+	media_info_get_file_path(media, &media_file_path);
+
+	MediaContentItem Item;
 	if(media_display_name)
 	{
-		std::vector<MediaContentItem>* itemlist = (std::vector<MediaContentItem>*)user_data;
-		MediaContentItem Item;
-		Item.path = media_display_name;
-		itemlist->push_back(Item);
+		Item.name = media_display_name;
 		free(media_display_name);
-		media_display_name = NULL;
 	}
+	if(media_file_path)
+	{
+		Item.path = media_file_path;
+		free(media_file_path);
+	}
+
+	std::vector<MediaContentItem>* itemlist = (std::vector<MediaContentItem>*)user_data;
+	itemlist->push_back(Item);
+
 	return true;
 }
 void MediaContent::getitemlist(filter_h filter, std::vector<MediaContentItem>* itemlist)

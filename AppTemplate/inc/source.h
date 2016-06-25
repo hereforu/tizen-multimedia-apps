@@ -25,6 +25,10 @@ protected:
 
 private:
 	ALuint m_source;
+	ALfloat m_min_gain;
+	ALfloat m_max_gain;
+	ALfloat m_max_distance;
+	ALfloat m_reference_distance;
 };
 
 #endif /* SOURCE_H_ */

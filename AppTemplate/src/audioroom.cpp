@@ -14,7 +14,7 @@ AudioRoom::AudioRoom()
 {
 	for(int i = 0; i < ROOM_OBJECT_MAX; ++i)
 	{
-		m_object[i] = NULL;
+		m_objects[i] = NULL;
 	}
 }
 
@@ -41,13 +41,58 @@ void AudioRoom::Create(Evas_Object* box)
 	evas_object_event_callback_add(box, EVAS_CALLBACK_MOUSE_MOVE, mousemove_cb, this);
 	evas_object_event_callback_add(box, EVAS_CALLBACK_MOUSE_UP, mouseup_cb, this);
 
-
-
-
-	for(int i = 0; i < ROOM_OBJECT_MAX; ++i)
+	//TODO: remove all constants
+	for(int i = 0; i < ROOM_SOURCE_MAX; ++i)
 	{
-		m_object[i] = new ObjectinRoom();
-		m_object[i]->Create(100, 200+(i*80),(RoomObjectType)i, m_eventrect);
+		SourceinRoom* source = new SourceinRoom();
+		source->Create(150 + 500*(i%2), 350+(i*100),(RoomSourceType)i, m_eventrect);
+		m_objects[i] = (ObjectinRoom*)source;
+	}
+	ListenerinRoom* listener = new ListenerinRoom();
+	listener->Create(300, 450, m_eventrect);
+	m_objects[LISTENER_INDEX] = (ObjectinRoom*)listener;
+}
+
+void AudioRoom::ConfigureSources(const std::vector<RoomSourceProperty>& sources)
+{
+	unsigned int num_sources = sources.size();
+
+	std::vector<RoomSourceProperty> remaining_srcs;
+	std::vector<SourceinRoom*> avail_roominsrcs;
+	for(int i= 0; i < ROOM_SOURCE_MAX; ++i)
+		avail_roominsrcs.push_back(dynamic_cast<SourceinRoom*>(m_objects[i]));
+
+
+	for(int srcidx = 0; srcidx < num_sources; ++srcidx)
+	{
+		bool isassigned = false;
+		for(std::vector<SourceinRoom*>::iterator iter = avail_roominsrcs.begin(); iter != avail_roominsrcs.end(); ++iter)
+		{
+			SourceinRoom* srcinroom =*iter;
+			if(srcinroom->IsSameSource(sources[srcidx]))
+			{
+				isassigned = true;
+				avail_roominsrcs.erase(iter);
+				break;
+			}
+		}
+		if(isassigned == false)
+			remaining_srcs.push_back(sources[srcidx]);
+	}
+
+	int remaining_srcidx = remaining_srcs.size()-1;
+	for(std::vector<SourceinRoom*>::iterator iter = avail_roominsrcs.begin(); iter != avail_roominsrcs.end(); ++iter)
+	{
+		SourceinRoom* srcinroom =*iter;
+		if(remaining_srcidx < 0)
+		{
+			srcinroom->ResetProperty();
+		}
+		else
+		{
+			srcinroom->SetProperty(remaining_srcs[remaining_srcidx]);
+			--remaining_srcidx;
+		}
 	}
 }
 
@@ -55,7 +100,7 @@ void AudioRoom::HideObjects()
 {
 	for(int i = 0; i < ROOM_OBJECT_MAX; ++i)
 	{
-		m_object[i]->Hide();
+		m_objects[i]->Hide();
 	}
 }
 
@@ -63,38 +108,78 @@ void AudioRoom::ShowObjectsIfinRoom()
 {
 	for(int i = 0; i < ROOM_OBJECT_MAX; ++i)
 	{
-		m_object[i]->Show();
+		m_objects[i]->Show();
 	}
 }
 
-void AudioRoom::ToggleSource(RoomObjectType type)
+void AudioRoom::ToggleSource(int index)
 {
-	AppTool::Assert(type != ROOM_OBJECT_LISTENER);
-	if(m_object[type]->IsinRoom())
-		m_object[type]->Out();
-	else
-		m_object[type]->Enter();
+	SourceinRoom* source = findsourcebyindex(index);
+	if(source)
+	{
+		if(source->IsinRoom())
+			source->Out();
+		else
+			source->Enter();
+	}
+}
+
+Pos AudioRoom::GetListenerPos()
+{
+	return m_objects[LISTENER_INDEX]->Get3DPos();
+}
+
+void AudioRoom::GetPosofSourcesinRoom(std::vector<ObjectPos>& positions)
+{
+	positions.clear();
+	for(int i = 0; i < ROOM_SOURCE_MAX; ++i)
+	{
+		SourceinRoom* source = dynamic_cast<SourceinRoom*>(m_objects[i]);
+		if(source->IsinRoom())
+		{
+			positions.push_back(ObjectPos(source->GetSourceIndex(),
+					source->Get3DPos()));
+		}
+	}
+}
+const char* AudioRoom::GetSourceIconPath(int index)
+{
+	SourceinRoom* source = findsourcebyindex(index);
+	if(source)
+		return source->GetIconPath();
+	return "images/default.png";
 }
 
 void AudioRoom::Destroy()
 {
 	for(int i = 0; i < ROOM_OBJECT_MAX; ++i)
 	{
-		m_object[i]->Destroy();
-		delete m_object[i];
-		m_object[i] = NULL;
+		m_objects[i]->Destroy();
+		delete m_objects[i];
+		m_objects[i] = NULL;
 	}
 	evas_object_del(m_eventrect);
 	m_eventrect = NULL;
 }
 
-
+SourceinRoom* AudioRoom::findsourcebyindex(int index)
+{
+	for(int i= 0; i < ROOM_SOURCE_MAX; ++i)
+	{
+		SourceinRoom* source = dynamic_cast<SourceinRoom*>(m_objects[i]);
+		if(source->GetSourceIndex() == index)
+		{
+			return source;
+		}
+	}
+	return NULL;
+}
 void AudioRoom::handledownevent(Evas_Coord x, Evas_Coord y)
 {
 	for(int i = ROOM_OBJECT_MAX-1; i >= 0; --i)
 	{
-		m_object[i]->HandleDownEvent(x, y);
-		if(m_object[i]->IsSelectedState())
+		m_objects[i]->HandleDownEvent(x, y);
+		if(m_objects[i]->IsSelectedState())
 			break;
 	}
 }
@@ -102,14 +187,14 @@ void AudioRoom::handleupevent(Evas_Coord x, Evas_Coord y)
 {
 	for(int i = 0; i < ROOM_OBJECT_MAX; ++i)
 	{
-		m_object[i]->HandleUpEvent(x, y);
+		m_objects[i]->HandleUpEvent(x, y);
 	}
 }
 void AudioRoom::handlemoveevent(Evas_Coord x, Evas_Coord y)
 {
 	for(int i = 0; i < ROOM_OBJECT_MAX; ++i)
 	{
-		m_object[i]->HandleMoveEvent(x, y);
+		m_objects[i]->HandleMoveEvent(x, y);
 	}
 }
 

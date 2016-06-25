@@ -4,123 +4,94 @@
  *  Created on: June 09, 2016
  *      Author: Hotak
  */
+#include "base.h"
 #include "audioManagerModel.h"
-#include <app_common.h>//
+#include <app_common.h>
 AudioManagerModel::AudioManagerModel()
 {
-	const ALCchar * m_defaultDeviceName = alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER);
-	m_device = alcOpenDevice(m_defaultDeviceName);
-	m_contextID = alcCreateContext(m_device, NULL);
-	alcMakeContextCurrent(m_contextID);
-	m_context = Context();
-	getAudioListinDB();
+	//TODO:: initialize variables
 }
 
 AudioManagerModel::~AudioManagerModel()
 {
-	for(int i = 0 ; i < m_obj.objVec.size() ; i++)
-	{
-		m_obj.objVec[i].source->Destroy();
-		delete m_obj.objVec[i].source;
-		m_obj.objVec[i].source = NULL;
-		m_obj.objVec[i].buffer->Destroy();
-		delete m_obj.objVec[i].buffer;
-		m_obj.objVec[i].buffer = NULL;
-	}
-	alcMakeContextCurrent(NULL);
-	alcDestroyContext(m_contextID);
-	alcCloseDevice(m_device);
+
+}
+bool AudioManagerModel::creatspecifics()
+{
+	getAudioListinDB();
+	return true;
+}
+
+void AudioManagerModel::destroyspecifics()
+{
+	removeAllSources();
+
 }
 
 void AudioManagerModel::getAudioListinDB()
 {
 	MediaContent mediaContent;
 	MediaContentParam param;
-	param.mediatype = MC_SOUND_TYPE;
+	param.mediatype = MC_SOUND_TYPE | MC_MUSIC_TYPE;
 	if(!mediaContent.IsConnected())
 		mediaContent.ConnectDB();
 	mediaContent.GetItem(param, &m_audioList);
 	mediaContent.DisconnectDB();
-//	char* resource_path = app_get_resource_path();
-//	std::string path = resource_path;
-//
-//	std::string wav_file_name = "1.wav";
-//	path = path + wav_file_name;
-//	m_audioList.push_back(path);
-//	path = resource_path;
-//
-//	wav_file_name = "2.wav";
-//	path = path + wav_file_name;
-//	m_audioList.push_back(path);
-//	path = resource_path;
-//
-//	wav_file_name = "3.wav";
-//	path = path + wav_file_name;
-//	m_audioList.push_back(path);
-//	path = resource_path;
-//
-//	wav_file_name = "five.wav";
-//	path = path + wav_file_name;
-//	m_audioList.push_back(path);
-//	path = resource_path;
-//
-//	wav_file_name = "four.wav";
-//	path = path + wav_file_name;
-//	m_audioList.push_back(path);
-//	path = resource_path;
-//
-//	wav_file_name = "seven.wav";
-//	path = path + wav_file_name;
-//	m_audioList.push_back(path);
-//	path = resource_path;
-//
-//	wav_file_name = "six.wav";
-//	path = path + wav_file_name;
-//	m_audioList.push_back(path);
 }
-AudioPathVector AudioManagerModel::GetAudioList()
+
+
+unsigned int AudioManagerModel::GetNumAllMediaItems()
 {
-	return m_audioList;
+	return m_audioList.size();
 }
+MediaContentItem& AudioManagerModel::GetMediaInfo(int index)
+{
+	AppTool::Assert( index >= 0 && index <  m_audioList.size());
+	return m_audioList[index];
+}
+
 
 void AudioManagerModel::removeAllSources()
 {
-	for(int i = 0 ; i < m_obj.objVec.size() ; i++)
+	ALObjectMap::iterator iter = m_objmap.begin();
+	while(iter != m_objmap.end())
 	{
-		m_obj.objVec[i].source->Destroy();
-		delete m_obj.objVec[i].source;
-		m_obj.objVec[i].source = NULL;
-		m_obj.objVec[i].buffer->Destroy();
-		delete m_obj.objVec[i].buffer;
-		m_obj.objVec[i].buffer = NULL;
+		ALObject obj = iter->second;
+
+		obj.source->Destroy();
+		delete obj.source;
+		obj.buffer->Destroy();
+		delete obj.buffer;
+
+		++iter;
 	}
-	m_obj.objVec.clear();
-	m_obj.indexMap.clear();
+	m_objmap.clear();
 }
 
-void AudioManagerModel::createSources(std::vector<unsigned int> selectedSourceIdx)
+void AudioManagerModel::createSources(const std::vector<unsigned int>& selectedsourceindex)
 {
-	for(int i = 0 ; i < selectedSourceIdx.size() ; i++)
+	for(int i = 0 ; i < selectedsourceindex.size() ; i++)
 	{
-		OBJECT object;
+		ALObject object;
+
 		object.buffer = new Buffer();
-		object.source = new Source();
-		if(!object.buffer->GenerateBuffer(m_audioList[selectedSourceIdx[i]].path))
+		if(!object.buffer->GenerateBuffer(m_audioList[selectedsourceindex[i]].path))
 		{
-			std::string msg = m_audioList[selectedSourceIdx[i]].path + "   <error>";
-			dlog_print(DLOG_FATAL, "AudioManagerModel", msg.c_str());
+			dlog_print(DLOG_FATAL, "AudioManagerModel", "fail to create the buffer of %s",  m_audioList[selectedsourceindex[i]].path.c_str());
+			delete object.buffer;
 			continue;
 		}
+		object.source = new Source();
 		object.source->GenerateSource(object.buffer->GetBufferID());
-		m_obj.objVec.push_back(object);
-		m_obj.indexMap.insert(std::pair<unsigned int, unsigned int>(selectedSourceIdx[i], m_obj.objVec.size()-1));
+
+		m_objmap[selectedsourceindex[i]]=object;
 	}
 }
 
-void AudioManagerModel::UpdateSource(std::vector<unsigned int> selectedSourceIdx)
+void AudioManagerModel::UpdateSource(const std::vector<unsigned int>& selectedsourceindex)
 {
 	removeAllSources();
-	createSources(selectedSourceIdx);
+	createSources(selectedsourceindex);
 	m_context.ResetSource();
 }
 
@@ -129,11 +100,26 @@ void AudioManagerModel::PlaySources()
 	m_context.Play();
 }
 
+bool AudioManagerModel::IsAlreadySelected(int index)
+{
+	return ( m_objmap.find(index) !=m_objmap.end() )?true:false;
+}
+
+ALObject AudioManagerModel::getobjectbyindex(int index)
+{
+	ALObjectMap::iterator iter = m_objmap.find(index);
+	if(iter==m_objmap.end())
+	{
+		dlog_print(DLOG_FATAL, "AudioManagerModel", "fail play source(%d)", index);
+		return ALObject();
+	}
+	return iter->second;
+}
 void AudioManagerModel::PlaySource(unsigned int index)
 {
-	unsigned int pos = m_obj.indexMap.find(index)->second;
-	if(pos == MAXNUM) return;
-	m_obj.objVec[pos].source->Play();
+	ALObject obj = getobjectbyindex(index);
+	if(obj.source)
+		obj.source->Play();
 }
 
 void AudioManagerModel::StopSources()
@@ -143,45 +129,42 @@ void AudioManagerModel::StopSources()
 
 void AudioManagerModel::LocateSource(unsigned int index, int x, int y, int z)
 {
-	unsigned int pos = m_obj.indexMap.find(index)->second;
-	if(pos == MAXNUM) return;
-	m_context.setSourcePos(m_obj.objVec[pos].source->GetSourceId(), NORMALIZE_X * x, y, NORMALIZE_Z * z);
+	ALObject obj = getobjectbyindex(index);
+	if(obj.source)
+		m_context.setSourcePos(obj.source->GetSourceId(), x, y, z);
 }
 
 void AudioManagerModel::LocateListener(int x, int y, int z)
 {
-	m_context.setListenerPos(NORMALIZE_X * x, y, NORMALIZE_Z * z);
+	m_context.setListenerPos(x, y, z);
 }
 
+void AudioManagerModel::ResetSource()
+{
+	m_context.ResetSource();
+}
 void AudioManagerModel::PushSource(unsigned int index)
 {
-	unsigned int pos = m_obj.indexMap.find(index)->second;
-	m_context.Push(m_obj.objVec[pos].source);
+	ALObject obj = getobjectbyindex(index);
+	if(obj.source)
+		m_context.Push(obj.source);
 }
 
 void AudioManagerModel::PopSource(unsigned int index)
 {
-	unsigned int pos = m_obj.indexMap.find(index)->second;
-	m_context.Pop(m_obj.objVec[pos].source);
+	ALObject obj = getobjectbyindex(index);
+	if(obj.source)
+		m_context.Pop(obj.source);
 }
 
-SelectedSourceIdxVec AudioManagerModel::GetSelectedSourceIdx()
+void AudioManagerModel::GetSelectedSourceIdx(std::vector<unsigned int>& selectedsourceindex)
 {
-	SelectedSourceIdxVec ret;
-	std::map<unsigned int, unsigned int>::iterator i;
-	for(i = m_obj.indexMap.begin() ; i != m_obj.indexMap.end() ; i++)
+	ALObjectMap::iterator iter = m_objmap.begin();
+	while(iter != m_objmap.end())
 	{
-		ret.push_back(i->first);
+		selectedsourceindex.push_back(iter->first);
+		++iter;
 	}
-	return ret;
 }
 
-bool AudioManagerModel::creatspecifics()
-{
-	return true;
-}
 
-void AudioManagerModel::destroyspecifics()
-{
-
-}

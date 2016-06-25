@@ -20,6 +20,7 @@ class Context
 public:
 	Context();
 	~Context();
+
 	void ResetSource();
 	void setSourcePos(ALuint source, int x, int y, int z);
 	void setListenerPos(int x, int y, int z);
@@ -28,11 +29,12 @@ public:
 	void Push(Source* source);
 	void Pop(Source* source);
 
-protected:
-
 private:
 	void convertVecToArr(ALuint* arr);
 
+private:
+	ALCdevice * m_device;
+	ALCcontext* m_contextID;
 	std::vector<Source*> m_ImportSourceIdx;
 };
 

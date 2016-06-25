@@ -22,19 +22,18 @@
 #include <string>
 #include <map>
 
-//typedef std::vector<std::string> AudioPath;
-typedef std::vector<MediaContentItem> AudioPathVector;
-typedef std::vector<unsigned int> SelectedSourceIdxVec;
 
-struct OBJECT {
+typedef struct _ALObject{
+	_ALObject()
+	:source(NULL), buffer(NULL)
+	{
+
+	}
 	Source* source;
 	Buffer* buffer;
-};
+}ALObject;
 
-struct OBJECTVEC {
-	std::vector<OBJECT> objVec;
-	std::map<unsigned int, unsigned int> indexMap;//for find source position
-};
+typedef std::map<int, ALObject> ALObjectMap;
 
 class AudioManagerModel : public Model
 {
@@ -42,9 +41,12 @@ public:
 	AudioManagerModel();
 	~AudioManagerModel();
 
-	AudioPathVector GetAudioList();
-	SelectedSourceIdxVec GetSelectedSourceIdx();
-	void UpdateSource(std::vector<unsigned int> selectedSourceIdx);
+	unsigned int GetNumAllMediaItems();
+	MediaContentItem& GetMediaInfo(int index);
+
+	void GetSelectedSourceIdx(std::vector<unsigned int>& selectedsourceindex);
+	bool IsAlreadySelected(int index);
+	void UpdateSource(const std::vector<unsigned int>& selectedsourceindex);
 
 	// play one source
 	void PlaySource(unsigned int index);
@@ -55,6 +57,7 @@ public:
 	//push, pop in context for play sources which are in context
 	void PushSource(unsigned int index);
 	void PopSource(unsigned int index);
+	void ResetSource();
 
 	/*
 	OpenAL uses a right-handed Cartesian coordinate system (RHS),
@@ -72,13 +75,15 @@ protected:
 private:
 	void getAudioListinDB();
 	void removeAllSources();
-	void createSources(std::vector<unsigned int> selectedSourceIdx);
-	Context m_context;
-	OBJECTVEC m_obj;
-	AudioPathVector m_audioList;
+	void createSources(const std::vector<unsigned int>& selectedsourceindex);
+	ALObject getobjectbyindex(int index);
 
-	ALCdevice * m_device;
-	ALCcontext* m_contextID;
+private:
+	Context m_context;
+	ALObjectMap m_objmap;
+	std::vector<MediaContentItem> m_audioList;
+
+
 };
 
 #endif /* AUDIOMANAGERMODEL_H_ */

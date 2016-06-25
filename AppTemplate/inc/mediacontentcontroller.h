@@ -43,6 +43,7 @@ typedef struct _MediaContentParam
 typedef struct _MediaContentItem
 {
 	std::string path;
+	std::string name;
 }MediaContentItem;
 
 class MediaContent

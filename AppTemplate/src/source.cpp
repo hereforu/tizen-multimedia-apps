@@ -21,15 +21,23 @@ void Source::GenerateSource(ALuint buffer)
 {
 	ALuint source;
 	alGenSources(1, &source);
+	dlog_print(DLOG_DEBUG, "ALContext", "alGenSources id:%d, buffer:%d", source, buffer);
 	ALenum ret = alGetError();
 	if (ret != AL_NO_ERROR)
 	{
-		dlog_print(DLOG_FATAL, "GenerateSource", "error");
+		dlog_print(DLOG_FATAL, "ALContext", "alGenSources error:%d", ret);
 	}
+
+	alGetSourcef(source, AL_MAX_GAIN, &m_max_gain);
+	alGetSourcef(source, AL_MIN_GAIN, &m_min_gain);
+	alGetSourcef(source, AL_MAX_DISTANCE, &m_max_distance);
+	alGetSourcef(source, AL_REFERENCE_DISTANCE, &m_reference_distance);
+	dlog_print(DLOG_DEBUG, "ALContext", "MAX_GAIN:%f, MIN_GAIN:%f, MAX_DIST:%f, REF_DIST:%f ", m_max_gain, m_min_gain, m_max_distance, m_reference_distance);
+	alSourcef(source, AL_GAIN, m_max_gain);
+	alSource3f(source, AL_POSITION, 0, 0, 0);
+	alSourcei(source,AL_LOOPING,AL_TRUE);
+	alSourcei(source, AL_BUFFER, buffer);
 	m_source = source;
-	alSourcef(m_source, AL_GAIN, 100);
-	alSource3f(m_source, AL_POSITION, 0, 0, 0);
-	alSourcei(m_source, AL_BUFFER, buffer);
 }
 
 void Source::Play()

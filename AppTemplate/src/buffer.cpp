@@ -138,10 +138,11 @@ bool Buffer::GenerateBuffer(std::string waveFilePath)
 	}
 	ALuint buffer;
 	alGenBuffers(1, &buffer);
+	dlog_print(DLOG_DEBUG, "ALContext", "alGenBuffers id:%d", buffer);
 	ALenum ret = alGetError();
 	if (ret != AL_NO_ERROR)
 	{
-		dlog_print(DLOG_FATAL, "GenerateBuffer", "error");
+		dlog_print(DLOG_FATAL, "ALContext", "alGenBuffers error:%d", ret);
 		return false;
 	}
 	m_buffer = buffer;
