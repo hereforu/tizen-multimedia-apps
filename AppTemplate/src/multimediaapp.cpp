@@ -9,7 +9,6 @@
 #include "multimediaapp.h"
 #include "mainview.h"
 #include "srcSelectionView.h"
-#include "samplemodel.h"
 #include "audioManagerModel.h"
 #include <stdexcept>
 
