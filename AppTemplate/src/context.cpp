@@ -36,25 +36,26 @@ void Context::ResetSource()
 	m_ImportSourceIdx.clear();
 }
 
-void Context::setSourcePos(ALuint source, int x, int y, int z)
+void Context::setSourcePos(ALuint source, float x, float y, float z)
 {
-	alSource3i(source, AL_POSITION, x, y, z);
-	dlog_print(DLOG_DEBUG, "ALContext", "source:%d, (%d, %d, %d)", source, x, y, z);
+	alSource3f(source, AL_POSITION, x, y, z);
+	dlog_print(DLOG_DEBUG, "ALContext", "source:%u, (%f, %f, %f)", source, x, y, z);
 	ALenum ret = alGetError();
 	if (ret != AL_NO_ERROR)
 	{
-		dlog_print(DLOG_FATAL, "ALContext", "alSource3i error:%d", ret);
+		dlog_print(DLOG_FATAL, "ALContext", "alSource3f error:%d", ret);
 	}
 }
 
-void Context::setListenerPos(int x, int y, int z)
+void Context::setListenerPos(float x, float y, float z)
 {
-	alListener3i(AL_POSITION, x, y, z);
-	dlog_print(DLOG_DEBUG, "ALContext", "listener:(%d, %d, %d)", x, y, z);
+	//alListener3f(AL_ORIENTATION, 0.0f, 0.0f, -1.0f);
+	alListener3f(AL_POSITION, x, y, z);
+	dlog_print(DLOG_DEBUG, "ALContext", "listener:(%f, %f, %f)", x, y, z);
 	ALenum ret = alGetError();
 	if (ret != AL_NO_ERROR)
 	{
-		dlog_print(DLOG_FATAL, "ALContext", "alListener3i error:%d", ret);
+		dlog_print(DLOG_FATAL, "ALContext", "alListener3f error:%d", ret);
 	}
 }
 

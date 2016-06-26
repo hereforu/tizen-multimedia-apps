@@ -65,8 +65,8 @@ public:
 	Y (index finger) points up, and Z (middle finger) points towards the viewer/camera.
 	*/
 	//you put pixel value. func change pixel -> openal value(normalize)
-	void LocateSource(unsigned int index, int x, int y, int z);
-	void LocateListener(int x, int y, int z);
+	void LocateSource(unsigned int index, float x, float y, float z);
+	void LocateListener(float x, float y, float z);
 
 protected:
 	bool creatspecifics();

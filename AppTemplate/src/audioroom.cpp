@@ -161,7 +161,12 @@ void AudioRoom::Destroy()
 	evas_object_del(m_eventrect);
 	m_eventrect = NULL;
 }
-
+EvasCoordRect AudioRoom::GetRect()
+{
+	EvasCoordRect rect;
+	evas_object_geometry_get(m_eventrect, &rect.x, &rect.y, &rect.w, &rect.h);
+	return rect;
+}
 SourceinRoom* AudioRoom::findsourcebyindex(int index)
 {
 	for(int i= 0; i < ROOM_SOURCE_MAX; ++i)
@@ -203,7 +208,7 @@ void AudioRoom::mousedown_cb(void *data, Evas *evas, Evas_Object *obj, void *eve
 	Evas_Event_Mouse_Down *ev = (Evas_Event_Mouse_Down *) event_info;
 	Evas_Coord x = ev->output.x;
 	Evas_Coord y = ev->output.y;
-
+	dlog_print(DLOG_DEBUG, "AudioRoom", "mouse down: (%d, %d)", x, y);
 	AudioRoom* room = (AudioRoom*)data;
 	room->handledownevent(x, y);
 }
@@ -213,6 +218,7 @@ void AudioRoom::mousemove_cb(void *data, Evas *evas, Evas_Object *obj, void *eve
 	Evas_Event_Mouse_Move *ev =(Evas_Event_Mouse_Move *)event_info;
 	Evas_Coord x = ev->cur.output.x;
 	Evas_Coord y = ev->cur.output.y;
+	dlog_print(DLOG_DEBUG, "AudioRoom", "mouse move: (%d, %d)", x, y);
 	AudioRoom* room = (AudioRoom*)data;
 	room->handlemoveevent(x, y);
 
@@ -222,6 +228,7 @@ void AudioRoom::mouseup_cb(void *data, Evas *evas, Evas_Object *obj, void *event
 	Evas_Event_Mouse_Up *ev = (Evas_Event_Mouse_Up*)event_info;
 	Evas_Coord x = ev->output.x;
 	Evas_Coord y = ev->output.y;
+	dlog_print(DLOG_DEBUG, "AudioRoom", "mouse up: (%d, %d)", x, y);
 	AudioRoom* room = (AudioRoom*)data;
 	room->handleupevent(x, y);
 }

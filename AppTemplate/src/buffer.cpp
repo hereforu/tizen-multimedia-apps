@@ -30,15 +30,32 @@ int Buffer::GetDataSize()
 	return m_waveFileSize;
 }
 
+//stereo sample does not support spatial differences
 int Buffer::getFormat(short numChannels, short bitsPerSample)
 {
 	int format = 0;
 	if (numChannels == 1) {
-		if (bitsPerSample == 8 ) format = AL_FORMAT_MONO8;
-		else if (bitsPerSample == 16) format = AL_FORMAT_MONO16;
+		if (bitsPerSample == 8 )
+		{
+			format = AL_FORMAT_MONO8;
+			dlog_print(DLOG_FATAL, "ALContext", "AL_FORMAT_MONO8");
+		}
+		else if (bitsPerSample == 16)
+		{
+			format = AL_FORMAT_MONO16;
+			dlog_print(DLOG_FATAL, "ALContext", "AL_FORMAT_MONO16");
+		}
 	} else if (numChannels == 2) {
-		if (bitsPerSample == 8 ) format = AL_FORMAT_STEREO8;
-		else if (bitsPerSample == 16) format = AL_FORMAT_STEREO16;
+		if (bitsPerSample == 8 )
+		{
+			format = AL_FORMAT_STEREO8;
+			dlog_print(DLOG_FATAL, "ALContext", "AL_FORMAT_STEREO8");
+		}
+		else if (bitsPerSample == 16)
+		{
+			format = AL_FORMAT_STEREO16;
+			dlog_print(DLOG_FATAL, "ALContext", "AL_FORMAT_STEREO16");
+		}
 	}
 	return format;
 }
@@ -138,7 +155,7 @@ bool Buffer::GenerateBuffer(std::string waveFilePath)
 	}
 	ALuint buffer;
 	alGenBuffers(1, &buffer);
-	dlog_print(DLOG_DEBUG, "ALContext", "alGenBuffers id:%d", buffer);
+	dlog_print(DLOG_DEBUG, "ALContext", "alGenBuffers id:%u", buffer);
 	ALenum ret = alGetError();
 	if (ret != AL_NO_ERROR)
 	{

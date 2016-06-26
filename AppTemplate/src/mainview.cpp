@@ -86,7 +86,7 @@ void MainView::decorateview(Evas_Object* box)
 
 	add_defaultbtns();
 
-	m_timer = ecore_timer_add(1.0, MainView::timer_cb, (void*)this);
+	m_timer = ecore_timer_add(0.5, MainView::timer_cb, (void*)this);
 	ecore_timer_freeze(m_timer);
 }
 
@@ -124,17 +124,36 @@ void MainView::add_defaultbtns()
 	m_pack->AddPacksHorizontally(functionbtn_params);
 }
 
+Posf MainView::convertrelativepos(const EvasCoordRect& rect, const Pos& pos)
+{
+	Posf posf;
+	const float max_x = 5.0f;
+	const float max_y = 5.0f*(float)rect.h / (float)rect.w;
+
+	posf.x = (float)(pos.x-rect.x);
+	posf.y = (float)(pos.y-rect.y);
+
+	posf.x = posf.x * max_x / (float)rect.w;
+	posf.y = posf.y * max_y / (float)rect.h;
+	posf.z = 0.0f;
+
+	return posf;
+}
+
 void MainView::locateobjects()
 {
-	Pos listener_pos = m_room->GetListenerPos();
-	getModel()->LocateListener(listener_pos.x, listener_pos.y, listener_pos.z);
+	EvasCoordRect rect = m_room->GetRect();
+	Pos pos = m_room->GetListenerPos();
+	Posf posf = convertrelativepos(rect, pos);
+	getModel()->LocateListener(posf.x, posf.y, posf.z);
 
 	getModel()->ResetSource();
 	std::vector<ObjectPos> sources_pos;
 	m_room->GetPosofSourcesinRoom(sources_pos);
 	for(int i = 0; i < sources_pos.size(); ++i)
 	{
-		getModel()->LocateSource(sources_pos[i].objidx, sources_pos[i].pos.x , sources_pos[i].pos.y, sources_pos[i].pos.z);
+		posf = convertrelativepos(rect, sources_pos[i].pos);
+		getModel()->LocateSource(sources_pos[i].objidx, posf.x , posf.y, posf.z);
 		getModel()->PushSource(sources_pos[i].objidx);
 	}
 }

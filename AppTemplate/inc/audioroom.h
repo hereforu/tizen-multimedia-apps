@@ -45,6 +45,7 @@ public:
 	const char* GetSourceIconPath(int index);
 	Pos GetListenerPos();
 	void GetPosofSourcesinRoom(std::vector<ObjectPos>& positions);
+	EvasCoordRect GetRect();
 
 
 

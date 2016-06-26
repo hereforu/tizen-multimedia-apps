@@ -127,14 +127,16 @@ void AudioManagerModel::StopSources()
 	m_context.Stop();
 }
 
-void AudioManagerModel::LocateSource(unsigned int index, int x, int y, int z)
+void AudioManagerModel::LocateSource(unsigned int index, float x, float y, float z)
 {
 	ALObject obj = getobjectbyindex(index);
 	if(obj.source)
+	{
 		m_context.setSourcePos(obj.source->GetSourceId(), x, y, z);
+	}
 }
 
-void AudioManagerModel::LocateListener(int x, int y, int z)
+void AudioManagerModel::LocateListener(float x, float y, float z)
 {
 	m_context.setListenerPos(x, y, z);
 }

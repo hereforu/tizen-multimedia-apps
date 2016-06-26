@@ -27,6 +27,13 @@ typedef struct _Pos
 	int z;
 }Pos;
 
+typedef struct _Posf
+{
+	float x;
+	float y;
+	float z;
+}Posf;
+
 class ObjectinRoom
 {
 public:

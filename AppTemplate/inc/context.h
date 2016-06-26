@@ -22,8 +22,8 @@ public:
 	~Context();
 
 	void ResetSource();
-	void setSourcePos(ALuint source, int x, int y, int z);
-	void setListenerPos(int x, int y, int z);
+	void setSourcePos(ALuint source, float x, float y, float z);
+	void setListenerPos(float x, float y, float z);
 	void Play();
 	void Stop();
 	void Push(Source* source);
