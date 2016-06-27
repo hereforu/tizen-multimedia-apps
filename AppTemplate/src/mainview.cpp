@@ -226,10 +226,13 @@ void MainView::clicked_srcsel_cb(void *data, Evas_Object *obj, void *event_info)
 	MainView* view = (MainView*)data;
 	view->handlesrcselbtn();
 }
+
+//TODO: need to manage memory leaks
 void MainView::clicked_exit_cb(void *data, Evas_Object *obj, void *event_info)
 {
 	ui_app_exit();
 }
+
 void MainView::clicked_play_cb(void *data, Evas_Object *obj, void *event_info)
 {
 	MainView* view = (MainView*)data;

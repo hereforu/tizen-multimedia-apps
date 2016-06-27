@@ -100,9 +100,11 @@ void FrameWindow::MovePrevView()
 		m_views[m_currentviewindex]->UpdateView();
 	}
 	else
+	{
 		dlog_print(DLOG_FATAL, "FrameWindow", "this is the first view");
+		ui_app_exit();
+	}
 }
-
 
 void FrameWindow::Show()
 {
@@ -157,10 +159,19 @@ Evas_Object* FrameWindow::createframewindow()
 	}
 
 	evas_object_smart_callback_add(pframewnd, "delete,request", delete_request_cb, this);
+	eext_object_event_callback_add(pframewnd, EEXT_CALLBACK_BACK, on_backkeydown_cb, this);
 
 	return pframewnd;
 }
 
+void FrameWindow::on_backkeydown_cb(void *data, Evas_Object *obj, void *event_info)
+{
+	FrameWindow* framewnd = static_cast<FrameWindow*>(data);
+	if(framewnd == NULL)
+		return;
+
+	framewnd->MovePrevView();
+}
 void FrameWindow::delete_request_cb(void *data, Evas_Object *obj, void *event_info)
 {
 	FrameWindow* framewnd = static_cast<FrameWindow*>(data);

@@ -43,6 +43,7 @@ private:
 
 	//for callback
 	static void delete_request_cb(void *data, Evas_Object *obj, void *event_info);
+	static void on_backkeydown_cb(void *data, Evas_Object *obj, void *event_info);
 
 
 private:

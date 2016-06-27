@@ -261,7 +261,7 @@ void SrcSelectionView::popAlarm(const char* str)
 
 	elm_popup_orient_set(popup, ELM_POPUP_ORIENT_CENTER);
 	elm_object_style_set(popup, "toast");
-	elm_popup_timeout_set(popup, 1.0); // 1 sec
+	elm_popup_timeout_set(popup, 2.0); // 1 sec
 	evas_object_smart_callback_add(popup, "timeout", popupTimeout_cb, NULL);
 
 	elm_object_part_text_set(popup, "default", str);

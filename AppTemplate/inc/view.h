@@ -28,19 +28,8 @@ protected:
 	//do not delete elm objects which are attached to the box
 	virtual void destroyremains()=0;
 	virtual const char* getedcfilename() = 0;
-
-
-
 private:
-	void handlelayoutevent(Evas_Object *obj, void *event_info);
 	Evas_Object* createbox(Evas_Object* naviframe, Evas_Object* conformant);
-	Evas_Object* createlayout(Evas_Object* framewnd, Evas_Object* conformant);
-	void getresource(const char *edj_file_in, char *edj_path_out, int edj_path_max);
-
-
-	//for callback
-	static void layout_back_cb(void *data, Evas_Object *obj, void *event_info);
-
 protected:
 	Evas_Object* m_box;
 
