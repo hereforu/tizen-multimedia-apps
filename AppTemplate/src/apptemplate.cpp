@@ -1,4 +1,4 @@
-#include "apptemplate.h"
+#include "base.h"
 #include "multimediaapp.h"
 
 

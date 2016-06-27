@@ -5,7 +5,7 @@
  *      Author: Jason
  */
 
-#include "apptemplate.h"
+#include "base.h"
 #include "view.h"
 #include <stdexcept>
 

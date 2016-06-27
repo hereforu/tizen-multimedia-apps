@@ -5,7 +5,6 @@
  *      Author: Jason
  */
 #include "base.h"
-#include "apptemplate.h"
 #include "multimediaapp.h"
 #include "mainview.h"
 #include "srcSelectionView.h"

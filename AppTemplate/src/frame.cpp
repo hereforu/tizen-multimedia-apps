@@ -6,7 +6,6 @@
  */
 
 #include "base.h"
-#include "apptemplate.h"
 #include "frame.h"
 #include <stdexcept>
 
