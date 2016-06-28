@@ -6,7 +6,7 @@
  */
 
 #include "objectinroom.h"
-#include "apptemplate.h"
+#include "base.h"
 #include <string>
 
 ObjectinRoom::ObjectinRoom()

@@ -4,7 +4,7 @@
  *  Created on: Jun 24, 2016
  *      Author: Jason
  */
-#include "apptemplate.h"
+
 #include "base.h"
 #include "buttonpack.h"
 

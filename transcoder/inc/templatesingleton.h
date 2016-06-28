@@ -1,0 +1,49 @@
+/*
+ * templatesingleton.h
+ *
+ *  Created on: May 30, 2016
+ *      Author: Jason
+ */
+
+#ifndef TEMPLATESINGLETON_H_
+#define TEMPLATESINGLETON_H_
+
+template < typename T >
+class TemplateSingleton
+{
+protected:
+    TemplateSingleton()
+    {
+
+    }
+    virtual ~TemplateSingleton()
+    {
+
+    }
+
+public:
+    static T * GetInstance()
+    {
+        if (m_pInstance == NULL)
+            m_pInstance = new T;
+        return m_pInstance;
+    };
+
+    static void DestroyInstance()
+    {
+        if (m_pInstance)
+        {
+            delete m_pInstance;
+            m_pInstance = NULL;
+        }
+    };
+
+private:
+    static T * m_pInstance;
+};
+
+
+template <typename T> T * TemplateSingleton<T>::m_pInstance = 0;
+
+
+#endif /* TEMPLATESINGLETON_H_ */

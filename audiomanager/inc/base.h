@@ -8,7 +8,7 @@
 #ifndef BASE_H_
 #define BASE_H_
 
-#include "apptemplate.h" //auto generated header by IDE
+#include "audiomanager.h" //auto generated header by IDE
 #include <string>
 #include <sstream>
 

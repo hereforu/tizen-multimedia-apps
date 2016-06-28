@@ -6,7 +6,6 @@
  */
 
 #include "base.h"
-#include "apptemplate.h"
 #include "MainView.h"
 #include "multimediaapp.h"
 #include <stdexcept>
