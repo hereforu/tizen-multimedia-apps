@@ -9,7 +9,7 @@
 #define VIEW_H_
 
 #include <Elementary.h>
-#include "model.h"
+#include "transcodermodel.h"
 #include <string>
 
 class View
@@ -24,10 +24,12 @@ public:
 	bool IsCreated();
 
 protected:
+	TranscoderModel* getmodel();
 	virtual void decorateview(Evas_Object* box) = 0;
 	//do not delete elm objects which are attached to the box
 	virtual void destroyremains()=0;
 	virtual const char* getedcfilename() = 0;
+	Evas_Object* getconformant() {return m_conformant;}
 private:
 	Evas_Object* createbox(Evas_Object* naviframe, Evas_Object* conformant);
 protected:

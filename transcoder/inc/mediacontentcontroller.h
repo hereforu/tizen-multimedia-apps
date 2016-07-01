@@ -45,6 +45,13 @@ typedef struct _MediaContentItem
 	std::string path;
 	std::string name;
 	std::string thumbnail_path;
+	int width;
+	int height;
+	int duration;
+	int video_bitrate;
+	int audio_channel;
+	int audio_bitrate;
+	int audio_sample;
 }MediaContentItem;
 
 class MediaContent

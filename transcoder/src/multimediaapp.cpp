@@ -6,8 +6,10 @@
  */
 #include "base.h"
 #include "multimediaapp.h"
-#include "samplemodel.h"
-#include "firstview.h"
+#include "transcodermodel.h"
+#include "videolistview.h"
+#include "infoview.h"
+#include "optionview.h"
 #include <stdexcept>
 
 
@@ -45,12 +47,14 @@ void MultimediaApp::HandlerAppCreate()
 	//todo: add exception handling
 	try
 	{
-		m_model = (Model*)new SampleModel();
+		m_model = (Model*)new TranscoderModel();
 		m_model->Create();
 		//create frame
 		m_frame = new FrameWindow;
 		m_frame->CreateBaseFrame();
-		m_frame->AddView(AppTool::ObjectFactory<FirstView>::CreateInstance());
+		m_frame->AddView(AppTool::ObjectFactory<VideoListView>::CreateInstance());
+		m_frame->AddView(AppTool::ObjectFactory<InfoView>::CreateInstance());
+		m_frame->AddView(AppTool::ObjectFactory<OptionView>::CreateInstance());
 		m_frame->ActivateFirstView();
 		m_frame->Show();
 	}

@@ -16,4 +16,10 @@
 #define PACKAGE "org.example.transcoder"
 #endif
 
+
+
+//global data structure
+
+
+
 #endif /* __transcoder_H__ */

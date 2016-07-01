@@ -78,6 +78,7 @@ void MediaContent::GetItem(const MediaContentParam& param, std::vector<MediaCont
 	catch(const std::runtime_error& e)
 	{
 		destroyfilter(filter);
+		throw std::runtime_error(std::string("fail to GetItem") + e.what());
 	}
 }
 
@@ -136,6 +137,23 @@ bool MediaContent::media_cb(media_info_h media, void *user_data)
 		free(media_thumbnail_file_path);
 	}
 
+	video_meta_h video = NULL;
+	media_info_get_video(media, &video);
+	if(video)
+	{
+		video_meta_get_width(video, &Item.width);
+		video_meta_get_height(video, &Item.height);
+		video_meta_get_duration(video, &Item.duration);
+		video_meta_get_bit_rate(video, &Item.video_bitrate);
+	}
+	audio_meta_h audio = NULL;
+	media_info_get_audio(media, &audio);
+	if(audio)
+	{
+		audio_meta_get_channel(audio, &Item.audio_channel);
+		audio_meta_get_bit_rate(audio, &Item.audio_bitrate);
+		audio_meta_get_bitpersample(audio, &Item.audio_sample);
+	}
 	std::vector<MediaContentItem>* itemlist = (std::vector<MediaContentItem>*)user_data;
 	itemlist->push_back(Item);
 

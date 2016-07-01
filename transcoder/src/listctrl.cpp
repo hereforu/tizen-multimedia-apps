@@ -1,17 +1,16 @@
 /*
  * listctrl.cpp
  *
- *  Created on: Jun 23, 2016
+ *  Created on: Jun 28, 2016
  *      Author: Jason
  */
-#include "base.h"
+
+
+
 #include "listctrl.h"
 #include <stdexcept>
 
-
-
 ListCtrl::ListCtrl()
-	:m_parent(NULL), m_list(NULL), m_itc(NULL)
 {
 
 }
@@ -19,152 +18,56 @@ ListCtrl::~ListCtrl()
 {
 
 }
-void ListCtrl::Create(Evas_Object* parent)
+
+
+Evas_Object* ListCtrl::creategenctrl(Evas_Object* parent)
 {
-	m_parent = parent;
-	if((m_list = createlist(parent))==NULL)
+	Evas_Object* ctrl = elm_genlist_add(parent);
+	if(ctrl!=NULL)
 	{
-		throw std::runtime_error("fail to create list control");
+		evas_object_size_hint_weight_set(ctrl, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+		evas_object_size_hint_align_set(ctrl, EVAS_HINT_FILL, EVAS_HINT_FILL);
+		elm_genlist_homogeneous_set(ctrl, EINA_TRUE); // make all items the same height (no need to calculate)
+		elm_genlist_multi_select_set (ctrl, EINA_FALSE);
+		elm_genlist_select_mode_set(ctrl, ELM_OBJECT_SELECT_MODE_ALWAYS);
+		elm_genlist_mode_set(ctrl, ELM_LIST_SCROLL);
+		elm_box_pack_end(parent,ctrl);
+		evas_object_show(ctrl);
 	}
-
-	if((m_itc = createitc())==NULL)
-	{
-		throw std::runtime_error("fail to create an itc of list control");
-	}
+	return ctrl;
 }
-
-void ListCtrl::Destroy()
+Elm_Object_Item* ListCtrl::appenditem(Elm_Gen_Item_Class* itc, DataforGenCtrlCB* cbdata, Evas_Smart_Cb selectcb)
 {
-	cleancbdatastore();
-
-	elm_genlist_item_class_free(m_itc);
-	evas_object_del(m_list);
-}
-
-void ListCtrl::AppendItem(const ListItem& item)
-{
-	m_itemmap[item.media_id] = item;
-	DataforListCrlCB* data = new DataforListCrlCB((void*)this, item.media_id);
-	m_cbdatastore.push_back(data);
-	Elm_Object_Item* objectitem = elm_genlist_item_append(m_list, m_itc, (void*)data, NULL, ELM_GENLIST_ITEM_NONE, item_selected_cb, (void*)data);
+	Elm_Object_Item* objectitem = elm_genlist_item_append(getctrl(), itc, (void*)cbdata, NULL, ELM_GENLIST_ITEM_NONE, selectcb, (void*)cbdata);
 	if(objectitem ==NULL)
 	{
-		throw std::runtime_error(std::string("fail to append")+item.displayname);
+		dlog_print(DLOG_DEBUG, "GenCtrl", "fail to append an item to list ctrl");
+		throw std::runtime_error("fail to append");
 	}
+	return objectitem;
 }
 
-void ListCtrl::RemoveAllItems()
-{
-	elm_genlist_clear(m_list);
-	m_itemmap.clear();
-	cleancbdatastore();
-}
-
-const ListItem& ListCtrl::GetItem(int media_id)
-{
-	return m_itemmap[media_id];
-}
-
-const ListItem& ListCtrl::GetSelectedItem()
-{
-	return m_itemmap[0];
-}
-
-void ListCtrl::cleancbdatastore()
-{
-	for(int i = 0; i < m_cbdatastore.size(); ++i)
-	{
-		delete m_cbdatastore[i];
-	}
-	m_cbdatastore.clear();
-}
-
-Evas_Object* ListCtrl::createlist(Evas_Object* parent)
-{
-	Evas_Object* list = elm_genlist_add(parent);
-	if(list!=NULL)
-	{
-		evas_object_size_hint_weight_set(list, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-		evas_object_size_hint_align_set(list, EVAS_HINT_FILL, EVAS_HINT_FILL);
-		elm_genlist_homogeneous_set(list, EINA_TRUE); // make all items the same height (no need to calculate)
-		elm_genlist_select_mode_set(list, ELM_OBJECT_SELECT_MODE_NONE);
-		elm_genlist_mode_set(list, ELM_LIST_SCROLL);
-		elm_box_pack_end(m_parent, m_list);
-		evas_object_show(m_list);
-
-	}
-	return list;
-}
-
-Elm_Genlist_Item_Class* ListCtrl::createitc()
+Elm_Gen_Item_Class* ListCtrl::createitc(Elm_Gen_Item_Text_Get_Cb textcb, Elm_Gen_Item_Content_Get_Cb contentcb, Elm_Gen_Item_Del_Cb delcb)
 {
 	Elm_Genlist_Item_Class *itc = elm_genlist_item_class_new();
 	if(itc != NULL)
 	{
-		itc->item_style = "default";
-		itc->func.text_get = item_label_get_cb;;
-		itc->func.content_get = item_content_get_cb;
+		itc->item_style = "1text.1icon";
+		itc->func.text_get = textcb;
+		itc->func.content_get = contentcb;
 		itc->func.state_get = NULL;
-		itc->func.del = NULL;
+		itc->func.del = delcb;
 	}
-	return itc;
+
+	return (Elm_Gen_Item_Class*)itc;
+
 }
-char* ListCtrl::get_item_label(int media_id)
+void ListCtrl::freeitc(Elm_Gen_Item_Class* itc)
 {
-	if(m_itemmap.find(media_id) == m_itemmap.end())
-	{
-		dlog_print(DLOG_DEBUG, "ListCtrl", "invalid item: %d", media_id);
-		return NULL;
-	}
-	return strdup(m_itemmap[media_id].displayname.c_str()); //I believe that genlist would delete the memory after using it
+	elm_genlist_item_class_free((Elm_Gengrid_Item_Class*)itc);
 }
 
-Evas_Object* ListCtrl::get_item_content(int media_id, Evas_Object *obj)
+void ListCtrl::removeallitems()
 {
-	if(m_itemmap.find(media_id) == m_itemmap.end())
-	{
-		dlog_print(DLOG_DEBUG, "ListCtrl", "invalid item: %d", media_id);
-		return NULL;
-	}
-	Evas_Object* thumbnail = elm_image_add(obj);
-	elm_image_file_set(thumbnail, m_itemmap[media_id].thumbnail_path.c_str(), NULL);
-	if (evas_object_image_load_error_get(thumbnail) != EVAS_LOAD_ERROR_NONE)
-	{
-		dlog_print(DLOG_ERROR, "ListCtrl", "fail to load thumb: %s", m_itemmap[media_id].thumbnail_path.c_str());
-		return NULL;
-	}
-	dlog_print(DLOG_DEBUG, "ListCtrl", "load thumb: %s (%p)", m_itemmap[media_id].thumbnail_path.c_str(), thumbnail);
-
-
-	return thumbnail;
+	elm_genlist_clear(getctrl());
 }
-char* ListCtrl::item_label_get_cb(void *data, Evas_Object *obj, const char *part)
-{
-	if(strcmp(part, "elm.text") == 0)
-	{
-		DataforListCrlCB* ctrlandid = (DataforListCrlCB*)data;
-		ListCtrl* listcrl = (ListCtrl*)ctrlandid->listctrl;
-		return listcrl->get_item_label(ctrlandid->media_id);
-	}
-	return NULL;
-}
-
-Evas_Object* ListCtrl::item_content_get_cb(void *data, Evas_Object *obj, const char *part)
-{
-	if (strcmp(part, "elm.swallow.icon") == 0)
-	{
-		DataforListCrlCB* ctrlandid = (DataforListCrlCB*)data;
-		ListCtrl* listcrl = (ListCtrl*)ctrlandid->listctrl;
-		return listcrl->get_item_content(ctrlandid->media_id, obj);
-	}
-	return NULL;
-}
-
-
-void ListCtrl::item_selected_cb(void *data, Evas_Object *obj, void *event_info)
-{
-	DataforListCrlCB* ctrlandid = (DataforListCrlCB*)data;
-	ListCtrl* listcrl = (ListCtrl*)ctrlandid->listctrl;
-}
-
-

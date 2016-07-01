@@ -6,6 +6,7 @@
  */
 
 #include "base.h"
+#include "multimediaapp.h"
 #include "view.h"
 #include <stdexcept>
 
@@ -67,4 +68,10 @@ Evas_Object* View::createbox(Evas_Object* naviframe, Evas_Object* conformant)
 	evas_object_show(box);
 
 	return box;
+}
+TranscoderModel* View::getmodel()
+{
+	TranscoderModel* model = static_cast<TranscoderModel*>(MODEL);
+	AppTool::Assert(model != NULL);
+	return model;
 }
