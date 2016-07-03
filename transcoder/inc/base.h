@@ -36,6 +36,8 @@ namespace AppTool
 	}
 
 	void Assert(bool condition);
+
+	void Iferror_throw(int ret, const char* msg);
 }
 
 #endif /* BASE_H_ */

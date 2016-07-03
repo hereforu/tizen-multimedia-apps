@@ -74,6 +74,7 @@ void muxer_only()
 	ret = mediamuxer_prepare(muxer);
 	dlog_print(DLOG_DEBUG, "TRANS_TEST", "mediamuxer_prepare:%d", ret);
 }
+
 #if 0
 typedef struct _TrackInfo
 {

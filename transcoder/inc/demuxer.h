@@ -25,7 +25,10 @@ public:
 
 	unsigned int GetNumTracks();
 	media_format_h GetMediaFormat(int track_index);
-	void SetQueue(int track_index, SharedQueue* queue);
+	bool GetVideoDecInfo(CodecInfo& vdec);
+	bool GetAudioDecInfo(CodecInfo& adec);
+	bool SetVideoQueue(SharedQueue* queue);
+	bool SetAudioQueue(SharedQueue* queue);
 
 
 private:
@@ -37,6 +40,8 @@ private:
 	static void demuxer_eos_cb(int track_num, void *user_data);
 	static void demuxer_error_cb (mediademuxer_error_e error, void *user_data);
 private:
+	int m_videotrackindex;
+	int m_audiotrackindex;
 	mediademuxer_h m_demuxer;
 	std::vector<TrackInfo> m_tracks;
 	bool m_eosflag;

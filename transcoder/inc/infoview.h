@@ -15,6 +15,7 @@
 #include "buttonpack.h"
 #include "videoplayer.h"
 #include "popupprogress.h"
+#include "transcodingengine.h"
 
 
 class InfoView : public View
@@ -51,6 +52,7 @@ private:
 	ListCtrl m_list;
 	ButtonPack m_btnpack;
 	PopupProgress m_pbpopup;
+	TranscodingEngine m_transcodingengine;
 
 #ifdef SUPPORT_PLAYER
 	Evas_Object* m_display;

@@ -11,7 +11,7 @@
 
 
 Demuxer::Demuxer()
-:m_demuxer(NULL)
+:m_videotrackindex(-1), m_audiotrackindex(-1),m_demuxer(NULL)
 {
 
 }
@@ -67,13 +67,68 @@ media_format_h Demuxer::GetMediaFormat(int track_index)
 {
 	return m_tracks[track_index].fmt;
 }
-void Demuxer::SetQueue(int track_index, SharedQueue* queue)
+bool Demuxer::GetVideoDecInfo(CodecInfo& vdec)
 {
-	m_tracks[track_index].queue = queue;
+	if(m_videotrackindex == -1)
+		return false;
+	media_format_mimetype_e mimetype;
+	int width, height, avg_bps, max_bps;
+	int ret = media_format_get_video_info(m_tracks[m_videotrackindex].fmt, &mimetype, &width, &height, &avg_bps, &max_bps);
+	if(ret == MEDIA_FORMAT_ERROR_NONE)
+	{
+		vdec.vdec.codecid = (mediacodec_codec_type_e) (mimetype & 0x0000FFFF);
+		vdec.vdec.width = width;
+		vdec.vdec.height = height;
+		return true;
+	}
+	else
+	{
+		dlog_print(DLOG_ERROR, "Demuxer", "get video track info (%d)", ret);
+	}
+
+	return false;
+}
+bool Demuxer::GetAudioDecInfo(CodecInfo& adec)
+{
+	if(m_audiotrackindex == -1)
+		return false;
+	media_format_mimetype_e mimetype;
+	int channel, samplerate, bit, avg_bps;
+	int ret = media_format_get_audio_info(m_tracks[m_audiotrackindex].fmt, &mimetype, &channel, &samplerate, &bit, &avg_bps);
+	if(ret == MEDIA_FORMAT_ERROR_NONE)
+	{
+		adec.adec.codecid = (mediacodec_codec_type_e)(mimetype & 0x0000FFFF);
+		adec.adec.samplerate = samplerate;
+		adec.adec.channel = channel;
+		adec.adec.bit = bit;
+		return true;
+	}
+	else
+	{
+		dlog_print(DLOG_ERROR, "Demuxer", "get audio track info (%d)", ret);
+	}
+	return false;
+}
+
+bool Demuxer::SetVideoQueue(SharedQueue* queue)
+{
+	if(m_videotrackindex == -1)
+		return false;
+	m_tracks[m_videotrackindex].queue = queue;
+	return true;
+}
+
+bool Demuxer::SetAudioQueue(SharedQueue* queue)
+{
+	if(m_audiotrackindex == -1)
+		return false;
+	m_tracks[m_audiotrackindex].queue = queue;
+	return true;
 }
 
 void Demuxer::demuxing(int track_index)
 {
+	dlog_print(DLOG_DEBUG, "Demuxer", "start of read of %d track", track_index);
 	m_eosflag = false;
 	AppTool::Assert(m_tracks[track_index].queue);
 	iferror_throw(mediademuxer_select_track(m_demuxer, track_index), "fail to mediademuxer_select_track: ");
@@ -84,10 +139,11 @@ void Demuxer::demuxing(int track_index)
 		media_packet_h packet = NULL;
 		iferror_throw(mediademuxer_read_sample(m_demuxer, track_index, &packet), "fail to mediademuxer_read_sample: ");
 		while(m_tracks[track_index].queue->IsFull())
-			usleep(500);
+			sleep(1);
 		m_tracks[track_index].queue->Push(packet);
 		++numsample;
 	}
+	m_tracks[track_index].queue->PushEoS();
 	dlog_print(DLOG_DEBUG, "Demuxer", "end of read %d samples", numsample);
 	iferror_throw(mediademuxer_stop(m_demuxer), "fail to mediademuxer_stop: ");
 	iferror_throw(mediademuxer_unselect_track(m_demuxer, track_index), "fail to mediademuxer_unselect_track: ");
@@ -101,7 +157,20 @@ void Demuxer::extract_tracks()
 	{
 		TrackInfo track;
 		iferror_throw(mediademuxer_get_track_info(m_demuxer, i, &track.fmt), "fail to mediademuxer_get_track_info: ");
-		m_tracks.push_back(track);
+		media_format_type_e formattype;
+		int ret = media_format_get_type(track.fmt, &formattype);
+		if(ret == MEDIA_FORMAT_ERROR_NONE)
+		{
+			if(formattype == MEDIA_FORMAT_VIDEO)
+				m_videotrackindex = i;
+			else if(formattype == MEDIA_FORMAT_AUDIO)
+				m_audiotrackindex = i;
+			m_tracks.push_back(track);
+		}
+		else
+		{
+			dlog_print(DLOG_ERROR, "Demuxer", "fail to media_format_get_type (%d)", ret);
+		}
 	}
 }
 void Demuxer::iferror_throw(int ret, const char* msg)
@@ -112,6 +181,7 @@ void Demuxer::iferror_throw(int ret, const char* msg)
 
 void Demuxer::handle_eos(int track_num)
 {
+	dlog_print(DLOG_DEBUG, "Demuxer", "eos for %d track", track_num);
 	m_eosflag = true;
 }
 void Demuxer::handle_error(mediademuxer_error_e error)

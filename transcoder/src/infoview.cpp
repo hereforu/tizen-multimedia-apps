@@ -10,6 +10,7 @@
 #include "multimediaapp.h"
 #include <stdexcept>
 #include "mediacontentcontroller.h"
+#include "transcodingengine.h"
 
 //#define SUPPORT_PLAYER
 #ifdef __cplusplus
@@ -146,9 +147,27 @@ void InfoView::change_optionview(int id)
 
 void InfoView::starttranscoding()
 {
-	m_pbpopup.Popup();
-	//start_transcoding(getmodel()->GetSelectedContent().path.c_str());
-	//muxer_only();
+	//m_pbpopup.Popup();
+
+
+	CodecInfo venc, aenc;
+	venc.venc.codecid = MEDIACODEC_MPEG4;
+	venc.venc.width = 320;
+	venc.venc.height = 240;
+	venc.venc.fps = 30;
+	venc.venc.target_bits = 256000;
+
+	aenc.aenc.codecid = MEDIACODEC_MP3;
+	aenc.aenc.channel = 2;
+	aenc.aenc.samplerate = 44100;
+	aenc.aenc.bit = 16;
+	aenc.aenc.bitrate = 128000;
+
+	if(m_transcodingengine.IsCreated())
+		m_transcodingengine.Destroy();
+
+	m_transcodingengine.Create(getmodel()->GetSelectedContent().path.c_str(), venc, aenc);
+	m_transcodingengine.Start();
 
 }
 
@@ -172,5 +191,6 @@ void InfoView::cancel_cb(void *data)
 {
 	//stop trandcoding
 }
+
 
 
