@@ -56,7 +56,7 @@ void PopupProgress::Hide()
 
 void PopupProgress::SetValue(double value)
 {
-
+	elm_progressbar_value_set(m_pb, value);
 }
 
 Evas_Object* PopupProgress::createpopup(Evas_Object* parent)
@@ -81,7 +81,7 @@ Evas_Object* PopupProgress::createpb(Evas_Object* parent)
 //	evas_object_size_hint_align_set(pb, EVAS_HINT_FILL, EVAS_HINT_FILL);
 	elm_object_style_set(pb, "default");
 	elm_object_text_set(pb, "Transcoding...");
-	elm_progressbar_value_set(pb, 0.8);
+	elm_progressbar_value_set(pb, 0.0);
 	return pb;
 }
 Evas_Object* PopupProgress::createcancelbtn(Evas_Object* parent)

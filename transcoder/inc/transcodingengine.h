@@ -41,14 +41,18 @@ public:
 
 	void Start();
 	void Stop();
-	int GetProgress();
+	double GetProgress();
 
 private:
+	void capture_current_packet_state_after_demuxing();
 	const char* generatedstfilename(const char* srcfilename);
 	void createdemuxer(const char* srcfilename);
 	void createcodec(CodecInfo& venc, CodecInfo& aenc);
 
 private:
+	unsigned int m_total_audio_packet_after_demuxing;
+	unsigned int m_total_video_packet_after_demuxing;
+
 	Demuxer m_demuxer;
 	VideoDecoder m_vdecoder;
 	VideoEncoder m_vencoder;

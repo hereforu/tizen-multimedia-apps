@@ -18,14 +18,15 @@ public:
 	void Create(const CodecInfo& codecinfo, SharedQueue* inputqueue, SharedQueue* outputqueue);
 	void Destroy();
 
+
+
 	void Start();
 	void Stop();
 
 	bool IsEoS();
-	media_format_h GetMediaFormat();
 
 protected:
-
+	virtual const char* getname() = 0;
 	mediacodec_h getmediacodec();
 	void pushpacket_to_outputqueue(const media_packet_h& packet);
 	void pusheos_to_outputqueue();
@@ -33,6 +34,7 @@ protected:
 	bool is_next_packet_eos_from_inputqueue();
 	virtual void create(mediacodec_h mediacodec, const CodecInfo& codecinfo) = 0;
 	virtual void destroy() = 0;
+
 
 private:
 	void iferror_throw(int ret, const char* msg);
@@ -46,8 +48,8 @@ private:
 	static void mc_error_cb(mediacodec_error_e error, void *user_data);
 	static void mc_eos_cb(void *user_data);
 
-protected:
-	media_format_h m_format;
+
+
 private:
 	mediacodec_h m_mediacodec;
 	SharedQueue* m_inputqueue;

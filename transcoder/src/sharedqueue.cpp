@@ -92,7 +92,7 @@ bool SharedQueue::IsFull()
 {
 	return (m_queue.size()==m_max_size)?true:false;
 }
-int SharedQueue::Size()
+unsigned int SharedQueue::Size()
 {
 	return m_queue.size();
 }

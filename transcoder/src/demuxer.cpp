@@ -186,7 +186,7 @@ void Demuxer::handle_eos(int track_num)
 }
 void Demuxer::handle_error(mediademuxer_error_e error)
 {
-
+	dlog_print(DLOG_DEBUG, "Demuxer", "mediademuxer_error_e: %d", error);
 }
 
 void Demuxer::demuxer_eos_cb(int track_num, void *user_data)

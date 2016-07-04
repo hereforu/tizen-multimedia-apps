@@ -16,14 +16,15 @@ class AudioEncoder : public CodecBase
 public:
 	AudioEncoder();
 	~AudioEncoder();
+	media_format_h GetMediaFormat();
 
 protected:
 	void create(mediacodec_h mediacodec, const CodecInfo& codecinfo);
 	void destroy();
-
+	const char* getname();
 
 private:
-
+	media_format_h m_format;
 
 
 

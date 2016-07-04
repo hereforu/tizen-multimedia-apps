@@ -29,9 +29,17 @@ void VideoEncoder::create(mediacodec_h mediacodec, const CodecInfo& codecinfo)
 	media_format_set_video_avg_bps(m_format, codecinfo.venc.target_bits);
 	media_format_set_video_max_bps(m_format, codecinfo.venc.target_bits);
 }
+media_format_h VideoEncoder::GetMediaFormat()
+{
+	return m_format;
+}
 void VideoEncoder::destroy()
 {
-
+	media_format_unref(m_format);
+}
+const char* VideoEncoder::getname()
+{
+	return "video encoder";
 }
 
 

@@ -28,3 +28,7 @@ void AudioDecoder::destroy()
 {
 
 }
+const char* AudioDecoder::getname()
+{
+	return "audio decoder";
+}

@@ -34,7 +34,16 @@ void AudioEncoder::create(mediacodec_h mediacodec, const CodecInfo& codecinfo)
 }
 void AudioEncoder::destroy()
 {
-
+	media_format_unref(m_format);
 }
+media_format_h AudioEncoder::GetMediaFormat()
+{
+	return m_format;
+}
+const char* AudioEncoder::getname()
+{
+	return "audio encoder";
+}
+
 
 

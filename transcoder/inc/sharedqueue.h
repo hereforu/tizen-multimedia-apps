@@ -30,7 +30,7 @@ public:
 
 	bool IsEmpty();
 	bool IsFull();
-	int Size();
+	unsigned int Size();
 
 
 private:

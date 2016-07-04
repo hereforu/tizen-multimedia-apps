@@ -19,12 +19,7 @@ public:
 protected:
 	void create(mediacodec_h mediacodec, const CodecInfo& codecinfo);
 	void destroy();
-
-
-private:
-
-
-
+	const char* getname();
 
 };
 

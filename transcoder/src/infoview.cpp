@@ -22,6 +22,7 @@ void muxer_only();
 #endif
 
 InfoView::InfoView()
+:m_timer(NULL), m_transcodingthread(NULL)
 {
 
 }
@@ -51,6 +52,8 @@ void InfoView::decorateview(Evas_Object* box)
 		m_btnpack.Create(box);
 		add_defaultbtns(m_btnpack);
 		m_pbpopup.Create(box, cancel_cb, (void*)this);
+		m_timer = ecore_timer_add(1.0, InfoView::timer_cb, (void*)this);
+		ecore_timer_freeze(m_timer);
 	}
 	catch(const std::runtime_error& e)
 	{
@@ -60,6 +63,11 @@ void InfoView::decorateview(Evas_Object* box)
 
 void InfoView::destroyremains()
 {
+	ecore_timer_del(m_timer);
+	if(m_transcodingengine.IsCreated())
+	{
+		m_transcodingengine.Destroy();
+	}
 	m_list.Destroy();
 	m_btnpack.Destroy();
 	m_pbpopup.Destroy();
@@ -144,12 +152,26 @@ void InfoView::change_optionview(int id)
 		MOVE_NEXTVIEW;
 	}
 }
-
-void InfoView::starttranscoding()
+void InfoView::move_prev()
 {
-	//m_pbpopup.Popup();
+	if(m_transcodingthread == NULL)
+		MOVE_PREVVIEW;
+}
+void InfoView::ontime()
+{
+	double progress = m_transcodingengine.GetProgress();
+	dlog_print(DLOG_DEBUG, "InfoView", "ontime is called and current position is %f", (float)progress);
+	m_pbpopup.SetValue(progress);
+}
 
+void InfoView::update_progress()
+{
 
+}
+
+void InfoView::long_func_transcoding(Ecore_Thread *thread)
+{
+	dlog_print(DLOG_DEBUG, "InfoView", "long_func_transcoding has been called");
 	CodecInfo venc, aenc;
 	venc.venc.codecid = MEDIACODEC_MPEG4;
 	venc.venc.width = 320;
@@ -164,16 +186,33 @@ void InfoView::starttranscoding()
 	aenc.aenc.bitrate = 128000;
 
 	if(m_transcodingengine.IsCreated())
+	{
 		m_transcodingengine.Destroy();
-
+	}
 	m_transcodingengine.Create(getmodel()->GetSelectedContent().path.c_str(), venc, aenc);
+	ecore_timer_thaw(m_timer);
 	m_transcodingengine.Start();
+	ecore_timer_freeze(m_timer);
+	m_pbpopup.Hide();
 
+
+}
+void InfoView::end_func_transcoding(Ecore_Thread *thread)
+{
+	dlog_print(DLOG_DEBUG, "InfoView", "end_func_transcoding has been called");
+	ecore_timer_freeze(m_timer);
+	m_transcodingthread = NULL;
+}
+void InfoView::cancel_func_transcoding(Ecore_Thread *thread)
+{
+	dlog_print(DLOG_DEBUG, "InfoView", "cancel_func_transcoding has been called");
+	ecore_timer_freeze(m_timer);
 }
 
 void InfoView::clicked_prev_cb(void *data, Evas_Object *obj, void *event_info)
 {
-	MOVE_PREVVIEW;
+	InfoView* view = (InfoView*)data;
+	view->move_prev();
 }
 
 void InfoView::change_optionview_cb(void *data, int id)
@@ -183,7 +222,6 @@ void InfoView::change_optionview_cb(void *data, int id)
 }
 void InfoView::clicked_start_cb(void *data, Evas_Object *obj, void *event_info)
 {
-
 	InfoView* view = (InfoView*)data;
 	view->starttranscoding();
 }
@@ -191,6 +229,47 @@ void InfoView::cancel_cb(void *data)
 {
 	//stop trandcoding
 }
+Eina_Bool InfoView::timer_cb(void *data)
+{
+	InfoView* view = (InfoView*)data;
+	view->ontime();
+	return EINA_TRUE;
+}
+
+void InfoView::update_progress_cb(void* data)
+{
+	InfoView* view = (InfoView*)data;
+	view->update_progress();
+}
+void InfoView::long_func_transcoding_cb(void *data, Ecore_Thread *thread)
+{
+	InfoView* view = (InfoView*)data;
+	view->long_func_transcoding(thread);
+}
+void InfoView::end_func_transcoding_cb(void *data, Ecore_Thread *thread)
+{
+	InfoView* view = (InfoView*)data;
+	view->end_func_transcoding(thread);
+}
+void InfoView::cancel_func_transcoding_cb(void *data, Ecore_Thread *thread)
+{
+	InfoView* view = (InfoView*)data;
+	view->cancel_func_transcoding(thread);
+}
+
+void InfoView::starttranscoding()
+{
+	if(m_transcodingthread)
+	{
+		dlog_print(DLOG_ERROR, "InfoView", "transcoding thread is alive!!");
+		return;
+	}
+	m_pbpopup.Popup();
+	m_transcodingthread = ecore_thread_run(InfoView::long_func_transcoding_cb, InfoView::end_func_transcoding_cb
+			, InfoView::cancel_func_transcoding_cb, (void*)this);
+	dlog_print(DLOG_DEBUG, "InfoView", "ecore_thread_run [%p]", m_transcodingthread);
+}
+
 
 
 

@@ -11,7 +11,7 @@
 
 
 CodecBase::CodecBase()
-:m_mediacodec(NULL), m_inputqueue(NULL), m_outputqueue(NULL), m_eos(false), m_watingtime(1), m_processingcount(0)
+:m_mediacodec(NULL), m_inputqueue(NULL), m_outputqueue(NULL), m_eos(false), m_watingtime(2), m_processingcount(0)
 {
 
 }
@@ -36,7 +36,7 @@ void CodecBase::Create(const CodecInfo& codecinfo, SharedQueue* inputqueue, Shar
 	iferror_throw(mediacodec_set_input_buffer_used_cb(m_mediacodec, mc_input_buffer_used_cb, (void*)this), "fail to mediacodec_set_input_buffer_used_cb");
 	iferror_throw(mediacodec_set_output_buffer_available_cb(m_mediacodec, mc_output_buffer_available_cb, (void*)this), "fail to mediacodec_set_output_buffer_available_cb");
 
-	iferror_throw(mediacodec_prepare(m_mediacodec), "fail to mediacodec_create");
+	iferror_throw(mediacodec_prepare(m_mediacodec), "fail to mediacodec_create [%s]");
 
 	m_inputqueue = inputqueue;
 	m_outputqueue = outputqueue;
@@ -45,11 +45,14 @@ void CodecBase::Create(const CodecInfo& codecinfo, SharedQueue* inputqueue, Shar
 void CodecBase::Destroy()
 {
 	destroy();
-	iferror_throw(mediacodec_unprepare(m_mediacodec), "fail to mediacodec_unprepare");
-	iferror_throw(mediacodec_destroy(m_mediacodec), "fail to mediacodec_destroy");
+	iferror_throw(mediacodec_flush_buffers(m_mediacodec), "fail to mediacodec_flush_buffers [%s]");
+	iferror_throw(mediacodec_unprepare(m_mediacodec), "fail to mediacodec_unprepare [%s]");
+	iferror_throw(mediacodec_destroy(m_mediacodec), "fail to mediacodec_destroy [%s]");
 	m_mediacodec = NULL;
 	m_inputqueue = NULL;
 	m_outputqueue = NULL;
+	m_processingcount = 0;
+	m_eos = false;
 };
 
 void CodecBase::Start()
@@ -65,23 +68,23 @@ void CodecBase::Start()
 			if(is_next_packet_eos_from_inputqueue())
 			{
 				ret = media_packet_set_flags(in_buf, MEDIA_PACKET_END_OF_STREAM);
-				dlog_print(DLOG_DEBUG, "CodecBase", "media_packet_set_flags as EOS%d", ret);
+				dlog_print(DLOG_DEBUG, "CodecBase", "media_packet_set_flags as EOS%d [%s]", ret, getname());
 				inputeos = true;
 			}
 			ret = mediacodec_process_input(m_mediacodec, in_buf, 0);
 			if(ret != MEDIACODEC_ERROR_NONE)
 			{
-				dlog_print(DLOG_ERROR, "CodecBase", "fail to mediacodec_process_input %d", ret);
+				dlog_print(DLOG_ERROR, "CodecBase", "fail to mediacodec_process_input %d [%s]", ret, getname());
 			}
 			else
 			{
-				dlog_print(DLOG_DEBUG, "CodecBase", "input %d th packet [%p]", i++, this);
+				dlog_print(DLOG_DEBUG, "CodecBase", "input %d th packet [%s]", i++, getname());
 			}
 		}
 		else
 		{
-			dlog_print(DLOG_DEBUG, "CodecBase", "input queue is empty [%p]", this);
-			sleep(1);
+			dlog_print(DLOG_DEBUG, "CodecBase", "input queue is empty [%s]", getname());
+			sleep(m_watingtime);
 		}
 	}
 }
@@ -94,10 +97,9 @@ bool CodecBase::IsEoS()
 {
 	return m_eos;
 }
-media_format_h CodecBase::GetMediaFormat()
-{
-	return m_format;
-}
+
+
+
 mediacodec_h CodecBase::getmediacodec()
 {
 	return m_mediacodec;
@@ -130,7 +132,7 @@ bool CodecBase::is_next_packet_eos_from_inputqueue()
 	media_packet_h packet = m_inputqueue->JustSee();
 	if(packet == END_OF_STREAM)
 	{
-		dlog_print(DLOG_DEBUG, "CodecBase", "EOS from inputqueue");
+		dlog_print(DLOG_DEBUG, "CodecBase [%s]", "EOS from inputqueue", getname());
 		packet = m_inputqueue->Get();
 		return true;
 	}
@@ -147,15 +149,15 @@ void CodecBase::handle_output_buffer_available(media_packet_h pkt)
 	int ret = mediacodec_get_output(m_mediacodec, &output_buf, 0);
 	if(ret != MEDIACODEC_ERROR_NONE)
 	{
-		dlog_print(DLOG_ERROR, "CodecBase", "fail to mediacodec_get_output %d", ret);
+		dlog_print(DLOG_ERROR, "CodecBase", "fail to mediacodec_get_output %d [%s]", ret, getname());
 	}
-	dlog_print(DLOG_DEBUG, "CodecBase", "mediacodec[%p]_get_output %d", this, m_processingcount++);
+	dlog_print(DLOG_DEBUG, "CodecBase", "mediacodec[%s]_get_output %d", getname(), m_processingcount++);
 	pushpacket_to_outputqueue(output_buf);
 }
 
 void CodecBase::handle_error(mediacodec_error_e error)
 {
-	dlog_print(DLOG_ERROR, "CodecBase", "media codec error %d", (int)error);
+	dlog_print(DLOG_ERROR, "CodecBase", "media codec error %d [%s]", (int)error, getname());
 }
 void CodecBase::handle_eos()
 {
@@ -187,5 +189,5 @@ void CodecBase::mc_eos_cb(void *user_data)
 void CodecBase::iferror_throw(int ret, const char* msg)
 {
 	if(ret != MEDIACODEC_ERROR_NONE)
-		throw std::runtime_error(std::string(msg)+AppTool::ToString(ret));
+		throw std::runtime_error(std::string(msg)+AppTool::ToString(ret)+std::string(getname()));
 }

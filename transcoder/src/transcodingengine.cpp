@@ -13,7 +13,7 @@
 #include <stdexcept>
 
 TranscodingEngine::TranscodingEngine()
-:m_bcreated(false)
+:m_total_audio_packet_after_demuxing(0), m_total_video_packet_after_demuxing(0), m_bcreated(false)
 {
 
 }
@@ -32,49 +32,71 @@ void TranscodingEngine::Create(const char* srcfilename, CodecInfo& venc, CodecIn
 	{
 		createdemuxer(srcfilename);
 		createcodec(venc, aenc);
+		m_bcreated = true;
 	}
 	catch(const std::runtime_error& e)
 	{
+		dlog_print(DLOG_ERROR, "TranscodingEngine", e.what());
 		throw e;
 	}
-	m_bcreated = true;
+
 
 }
 void TranscodingEngine::Destroy()
 {
-	m_demuxer.Destroy();
-	m_vdecoder.Destroy();
-	m_vencoder.Destroy();
-	m_adecoder.Destroy();
-	m_aencoder.Destroy();
-	m_queue[AFTER_DEMUXING_QUEUE][VIDEO_TRACK].ClearAll();
-	m_queue[AFTER_DEMUXING_QUEUE][AUDIO_TRACK].ClearAll();
-	m_queue[AFTER_DECODING_QUEUE][VIDEO_TRACK].ClearAll();
-	m_queue[AFTER_DECODING_QUEUE][AUDIO_TRACK].ClearAll();
-	m_queue[AFTER_ENCODING_QUEUE][VIDEO_TRACK].ClearAll();
-	m_queue[AFTER_ENCODING_QUEUE][AUDIO_TRACK].ClearAll();
-	m_bcreated = false;
+	try
+	{
+		m_demuxer.Destroy();
+		m_vdecoder.Destroy();
+		m_vencoder.Destroy();
+	//	m_adecoder.Destroy();
+	//	m_aencoder.Destroy();
+		m_queue[AFTER_DEMUXING_QUEUE][VIDEO_TRACK].ClearAll();
+		m_queue[AFTER_DEMUXING_QUEUE][AUDIO_TRACK].ClearAll();
+		m_queue[AFTER_DECODING_QUEUE][VIDEO_TRACK].ClearAll();
+		m_queue[AFTER_DECODING_QUEUE][AUDIO_TRACK].ClearAll();
+		m_queue[AFTER_ENCODING_QUEUE][VIDEO_TRACK].ClearAll();
+		m_queue[AFTER_ENCODING_QUEUE][AUDIO_TRACK].ClearAll();
+		m_bcreated = false;
+	}
+	catch(const std::runtime_error& e)
+	{
+		dlog_print(DLOG_ERROR, "TranscodingEngine", e.what());
+		throw e;
+	}
 }
+
 bool TranscodingEngine::IsCreated()
 {
 	return m_bcreated;
 }
+
 void TranscodingEngine::Start()
 {
 	m_demuxer.Start();
+	capture_current_packet_state_after_demuxing();
 	m_vdecoder.Start();
 //	m_adecoder.Start();
 	m_vencoder.Start();
 //	m_aencoder.Start();
 
+	while(m_vencoder.IsEoS() == false) //end condition
+	{
+		sleep(1);
+	}
 }
 void TranscodingEngine::Stop()
 {
 
 }
-int TranscodingEngine::GetProgress()
+double TranscodingEngine::GetProgress()
 {
-	return 0;
+	double progress = 0.0;
+	if(m_total_video_packet_after_demuxing != 0.0)
+		progress = (double)m_queue[AFTER_ENCODING_QUEUE][VIDEO_TRACK].Size()/(double)m_total_video_packet_after_demuxing;
+	if(m_vencoder.IsEoS())
+		progress = 1.0;
+	return progress;
 }
 void TranscodingEngine::createdemuxer(const char* srcfilename)
 {
@@ -111,6 +133,12 @@ void TranscodingEngine::createcodec(CodecInfo& venc, CodecInfo& aenc)
 const char* TranscodingEngine::generatedstfilename(const char* srcfilename)
 {
 	return "/home/owner/result.mp4";
+}
+
+void TranscodingEngine::capture_current_packet_state_after_demuxing()
+{
+	m_total_video_packet_after_demuxing = m_queue[AFTER_DEMUXING_QUEUE][VIDEO_TRACK].Size();
+	m_total_audio_packet_after_demuxing = m_queue[AFTER_DEMUXING_QUEUE][AUDIO_TRACK].Size();
 }
 
 
