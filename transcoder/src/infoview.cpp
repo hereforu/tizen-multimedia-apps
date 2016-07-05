@@ -169,21 +169,37 @@ void InfoView::update_progress()
 
 }
 
+void InfoView::getresolutionbycode(unsigned int code, int& width, int& height)
+{
+	if(code == ORIGINAL_FEATURE)
+	{
+		width = getmodel()->GetSelectedContent().width;
+		height = getmodel()->GetSelectedContent().height;
+	}
+	else
+	{
+		int multiplier = (code & 0xFFFF)*10;
+		width = (code & RATIO_16_9)?16*multiplier:4*multiplier;
+		height = (code & RATIO_16_9)?9*multiplier:3*multiplier;
+	}
+}
+
 void InfoView::long_func_transcoding(Ecore_Thread *thread)
 {
 	dlog_print(DLOG_DEBUG, "InfoView", "long_func_transcoding has been called");
 	CodecInfo venc, aenc;
-	venc.venc.codecid = MEDIACODEC_MPEG4;
-	venc.venc.width = 320;
-	venc.venc.height = 240;
+	venc.venc.codecid = (mediacodec_codec_type_e)getmodel()->GetSelectedOption(VIDEO_CODEC_OPTION);
+	//venc.venc.codecid = MEDIACODEC_MPEG4;
+	getresolutionbycode(getmodel()->GetSelectedOption(RESOLUTION_OPTION), venc.venc.width, venc.venc.height);
 	venc.venc.fps = 30;
-	venc.venc.target_bits = 256000;
+	venc.venc.target_bits =(int)((double)venc.venc.width*(double)venc.venc.height*(double)venc.venc.fps*0.20);
 
-	aenc.aenc.codecid = MEDIACODEC_MP3;
-	aenc.aenc.channel = 2;
-	aenc.aenc.samplerate = 44100;
-	aenc.aenc.bit = 16;
-	aenc.aenc.bitrate = 128000;
+
+	aenc.aenc.codecid = (mediacodec_codec_type_e)getmodel()->GetSelectedOption(AUDIO_CODEC_OPTION);
+	aenc.aenc.channel = ORIGINAL_FEATURE;
+	aenc.aenc.samplerate = ORIGINAL_FEATURE;
+	aenc.aenc.bit = ORIGINAL_FEATURE;
+	aenc.aenc.bitrate = ORIGINAL_FEATURE;
 
 	if(m_transcodingengine.IsCreated())
 	{

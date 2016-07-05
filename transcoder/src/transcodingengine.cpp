@@ -24,6 +24,7 @@ TranscodingEngine::~TranscodingEngine()
 
 void TranscodingEngine::Create(const char* srcfilename, CodecInfo& venc, CodecInfo& aenc)
 {
+	print_errorcode_for_debug();
 	m_dstfilename = generatedstfilename(srcfilename);
 	m_vencinfo = venc;
 	m_aencinfo = aenc;
@@ -39,8 +40,6 @@ void TranscodingEngine::Create(const char* srcfilename, CodecInfo& venc, CodecIn
 		dlog_print(DLOG_ERROR, "TranscodingEngine", e.what());
 		throw e;
 	}
-
-
 }
 void TranscodingEngine::Destroy()
 {
@@ -98,6 +97,49 @@ double TranscodingEngine::GetProgress()
 		progress = 1.0;
 	return progress;
 }
+void TranscodingEngine::print_errorcode_for_debug()
+{
+	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIAMUXER_ERROR_OUT_OF_MEMORY:%d", MEDIAMUXER_ERROR_OUT_OF_MEMORY);
+	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIAMUXER_ERROR_INVALID_PARAMETER:%d", MEDIAMUXER_ERROR_INVALID_PARAMETER);
+	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIAMUXER_ERROR_INVALID_OPERATION:%d", MEDIAMUXER_ERROR_INVALID_OPERATION);
+	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIAMUXER_ERROR_NOT_SUPPORTED:%d", MEDIAMUXER_ERROR_NOT_SUPPORTED);
+	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIAMUXER_ERROR_PERMISSION_DENIED:%d", MEDIAMUXER_ERROR_PERMISSION_DENIED);
+	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIAMUXER_ERROR_INVALID_STATE:%d", MEDIAMUXER_ERROR_INVALID_STATE);
+	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIAMUXER_ERROR_INVALID_PATH:%d", MEDIAMUXER_ERROR_INVALID_PATH);
+	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIAMUXER_ERROR_RESOURCE_LIMIT:%d", MEDIAMUXER_ERROR_RESOURCE_LIMIT);
+
+	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIADEMUXER_ERROR_OUT_OF_MEMORY:%d", MEDIADEMUXER_ERROR_OUT_OF_MEMORY);
+	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIADEMUXER_ERROR_INVALID_PARAMETER:%d", MEDIADEMUXER_ERROR_INVALID_PARAMETER);
+	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIADEMUXER_ERROR_INVALID_OPERATION:%d", MEDIADEMUXER_ERROR_INVALID_OPERATION);
+	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIADEMUXER_ERROR_NOT_SUPPORTED:%d", MEDIADEMUXER_ERROR_NOT_SUPPORTED);
+	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIADEMUXER_ERROR_PERMISSION_DENIED:%d", MEDIADEMUXER_ERROR_PERMISSION_DENIED);
+	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIADEMUXER_ERROR_INVALID_STATE:%d", MEDIADEMUXER_ERROR_INVALID_STATE);
+	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIADEMUXER_ERROR_INVALID_PATH:%d", MEDIADEMUXER_ERROR_INVALID_PATH);
+	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIADEMUXER_ERROR_RESOURCE_LIMIT:%d", MEDIADEMUXER_ERROR_RESOURCE_LIMIT);
+	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIADEMUXER_ERROR_SEEK_FAILED:%d", MEDIADEMUXER_ERROR_SEEK_FAILED);
+	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIADEMUXER_ERROR_DRM_NOT_PERMITTED:%d", MEDIADEMUXER_ERROR_DRM_NOT_PERMITTED);
+
+	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIACODEC_ERROR_OUT_OF_MEMORY:%d", MEDIACODEC_ERROR_OUT_OF_MEMORY);
+	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIACODEC_ERROR_INVALID_PARAMETER:%d", MEDIACODEC_ERROR_INVALID_PARAMETER);
+	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIACODEC_ERROR_INVALID_OPERATION:%d", MEDIACODEC_ERROR_INVALID_OPERATION);
+	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIACODEC_ERROR_NOT_SUPPORTED_ON_DEVICE:%d", MEDIACODEC_ERROR_NOT_SUPPORTED_ON_DEVICE);
+	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIACODEC_ERROR_PERMISSION_DENIED:%d", MEDIACODEC_ERROR_PERMISSION_DENIED);
+	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIACODEC_ERROR_INVALID_STATE:%d", MEDIACODEC_ERROR_INVALID_STATE);
+	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIACODEC_ERROR_INVALID_INBUFFER:%d", MEDIACODEC_ERROR_INVALID_INBUFFER);
+	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIACODEC_ERROR_INVALID_OUTBUFFER:%d", MEDIACODEC_ERROR_INVALID_OUTBUFFER);
+	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIACODEC_ERROR_INTERNAL:%d", MEDIACODEC_ERROR_INTERNAL);
+	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIACODEC_ERROR_NOT_INITIALIZED:%d", MEDIACODEC_ERROR_NOT_INITIALIZED);
+	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIACODEC_ERROR_INVALID_STREAM:%d", MEDIACODEC_ERROR_INVALID_STREAM);
+	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIACODEC_ERROR_CODEC_NOT_FOUND:%d", MEDIACODEC_ERROR_CODEC_NOT_FOUND);
+	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIACODEC_ERROR_DECODE:%d", MEDIACODEC_ERROR_DECODE);
+	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIACODEC_ERROR_NO_FREE_SPACE:%d", MEDIACODEC_ERROR_NO_FREE_SPACE);
+	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIACODEC_ERROR_STREAM_NOT_FOUND:%d", MEDIACODEC_ERROR_STREAM_NOT_FOUND);
+	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIACODEC_ERROR_NOT_SUPPORTED_FORMAT:%d", MEDIACODEC_ERROR_NOT_SUPPORTED_FORMAT);
+	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIACODEC_ERROR_BUFFER_NOT_AVAILABLE:%d", MEDIACODEC_ERROR_BUFFER_NOT_AVAILABLE);
+	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIACODEC_ERROR_OVERFLOW_INBUFFER:%d", MEDIACODEC_ERROR_OVERFLOW_INBUFFER);
+	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIACODEC_ERROR_RESOURCE_OVERLOADED:%d", MEDIACODEC_ERROR_RESOURCE_OVERLOADED);
+}
+
 void TranscodingEngine::createdemuxer(const char* srcfilename)
 {
 	try
@@ -119,10 +161,30 @@ void TranscodingEngine::createcodec(CodecInfo& venc, CodecInfo& aenc)
 		CodecInfo vdec, adec;
 		m_demuxer.GetVideoDecInfo(vdec);
 		m_demuxer.GetAudioDecInfo(adec);
+
+		if(venc.venc.codecid == 0)//ORIGINAL_FEATURE
+			venc.venc.codecid = vdec.vdec.codecid;
+		if(aenc.aenc.codecid == 0)//ORIGINAL_FEATURE
+			aenc.aenc.codecid = adec.adec.codecid;
+		aenc.aenc.bit = adec.adec.bit;
+		aenc.aenc.channel = adec.adec.channel;
+		aenc.aenc.samplerate = adec.adec.samplerate;
+		aenc.aenc.bitrate = aenc.aenc.bit*aenc.aenc.channel*aenc.aenc.samplerate;
+		dlog_print(DLOG_DEBUG, "TranscodingEngine", "video decode: codecid:%d, width:%d, height:%d", vdec.vdec.codecid, vdec.vdec.width, vdec.vdec.height);
+		dlog_print(DLOG_DEBUG, "TranscodingEngine", "video encode: codecid:%d, width:%d, height:%d, fps:%d, bitrate:%d"
+				, venc.venc.codecid, venc.venc.width, venc.venc.height, venc.venc.fps, venc.venc.target_bits);
+		dlog_print(DLOG_DEBUG, "TranscodingEngine", "audio decode: codecid:%d, bit:%d, channel:%d, samplerate:%d"
+						, adec.adec.codecid, adec.adec.bit, adec.adec.channel, adec.adec.samplerate);
+		dlog_print(DLOG_DEBUG, "TranscodingEngine", "audio encode: codecid:%d, bit:%d, channel:%d, samplerate:%d, bitrate:%d"
+								, aenc.aenc.codecid, aenc.aenc.bit, aenc.aenc.channel, aenc.aenc.samplerate, aenc.aenc.bitrate);
+
 		m_vdecoder.Create(vdec, &m_queue[AFTER_DEMUXING_QUEUE][VIDEO_TRACK], &m_queue[AFTER_DECODING_QUEUE][VIDEO_TRACK]);
 	//	m_adecoder.Create(adec, &m_queue[AFTER_DEMUXING_QUEUE][AUDIO_TRACK], &m_queue[AFTER_DECODING_QUEUE][AUDIO_TRACK]);
 		m_vencoder.Create(venc, &m_queue[AFTER_DECODING_QUEUE][VIDEO_TRACK], &m_queue[AFTER_ENCODING_QUEUE][VIDEO_TRACK]);
 	//	m_aencoder.Create(aenc, &m_queue[AFTER_DECODING_QUEUE][AUDIO_TRACK], &m_queue[AFTER_ENCODING_QUEUE][AUDIO_TRACK]);
+
+
+
 	}
 	catch(const std::runtime_error& e)
 	{

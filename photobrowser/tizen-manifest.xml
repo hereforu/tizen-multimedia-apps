@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns="http://tizen.org/ns/packages" api-version="3.0" package="org.example.photobrowser" version="1.0.0">
+	<profile name="mobile" />
+	<ui-application appid="org.example.photobrowser" exec="photobrowser" type="capp" multiple="false" taskmanage="true" nodisplay="false" launch_mode="single">
+		<icon>photobrowser.png</icon>
+		<label>photobrowser</label>
+	</ui-application>
+</manifest>

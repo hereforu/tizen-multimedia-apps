@@ -44,6 +44,7 @@ public:
 	double GetProgress();
 
 private:
+	void print_errorcode_for_debug();
 	void capture_current_packet_state_after_demuxing();
 	const char* generatedstfilename(const char* srcfilename);
 	void createdemuxer(const char* srcfilename);

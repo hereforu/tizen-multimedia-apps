@@ -13,14 +13,14 @@
 
 typedef enum
 {
-	RATIO_16_9 = 0x1000,
-	RATIO_4_3 = 0x2000,
+	RATIO_16_9 = 0x10000,
+	RATIO_4_3 = 0x20000,
 
-	MULTI_020 = 0x0001,
-	MULTI_060 = 0x0002,
-	MULTI_080 = 0x0004,
-	MULTI_160 = 0x0008,
-	MULTI_320 = 0x0010
+	MULTI_020 = 0x0002,
+	MULTI_060 = 0x0006,
+	MULTI_080 = 0x0008,
+	MULTI_160 = 0x0010,
+	MULTI_320 = 0x0020
 }ResolutionType;
 
 typedef struct _TranscodingOption

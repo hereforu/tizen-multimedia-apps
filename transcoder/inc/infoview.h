@@ -34,6 +34,7 @@ protected:
 
 
 private:
+	void getresolutionbycode(unsigned int code, int& width, int& height);
 	void getoriginalvideoinfo(const char* path, VideoInfo& info);
 	Evas_Object* createdisplay(Evas_Object* box);
 	std::string getresiconpath(const char* iconname);
