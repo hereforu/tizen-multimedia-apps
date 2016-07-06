@@ -1,8 +1,12 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <manifest xmlns="http://tizen.org/ns/packages" api-version="3.0" package="org.example.photobrowser" version="1.0.0">
-	<profile name="mobile" />
-	<ui-application appid="org.example.photobrowser" exec="photobrowser" type="capp" multiple="false" taskmanage="true" nodisplay="false" launch_mode="single">
-		<icon>photobrowser.png</icon>
-		<label>photobrowser</label>
-	</ui-application>
+    <profile name="mobile"/>
+    <ui-application appid="org.example.photobrowser" exec="photobrowser" launch_mode="single" multiple="false" nodisplay="false" taskmanage="true" type="capp">
+        <label>photobrowser</label>
+        <icon>photobrowser.png</icon>
+    </ui-application>
+    <privileges>
+        <privilege>http://tizen.org/privilege/mediastorage</privilege>
+        <privilege>http://tizen.org/privilege/content.write</privilege>
+    </privileges>
 </manifest>

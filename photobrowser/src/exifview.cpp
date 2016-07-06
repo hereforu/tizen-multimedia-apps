@@ -30,7 +30,7 @@ void ExifView::decorateview(Evas_Object* box)
 {
 	try
 	{
-		m_list.Create(box, change_optionview_cb, (void*)this);
+		m_list.Create(box, change_optionview_cb, (void*)this, ListCtrl::SMALL_ITEM_SIZE);
 		setinfo_tolist(m_list, getmodel()->GetExif_of_SelectedContent());
 		m_btnpack.Create(box);
 		add_defaultbtns(m_btnpack);

@@ -36,14 +36,13 @@ private:
 	void add_defaultbtns(ButtonPack& btnpack);
 	void buildthelist(ListCtrl& list);
 	Evas_Object* createpopup(Evas_Object* box);
-	void showpopup(const char* message, int timeout);
+	void showpopup(const char* message, int timeout=3);
 	static void popuptimeout_cb(void *data, Evas_Object *obj, void *event_info);
 	static void clicked_exit_cb(void *data, Evas_Object *obj, void *event_info);
 	static void select_image_cb(void *data, int id);
 
 
 private:
-
 	ListCtrl m_list;
 	Evas_Object* m_popup;
 	ButtonPack m_btnpack;

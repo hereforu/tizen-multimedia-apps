@@ -19,11 +19,12 @@ GenCtrl::~GenCtrl()
 {
 
 }
-void GenCtrl::Create(Evas_Object* parent, GenCtrl_Select_Cb selectcb_toview, void* data)
+void GenCtrl::Create(Evas_Object* parent, GenCtrl_Select_Cb selectcb_toview, void* data, int iconsize)
 {
 	m_parent = parent;
 	m_cbtoview = selectcb_toview;
 	m_cbtoview_data = data;
+	m_iconsize = iconsize;
 
 	if((m_ctrl = creategenctrl(parent))==NULL)
 	{
@@ -131,8 +132,8 @@ Evas_Object* GenCtrl::get_item_content(int id, Evas_Object *obj)
 
 	Evas_Object* thumbnail = elm_image_add(obj);
 	elm_image_file_set(thumbnail, m_itemmap[id].thumbnail_path.c_str(), NULL);
-	evas_object_size_hint_min_set(thumbnail, 100, 100);
-	evas_object_size_hint_max_set(thumbnail, 100, 100);
+	evas_object_size_hint_min_set(thumbnail, m_iconsize, m_iconsize);
+	evas_object_size_hint_max_set(thumbnail, m_iconsize, m_iconsize);
 
 	if (evas_object_image_load_error_get(thumbnail) != EVAS_LOAD_ERROR_NONE)
 	{

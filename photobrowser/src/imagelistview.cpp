@@ -46,7 +46,6 @@ void ImageListView::decorateview(Evas_Object* box)
 		m_popup = createpopup(box);
 		m_btnpack.Create(box);
 		add_defaultbtns(m_btnpack);
-
 	}
 	catch(const std::runtime_error& e)
 	{
@@ -106,7 +105,7 @@ void ImageListView::gotonextview(int id)
 		MOVE_NEXTVIEW;
 	else
 	{
-		; //TODO: no exif popup
+		showpopup("EXIF가 없는 이미지 파일입니다!");
 	}
 }
 void ImageListView::popuptimeout_cb(void *data, Evas_Object *obj, void *event_info)
@@ -139,7 +138,7 @@ Evas_Object* ImageListView::createpopup(Evas_Object* box)
 	return popup;
 }
 
-void ImageListView::showpopup(const char* message, int timeout = 3)
+void ImageListView::showpopup(const char* message, int timeout)
 {
 	elm_popup_timeout_set(m_popup, (double)timeout);
 	elm_object_part_text_set(m_popup, "default", message);

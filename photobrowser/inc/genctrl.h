@@ -47,11 +47,16 @@ typedef void (*GenCtrl_Select_Cb)(void *data, int index);
 class GenCtrl
 {
 public:
+	enum
+	{
+		BIG_ITEM_SIZE = 100,
+		SMALL_ITEM_SIZE = 50
+	};
 
 	GenCtrl();
 	virtual ~GenCtrl();
 
-	void Create(Evas_Object* parent, GenCtrl_Select_Cb selectcb_toview = NULL, void* data = NULL);
+	void Create(Evas_Object* parent, GenCtrl_Select_Cb selectcb_toview = NULL, void* data = NULL, int iconsize = BIG_ITEM_SIZE);
 	void Destroy();
 
 	void AppendItem(GenCtrlItem& item);
@@ -84,6 +89,7 @@ private:
 	static void item_selected_cb(void *data, Evas_Object *obj, void *event_info);
 
 private:
+	int m_iconsize;
 	int m_selectedid;
 	GenCtrl_Select_Cb m_cbtoview;
 	void* m_cbtoview_data;

@@ -118,7 +118,7 @@ Evas_Object* VideoListView::createpopup(Evas_Object* box)
 	return popup;
 }
 
-void VideoListView::showpopup(const char* message, int timeout = 3)
+void VideoListView::showpopup(const char* message, int timeout)
 {
 	elm_popup_timeout_set(m_popup, (double)timeout);
 	elm_object_part_text_set(m_popup, "default", message);
