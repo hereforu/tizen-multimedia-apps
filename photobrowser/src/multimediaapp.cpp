@@ -9,6 +9,7 @@
 #include "photobrowsermodel.h"
 #include "imagelistview.h"
 #include "exifview.h"
+#include "imageview.h"
 #include <stdexcept>
 
 
@@ -53,6 +54,7 @@ void MultimediaApp::HandlerAppCreate()
 		m_frame->CreateBaseFrame();
 		m_frame->AddView(AppTool::ObjectFactory<ImageListView>::CreateInstance());
 		m_frame->AddView(AppTool::ObjectFactory<ExifView>::CreateInstance());
+		m_frame->AddView(AppTool::ObjectFactory<ImageView>::CreateInstance());
 		m_frame->ActivateFirstView();
 		m_frame->Show();
 	}

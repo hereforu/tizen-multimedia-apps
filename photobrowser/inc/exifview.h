@@ -36,10 +36,12 @@ private:
 	void setinfo_tolist(ListCtrl& list, EXIF& exif);
 	void change_optionview(int id);
 	void move_prev();
+	void play();
 
 
 
 	static void clicked_prev_cb(void *data, Evas_Object *obj, void *event_info);
+	static void clicked_play_cb(void *data, Evas_Object *obj, void *event_info);
 
 	static void change_optionview_cb(void *data, int id);
 

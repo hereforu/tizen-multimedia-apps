@@ -27,6 +27,7 @@ public:
 	void SetSelectedContentIndex(int index);
 	bool SetSelectedContentIndexifExif(int index);
 	const MediaContentItem& GetSelectedContent();
+	int GetSelectedIndex();
 	EXIF& GetExif_of_SelectedContent();
 
 protected:

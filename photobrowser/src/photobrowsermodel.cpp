@@ -45,6 +45,11 @@ bool PhotoBrowserModel::SetSelectedContentIndexifExif(int index)
 	return false;
 }
 
+int PhotoBrowserModel::GetSelectedIndex()
+{
+	return m_selectedcontentindex;
+}
+
 const MediaContentItem& PhotoBrowserModel::GetSelectedContent()
 {
 	AppTool::Assert(m_selectedcontentindex != no_selected_content);

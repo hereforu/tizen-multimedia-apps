@@ -52,6 +52,7 @@ void ExifView::add_defaultbtns(ButtonPack& btnpack)
 {
 	std::vector<BTPackParam> functionbtn_params;
 	functionbtn_params.push_back(BTPackParam(NULL, "images/exit.png", ExifView::clicked_prev_cb, (void*)this));
+	functionbtn_params.push_back(BTPackParam(NULL, "images/play.png", ExifView::clicked_play_cb, (void*)this));
 	btnpack.AddPacksHorizontally(functionbtn_params);
 }
 
@@ -92,12 +93,21 @@ void ExifView::move_prev()
 {
 	MOVE_PREVVIEW;
 }
-
+void ExifView::play()
+{
+	MOVE_NEXTVIEW;
+}
 
 void ExifView::clicked_prev_cb(void *data, Evas_Object *obj, void *event_info)
 {
 	ExifView* view = (ExifView*)data;
 	view->move_prev();
+}
+void ExifView::clicked_play_cb(void *data, Evas_Object *obj, void *event_info)
+{
+	ExifView* view = (ExifView*)data;
+	view->play();
+
 }
 
 void ExifView::change_optionview_cb(void *data, int id)
