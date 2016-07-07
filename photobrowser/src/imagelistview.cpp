@@ -9,6 +9,7 @@
 #include "ImageListView.h"
 #include "multimediaapp.h"
 #include <stdexcept>
+#include "exifcreator.h"
 
 
 
@@ -102,11 +103,30 @@ void ImageListView::buildthelist(ListCtrl& list)
 void ImageListView::gotonextview(int id)
 {
 	if(getmodel()->SetSelectedContentIndexifExif(id))
+	{
 		MOVE_NEXTVIEW;
+	}
 	else
 	{
-		showpopup("EXIF가 없는 이미지 파일입니다!");
+		getmodel()->SetSelectedContentIndex(id);
+		showpopup("EXIF가 없는 이미지 파일입니다! EXIF를 만들어 이미지 파일에 삽입하시겠습니까?");
 	}
+}
+
+void ImageListView::addexif_yes()
+{
+	MediaContentItem content = getmodel()->GetSelectedContent();
+	EXIFCreator ec;
+	ec.Create(content.path.c_str());
+	ec.AddResolution(content.width, content.height);
+	ec.WriteExif();
+	ec.Destroy();
+	evas_object_hide(m_popup);
+}
+
+void ImageListView::addexif_no()
+{
+	evas_object_hide(m_popup);
 }
 void ImageListView::popuptimeout_cb(void *data, Evas_Object *obj, void *event_info)
 {
@@ -124,6 +144,16 @@ void ImageListView::select_image_cb(void *data, int id)
 	ImageListView* view = (ImageListView*)data;
 	view->gotonextview(id);
 }
+void ImageListView::clicked_addexif_yes_cb(void *data, Evas_Object *obj, void *event_info)
+{
+	ImageListView* view = (ImageListView*)data;
+	view->addexif_yes();
+}
+void ImageListView::clicked_addexif_no_cb(void *data, Evas_Object *obj, void *event_info)
+{
+	ImageListView* view = (ImageListView*)data;
+	view->addexif_no();
+}
 
 Evas_Object* ImageListView::createpopup(Evas_Object* box)
 {
@@ -133,14 +163,35 @@ Evas_Object* ImageListView::createpopup(Evas_Object* box)
 		throw std::runtime_error("fail to create popup");  // 이 throw를 받아주는 데는 어디?
 	}
 	elm_popup_orient_set(popup, ELM_POPUP_ORIENT_CENTER);
-	elm_object_style_set(popup, "toast");
-	evas_object_smart_callback_add(popup, "timeout", ImageListView::popuptimeout_cb, NULL);
+	elm_object_style_set(popup, "default");
+//	evas_object_smart_callback_add(popup, "timeout", ImageListView::popuptimeout_cb, NULL);
+	Evas_Object* yesbtn = createpopupbtns(popup, "images/yes.png", ImageListView::clicked_addexif_yes_cb);
+	Evas_Object* nobtn = createpopupbtns(popup, "images/no.png", ImageListView::clicked_addexif_no_cb);
+	elm_object_part_content_set(popup, "button1", yesbtn);
+	elm_object_part_content_set(popup, "button2", nobtn);
 	return popup;
+}
+
+Evas_Object* ImageListView::createpopupbtns(Evas_Object* popup, const char* iconpath, Evas_Smart_Cb func_cb)
+{
+	Evas_Object* btn = elm_button_add(popup);
+	if(btn==NULL)
+	{
+		throw std::runtime_error("fail to create popup buttons");
+	}
+	std::string resource_path = app_get_resource_path();
+	resource_path += iconpath;
+	Evas_Object *ic;
+	ic = elm_icon_add(btn);
+	elm_image_file_set(ic, resource_path.c_str(), NULL);
+	elm_object_part_content_set(btn, "icon", ic);
+	elm_object_style_set(btn,"circle");
+	evas_object_smart_callback_add(btn, "clicked", func_cb, (void*)this);
+	return btn;
 }
 
 void ImageListView::showpopup(const char* message, int timeout)
 {
-	elm_popup_timeout_set(m_popup, (double)timeout);
 	elm_object_part_text_set(m_popup, "default", message);
 	evas_object_show(m_popup);
 }

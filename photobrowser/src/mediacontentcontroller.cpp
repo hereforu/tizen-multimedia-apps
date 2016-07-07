@@ -137,6 +137,13 @@ bool MediaContent::media_cb(media_info_h media, void *user_data)
 		free(media_thumbnail_file_path);
 	}
 
+	image_meta_h image = NULL;
+	media_info_get_image(media, &image);
+	if(image)
+	{
+		image_meta_get_width(image, &Item.width);
+		image_meta_get_height(image, &Item.height);
+	}
 	video_meta_h video = NULL;
 	media_info_get_video(media, &video);
 	if(video)

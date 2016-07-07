@@ -24,7 +24,7 @@ bool EXIFCreator::Create(const char* jpegfilename)
 	if((m_data = create_exifdata())==NULL)
 		return false;
 
-	setbasicdata(jpegfilename);
+	m_jpegfilename = jpegfilename;
 	return true;
 }
 
@@ -41,6 +41,17 @@ void EXIFCreator::Destroy()
 	exif_data_unref(m_data);
 }
 
+void EXIFCreator::AddResolution(int width, int height)
+{
+	ExifEntry* width_entry = get_or_create_tag_ifnone(m_data, EXIF_IFD_0, EXIF_TAG_IMAGE_WIDTH);
+	setdata(width_entry->data, width_entry->format, width);
+	ExifEntry* length_entry = get_or_create_tag_ifnone(m_data, EXIF_IFD_0, EXIF_TAG_IMAGE_LENGTH);
+	setdata(length_entry->data, length_entry->format, height);
+}
+void EXIFCreator::WriteExif()
+{
+	write_exif_to_file(m_jpegfilename.c_str(), m_jpegfilename.c_str());
+}
 
 void EXIFCreator::getexifblock(unsigned char** exif_data, unsigned int* length)
 {
@@ -122,46 +133,40 @@ void EXIFCreator::writejpegfile_with_exif(const char* dstjpegfilename, unsigned 
 	}
 }
 
-bool EXIFCreator::write_exif_to_file(const char* jpegfilename)
+bool EXIFCreator::write_exif_to_file(const char* srcjpegfilename, const char* destjpegfilename)
 {
 	unsigned char* exif_data = NULL;
 	unsigned int exif_data_len = 0;
 	unsigned char* image_data = NULL;
 	unsigned int image_data_len = 0;
 
+	bool ret = true;
 	try
 	{
 		getexifblock(&exif_data, &exif_data_len);
-		readjpegfile(jpegfilename, &image_data, &image_data_len);
-		writejpegfile_with_exif(jpegfilename, exif_data, exif_data_len, image_data, image_data_len);
+		readjpegfile(srcjpegfilename, &image_data, &image_data_len);
+		writejpegfile_with_exif(destjpegfilename, exif_data, exif_data_len, image_data, image_data_len);
 	}
 	catch(const std::runtime_error& e)
 	{
-		if(exif_data)
-		{
-			free(exif_data);
-			exif_data = NULL;
-		}
-		if(image_data)
-		{
-			free(image_data);
-			image_data = NULL;
-		}
 
 		dlog_print(DLOG_ERROR, "EXIF", e.what());
-		return false;
+		ret =  false;
 	}
-	return true;
+	if(exif_data)
+	{
+		free(exif_data);
+		exif_data = NULL;
+	}
+	if(image_data)
+	{
+		free(image_data);
+		image_data = NULL;
+	}
+
+	return ret;
 }
-//EXIF_TAG_MAKE
-void EXIFCreator::setbasicdata(const char* jpegfilename)
-{
-	//TODO:
-	ExifEntry* width_entry = get_or_create_tag_ifnone(m_data, EXIF_IFD_EXIF, EXIF_TAG_IMAGE_WIDTH);
-	setdata(width_entry->data, width_entry->format, 640);
-	ExifEntry* length_entry = get_or_create_tag_ifnone(m_data, EXIF_IFD_EXIF, EXIF_TAG_IMAGE_LENGTH);
-	setdata(length_entry->data, length_entry->format, 480);
-}
+
 
 ExifData* EXIFCreator::create_exifdata()
 {

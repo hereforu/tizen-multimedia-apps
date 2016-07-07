@@ -31,6 +31,9 @@ protected:
 
 
 private:
+	Evas_Object* createpopupbtns(Evas_Object* popup, const char* iconpath, Evas_Smart_Cb func_cb);
+	void addexif_yes();
+	void addexif_no();
 	void PrintExif(const char* imagefilename);
 	void gotonextview(int id);
 	void add_defaultbtns(ButtonPack& btnpack);
@@ -40,6 +43,9 @@ private:
 	static void popuptimeout_cb(void *data, Evas_Object *obj, void *event_info);
 	static void clicked_exit_cb(void *data, Evas_Object *obj, void *event_info);
 	static void select_image_cb(void *data, int id);
+
+	static void clicked_addexif_yes_cb(void *data, Evas_Object *obj, void *event_info);
+	static void clicked_addexif_no_cb(void *data, Evas_Object *obj, void *event_info);
 
 
 private:
