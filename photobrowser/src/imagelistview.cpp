@@ -119,6 +119,7 @@ void ImageListView::addexif_yes()
 	EXIFCreator ec;
 	ec.Create(content.path.c_str());
 	ec.AddResolution(content.width, content.height);
+	ec.AddComment("created by sogang university");
 	ec.WriteExif();
 	ec.Destroy();
 	evas_object_hide(m_popup);

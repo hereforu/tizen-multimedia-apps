@@ -48,6 +48,16 @@ void EXIFCreator::AddResolution(int width, int height)
 	ExifEntry* length_entry = get_or_create_tag_ifnone(m_data, EXIF_IFD_0, EXIF_TAG_IMAGE_LENGTH);
 	setdata(length_entry->data, length_entry->format, height);
 }
+void EXIFCreator::AddComment(const char* text)
+{
+	int len = strlen(text)-1;
+	char* mem = new char[8+len];
+	memcpy(mem, "ASCII\0\0\0", 8);
+	memcpy(mem+8, text, len);
+	ExifEntry* comment_entry = get_or_create_tag_with_memory_ifnone(m_data, EXIF_IFD_EXIF, EXIF_TAG_USER_COMMENT, 8+len);
+	setdata(comment_entry->data, mem, 8+len);
+	delete[] mem;
+}
 void EXIFCreator::WriteExif()
 {
 	write_exif_to_file(m_jpegfilename.c_str(), m_jpegfilename.c_str());
@@ -184,18 +194,41 @@ ExifData* EXIFCreator::create_exifdata()
 	return data;
 }
 
+ExifEntry* EXIFCreator::get_or_create_tag_with_memory_ifnone(ExifData* data, ExifIfd ifd, ExifTag tag, unsigned buflength)
+{
+	ExifEntry *entry = exif_content_get_entry(data->ifd[ifd], tag);
+	if(entry == NULL) //create one
+	{
+		ExifMem *mem = exif_mem_new_default();
+		entry = exif_entry_new_mem(mem);
+		entry->data = (unsigned char*)exif_mem_alloc(mem, buflength);
+		entry->size = (size_t)buflength;
+		entry->tag = tag;
+		entry->components = (size_t)buflength;
+		entry->format = EXIF_FORMAT_UNDEFINED;
+		exif_content_add_entry (data->ifd[ifd], entry);
+		exif_mem_unref(mem);
+		exif_entry_unref(entry);
+	}
+	return entry;
+}
+
 ExifEntry* EXIFCreator::get_or_create_tag_ifnone(ExifData* data, ExifIfd ifd, ExifTag tag)
 {
 	ExifEntry *entry = exif_content_get_entry(data->ifd[ifd], tag);
 	if(entry == NULL) //create one
 	{
-		 entry = exif_entry_new ();
-		 entry->tag = tag;
-		 exif_content_add_entry (data->ifd[ifd], entry);
-		 exif_entry_initialize (entry, tag);
-		 exif_entry_unref(entry);
+		entry = exif_entry_new ();
+		entry->tag = tag;
+		exif_content_add_entry (data->ifd[ifd], entry);
+		exif_entry_initialize (entry, tag);
+		exif_entry_unref(entry);
 	}
 	return entry;
+}
+void EXIFCreator::setdata(unsigned char* dest, const char* text, int length)
+{
+	memcpy(dest, (unsigned char*)text, length);
 }
 
 void EXIFCreator::setdata(unsigned char* dest, ExifFormat format, int value)
