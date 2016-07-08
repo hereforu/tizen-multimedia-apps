@@ -72,7 +72,7 @@ public:
 protected:
 	Evas_Object* getctrl();
 	virtual Evas_Object* creategenctrl(Evas_Object* parent) = 0;
-	virtual Elm_Object_Item* appenditem(Elm_Gen_Item_Class* itc, DataforGenCtrlCB* cbdata, Evas_Smart_Cb selectcb) = 0;
+	virtual Elm_Object_Item* appenditem(GenCtrlItem& item, Elm_Gen_Item_Class* itc, DataforGenCtrlCB* cbdata, Evas_Smart_Cb selectcb) = 0;
 	virtual Elm_Gen_Item_Class* createitc(Elm_Gen_Item_Text_Get_Cb textcb, Elm_Gen_Item_Content_Get_Cb contentcb, Elm_Gen_Item_Del_Cb delcb) = 0;
 	virtual void freeitc(Elm_Gen_Item_Class* itc) = 0;
 	virtual void removeallitems() = 0;

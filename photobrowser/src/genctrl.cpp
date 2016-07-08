@@ -49,7 +49,7 @@ void GenCtrl::AppendItem(GenCtrlItem& item)
 {
 	Elm_Gen_Item_Class* itc = createitc(item_label_get_cb, item_content_get_cb, NULL);
 	DataforGenCtrlCB* data = generatecbdata(item);
-	item.it = appenditem(itc, data, item_selected_cb);
+	item.it = appenditem(item, itc, data, item_selected_cb);
 	m_itemmap[item.id] = item;
 	freeitc(itc);
 }
@@ -60,7 +60,7 @@ void GenCtrl::AppendItems(std::vector<GenCtrlItem>& items)
 	for(unsigned int i = 0; i < items.size(); ++i)
 	{
 		DataforGenCtrlCB* data = generatecbdata(items[i]);
-		items[i].it = appenditem(itc, data, item_selected_cb);
+		items[i].it = appenditem(items[i], itc, data, item_selected_cb);
 		m_itemmap[items[i].id] = items[i];
 	}
 	freeitc(itc);

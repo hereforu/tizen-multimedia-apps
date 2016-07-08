@@ -50,7 +50,7 @@ void EXIFCreator::AddResolution(int width, int height)
 }
 void EXIFCreator::AddComment(const char* text)
 {
-	int len = strlen(text)-1;
+	int len = strlen(text);
 	char* mem = new char[8+len];
 	memcpy(mem, "ASCII\0\0\0", 8);
 	memcpy(mem+8, text, len);

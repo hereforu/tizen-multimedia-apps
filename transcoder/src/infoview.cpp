@@ -275,6 +275,7 @@ void InfoView::cancel_func_transcoding_cb(void *data, Ecore_Thread *thread)
 
 void InfoView::starttranscoding()
 {
+#if 0 //TODO::
 	if(m_transcodingthread)
 	{
 		dlog_print(DLOG_ERROR, "InfoView", "transcoding thread is alive!!");
@@ -284,6 +285,7 @@ void InfoView::starttranscoding()
 	m_transcodingthread = ecore_thread_run(InfoView::long_func_transcoding_cb, InfoView::end_func_transcoding_cb
 			, InfoView::cancel_func_transcoding_cb, (void*)this);
 	dlog_print(DLOG_DEBUG, "InfoView", "ecore_thread_run [%p]", m_transcodingthread);
+#endif
 }
 
 
