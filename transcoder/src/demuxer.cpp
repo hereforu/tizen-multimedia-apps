@@ -11,7 +11,7 @@
 
 
 Demuxer::Demuxer()
-:m_videotrackindex(-1), m_audiotrackindex(-1),m_demuxer(NULL)
+:m_packet(NULL), m_videotrackindex(-1), m_audiotrackindex(-1),m_demuxer(NULL), m_eosflag(false)
 {
 
 }
@@ -30,34 +30,82 @@ void Demuxer::Create(const char* srcfilename)
 	iferror_throw(mediademuxer_prepare(m_demuxer), "fail to mediademuxer_prepare: ");
 	extract_tracks();
 }
+
 void Demuxer::Destroy()
 {
+	dlog_print(DLOG_DEBUG, "Demuxer", "Demuxer destroy #1");
 	for(int i= 0; i < m_tracks.size(); ++i)
 	{
 		media_format_unref(m_tracks[i].fmt);
 	}
+	dlog_print(DLOG_DEBUG, "Demuxer", "Demuxer destroy #2");
 	m_tracks.clear();
+	dlog_print(DLOG_DEBUG, "Demuxer", "Demuxer destroy #3");
 	mediademuxer_unset_eos_cb(m_demuxer);
 	mediademuxer_unset_error_cb(m_demuxer);
 	mediademuxer_unprepare(m_demuxer);
 	mediademuxer_destroy(m_demuxer);
 	m_demuxer = NULL;
+	dlog_print(DLOG_DEBUG, "Demuxer", "Demuxer destroy #4");
 
 }
-void Demuxer::Start()
+
+
+
+void Demuxer::Prepare(int track_index)
 {
-	try
+	iferror_throw(mediademuxer_select_track(m_demuxer, track_index), "fail to mediademuxer_select_track: ");
+	iferror_throw(mediademuxer_start(m_demuxer), "fail to mediademuxer_start: ");
+	m_eosflag = false;
+	if(!read_sample(track_index, &m_packet))
 	{
-		for(int i= 0; i < m_tracks.size(); ++i)
-		{
-			demuxing(i);
-		}
-	}
-	catch(const std::runtime_error& e)
-	{
-		dlog_print(DLOG_ERROR, "Demuxer", e.what());
+		std::runtime_error("error to read a sample in the prepare stage");
 	}
 }
+
+bool Demuxer::ReadSeample(int track_index, media_packet_h* packet)
+{
+	if(m_packet != NULL)
+	{
+		*packet = m_packet;
+		m_packet = NULL;
+		read_sample(track_index, &m_packet); //there's no next sample, i.e. EoS
+		if(m_packet == NULL)
+		{
+			int ret = media_packet_set_flags(*packet, MEDIA_PACKET_END_OF_STREAM);
+			m_eosflag = true;
+			dlog_print(DLOG_DEBUG, "Demuxer", "media_packet_set_flags as EOS %d", ret);
+		}
+		return true;
+	}
+	return false;
+}
+
+bool Demuxer::read_sample(int track_index, media_packet_h* packet)
+{
+	if(m_tracks[track_index].eos == true)
+		return false;
+	int ret = mediademuxer_read_sample(m_demuxer, track_index, packet);
+	if(ret != MEDIADEMUXER_ERROR_NONE)
+	{
+		dlog_print(DLOG_ERROR, "Demuxer", "mediademuxer_read_sample(%d)", ret);
+		packet = NULL;
+		return false;
+	}
+	return true;
+}
+
+bool Demuxer::IsEoS(int track_index)
+{
+	return m_eosflag;
+}
+
+void Demuxer::Unprepare(int track_index)
+{
+	iferror_throw(mediademuxer_stop(m_demuxer), "fail to mediademuxer_stop: ");
+	iferror_throw(mediademuxer_unselect_track(m_demuxer, track_index), "fail to mediademuxer_unselect_track: ");
+}
+
 
 unsigned int Demuxer::GetNumTracks()
 {
@@ -110,45 +158,16 @@ bool Demuxer::GetAudioDecInfo(CodecInfo& adec)
 	return false;
 }
 
-bool Demuxer::SetVideoQueue(SharedQueue* queue)
+
+int Demuxer::GetVideoTrackIndex()
 {
-	if(m_videotrackindex == -1)
-		return false;
-	m_tracks[m_videotrackindex].queue = queue;
-	return true;
+	return m_videotrackindex;
 }
 
-bool Demuxer::SetAudioQueue(SharedQueue* queue)
+int Demuxer::GetAudioTrackIndex()
 {
-	if(m_audiotrackindex == -1)
-		return false;
-	m_tracks[m_audiotrackindex].queue = queue;
-	return true;
+	return m_audiotrackindex;
 }
-
-void Demuxer::demuxing(int track_index)
-{
-	dlog_print(DLOG_DEBUG, "Demuxer", "start of read of %d track", track_index);
-	m_eosflag = false;
-	AppTool::Assert(m_tracks[track_index].queue);
-	iferror_throw(mediademuxer_select_track(m_demuxer, track_index), "fail to mediademuxer_select_track: ");
-	iferror_throw(mediademuxer_start(m_demuxer), "fail to mediademuxer_start: ");
-	int numsample = 0;
-	while(m_eosflag == false)
-	{
-		media_packet_h packet = NULL;
-		iferror_throw(mediademuxer_read_sample(m_demuxer, track_index, &packet), "fail to mediademuxer_read_sample: ");
-		while(m_tracks[track_index].queue->IsFull())
-			sleep(1);
-		m_tracks[track_index].queue->Push(packet);
-		++numsample;
-	}
-	m_tracks[track_index].queue->PushEoS();
-	dlog_print(DLOG_DEBUG, "Demuxer", "end of read %d samples", numsample);
-	iferror_throw(mediademuxer_stop(m_demuxer), "fail to mediademuxer_stop: ");
-	iferror_throw(mediademuxer_unselect_track(m_demuxer, track_index), "fail to mediademuxer_unselect_track: ");
-}
-
 void Demuxer::extract_tracks()
 {
 	int trackcount = 0;
@@ -182,8 +201,9 @@ void Demuxer::iferror_throw(int ret, const char* msg)
 void Demuxer::handle_eos(int track_num)
 {
 	dlog_print(DLOG_DEBUG, "Demuxer", "eos for %d track", track_num);
-	m_eosflag = true;
+	m_tracks[track_num].eos = true;
 }
+
 void Demuxer::handle_error(mediademuxer_error_e error)
 {
 	dlog_print(DLOG_DEBUG, "Demuxer", "mediademuxer_error_e: %d", error);

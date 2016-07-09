@@ -13,7 +13,7 @@
 #include <stdexcept>
 
 TranscodingEngine::TranscodingEngine()
-:m_total_audio_packet_after_demuxing(0), m_total_video_packet_after_demuxing(0), m_bcreated(false)
+:m_bcreated(false)
 {
 
 }
@@ -33,6 +33,7 @@ void TranscodingEngine::Create(const char* srcfilename, CodecInfo& venc, CodecIn
 	{
 		createdemuxer(srcfilename);
 		createcodec(venc, aenc);
+	//	m_resizer.Create(venc.venc.width, venc.venc.height);
 		m_bcreated = true;
 	}
 	catch(const std::runtime_error& e)
@@ -48,14 +49,9 @@ void TranscodingEngine::Destroy()
 		m_demuxer.Destroy();
 		m_vdecoder.Destroy();
 		m_vencoder.Destroy();
+	//	m_resizer.Destroy();
 	//	m_adecoder.Destroy();
 	//	m_aencoder.Destroy();
-		m_queue[AFTER_DEMUXING_QUEUE][VIDEO_TRACK].ClearAll();
-		m_queue[AFTER_DEMUXING_QUEUE][AUDIO_TRACK].ClearAll();
-		m_queue[AFTER_DECODING_QUEUE][VIDEO_TRACK].ClearAll();
-		m_queue[AFTER_DECODING_QUEUE][AUDIO_TRACK].ClearAll();
-		m_queue[AFTER_ENCODING_QUEUE][VIDEO_TRACK].ClearAll();
-		m_queue[AFTER_ENCODING_QUEUE][AUDIO_TRACK].ClearAll();
 		m_bcreated = false;
 	}
 	catch(const std::runtime_error& e)
@@ -70,32 +66,160 @@ bool TranscodingEngine::IsCreated()
 	return m_bcreated;
 }
 
+
+bool TranscodingEngine::feed_decoder_with_packet(CodecBase* decoder, int track_index, int& count)
+{
+	media_packet_h demux_packet;
+	if(m_demuxer.IsEoS(track_index) == false)
+	{
+		if(m_demuxer.ReadSeample(track_index, &demux_packet))
+		{
+			++count;
+			dlog_print(DLOG_DEBUG, "TranscodingEngine", "%dth demuxed packet", count);
+			if(decoder == NULL)
+			{
+				media_packet_destroy(demux_packet);
+			}
+			else
+			{
+				if(!decoder->Input_Packets(demux_packet))
+				{
+					dlog_print(DLOG_ERROR, "TranscodingEngine", "while putting the %d th packet to the decoder", count);
+					return false;
+				}
+			}
+		}
+	}
+	return true;
+}
+
+bool TranscodingEngine::feed_encoder_with_packet(CodecBase* decoder, CodecBase* encoder, int& count)
+{
+	if(decoder == NULL || encoder == NULL)
+		return false;
+	media_packet_h decoded_packet;
+
+	if(decoder->IsEoS()==false)
+	{
+		if(decoder->Get_Packets(decoded_packet))
+		{
+			++count;
+			dlog_print(DLOG_DEBUG, "TranscodingEngine", "%dth decoded packet", count);
+#if 0
+			media_packet_h resized_packet;
+			if(m_resizer.Resize(decoded_packet, &resized_packet)==false)
+			{
+				dlog_print(DLOG_ERROR, "TranscodingEngine", "fail to resize");
+			}
+			media_packet_destroy(decoded_packet);
+#endif
+			if(!encoder->Input_Packets(decoded_packet))
+			{
+				dlog_print(DLOG_ERROR, "TranscodingEngine", "while putting the %d th packet to the encoder", count);
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+bool TranscodingEngine::feed_muxer_with_packet(CodecBase* encoder, int& count)
+{
+	if(encoder == NULL)
+		return false;
+	media_packet_h encoded_packet;
+	if(encoder->IsEoS()==false)
+	{
+		if(encoder->Get_Packets(encoded_packet))
+		{
+			++count;
+			//for test
+			dlog_print(DLOG_DEBUG, "TranscodingEngine", "%dth encoded packet", count);
+			media_packet_destroy(encoded_packet);
+		}
+	}
+	return true;
+}
+
+
+void TranscodingEngine::process_track(int track_index, CodecBase* decoder, CodecBase* encoder)
+{
+	m_demuxer.Prepare(track_index);
+	int demux_count = 0;
+	int decoded_count = 0;
+	int encoded_count = 0;
+	while(1)
+	{
+		if(feed_decoder_with_packet(decoder, track_index, demux_count)==false)
+		{
+			m_demuxer.Unprepare(track_index);
+			throw std::runtime_error("fail to feed_decoder_with_packet");
+		}
+		if(feed_encoder_with_packet(decoder, encoder, decoded_count)==false)
+		{
+			m_demuxer.Unprepare(track_index);
+			throw std::runtime_error("fail to feed_encoder_with_packet");
+		}
+		if(feed_muxer_with_packet(encoder, encoded_count)==false)
+		{
+			m_demuxer.Unprepare(track_index);
+			throw std::runtime_error("fail to feed_muxer_with_packet");
+		}
+
+		if(encoder->IsEoS())
+		{
+			dlog_print(DLOG_DEBUG, "TranscodingEngine", "the end of %dth track processing", track_index);
+			break;
+		}
+		usleep(100000);
+	}
+	m_demuxer.Unprepare(track_index);
+}
+
 void TranscodingEngine::Start()
 {
-	m_demuxer.Start();
-	capture_current_packet_state_after_demuxing();
-	m_vdecoder.Start();
-//	m_adecoder.Start();
-	m_vencoder.Start();
-//	m_aencoder.Start();
 
-	while(m_vencoder.IsEoS() == false) //end condition
+	int video_track_index = m_demuxer.GetVideoTrackIndex();
+	int audio_track_index = m_demuxer.GetAudioTrackIndex();
+	try
 	{
-		sleep(1);
+		if(video_track_index != -1)
+		{
+			process_track(video_track_index, (CodecBase*)&m_vdecoder, (CodecBase*)&m_vencoder);
+		}
+		if(audio_track_index != -1)
+		{
+		//	process_track(audio_track_index, (CodecBase*)&m_adecoder, (CodecBase*)&m_aencoder);
+			int count = 0;
+			m_demuxer.Prepare(audio_track_index);
+			while(m_demuxer.IsEoS(audio_track_index) == false)
+			{
+				feed_decoder_with_packet(NULL, audio_track_index, count);
+			}
+			m_demuxer.Unprepare(audio_track_index);
+
+		}
+	}
+	catch(const std::runtime_error& e)
+	{
+		dlog_print(DLOG_ERROR, "TranscodingEngine", e.what());
 	}
 }
+
 void TranscodingEngine::Stop()
 {
 
 }
 double TranscodingEngine::GetProgress()
 {
+#if 0
 	double progress = 0.0;
 	if(m_total_video_packet_after_demuxing != 0.0)
 		progress = (double)m_queue[AFTER_ENCODING_QUEUE][VIDEO_TRACK].Size()/(double)m_total_video_packet_after_demuxing;
 	if(m_vencoder.IsEoS())
 		progress = 1.0;
-	return progress;
+#endif
+	return 1.0;
 }
 void TranscodingEngine::print_errorcode_for_debug()
 {
@@ -145,8 +269,6 @@ void TranscodingEngine::createdemuxer(const char* srcfilename)
 	try
 	{
 		m_demuxer.Create(srcfilename);
-		m_demuxer.SetVideoQueue(&m_queue[AFTER_DEMUXING_QUEUE][VIDEO_TRACK]);
-		m_demuxer.SetAudioQueue(&m_queue[AFTER_DEMUXING_QUEUE][AUDIO_TRACK]);
 	}
 	catch(const std::runtime_error& e)
 	{
@@ -178,13 +300,10 @@ void TranscodingEngine::createcodec(CodecInfo& venc, CodecInfo& aenc)
 		dlog_print(DLOG_DEBUG, "TranscodingEngine", "audio encode: codecid:%d, bit:%d, channel:%d, samplerate:%d, bitrate:%d"
 								, aenc.aenc.codecid, aenc.aenc.bit, aenc.aenc.channel, aenc.aenc.samplerate, aenc.aenc.bitrate);
 
-		m_vdecoder.Create(vdec, &m_queue[AFTER_DEMUXING_QUEUE][VIDEO_TRACK], &m_queue[AFTER_DECODING_QUEUE][VIDEO_TRACK]);
-	//	m_adecoder.Create(adec, &m_queue[AFTER_DEMUXING_QUEUE][AUDIO_TRACK], &m_queue[AFTER_DECODING_QUEUE][AUDIO_TRACK]);
-		m_vencoder.Create(venc, &m_queue[AFTER_DECODING_QUEUE][VIDEO_TRACK], &m_queue[AFTER_ENCODING_QUEUE][VIDEO_TRACK]);
-	//	m_aencoder.Create(aenc, &m_queue[AFTER_DECODING_QUEUE][AUDIO_TRACK], &m_queue[AFTER_ENCODING_QUEUE][AUDIO_TRACK]);
-
-
-
+		m_vdecoder.Create(vdec);
+		m_vencoder.Create(venc);
+	//	m_adecoder.Create(adec);
+	//	m_aencoder.Create(aenc);
 	}
 	catch(const std::runtime_error& e)
 	{
@@ -197,11 +316,7 @@ const char* TranscodingEngine::generatedstfilename(const char* srcfilename)
 	return "/home/owner/result.mp4";
 }
 
-void TranscodingEngine::capture_current_packet_state_after_demuxing()
-{
-	m_total_video_packet_after_demuxing = m_queue[AFTER_DEMUXING_QUEUE][VIDEO_TRACK].Size();
-	m_total_audio_packet_after_demuxing = m_queue[AFTER_DEMUXING_QUEUE][AUDIO_TRACK].Size();
-}
+
 
 
 #if 0

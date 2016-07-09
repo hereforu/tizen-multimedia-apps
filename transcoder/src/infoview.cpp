@@ -63,14 +63,20 @@ void InfoView::decorateview(Evas_Object* box)
 
 void InfoView::destroyremains()
 {
+	dlog_print(DLOG_DEBUG, "InfoView", "destroyremains #1");
 	ecore_timer_del(m_timer);
+	dlog_print(DLOG_DEBUG, "InfoView", "destroyremains #2");
 	if(m_transcodingengine.IsCreated())
 	{
 		m_transcodingengine.Destroy();
 	}
+	dlog_print(DLOG_DEBUG, "InfoView", "destroyremains #3");
 	m_list.Destroy();
+	dlog_print(DLOG_DEBUG, "InfoView", "destroyremains #4");
 	m_btnpack.Destroy();
+	dlog_print(DLOG_DEBUG, "InfoView", "destroyremains #5");
 	m_pbpopup.Destroy();
+	dlog_print(DLOG_DEBUG, "InfoView", "destroyremains #6");
 }
 
 
@@ -201,15 +207,22 @@ void InfoView::long_func_transcoding(Ecore_Thread *thread)
 	aenc.aenc.bit = ORIGINAL_FEATURE;
 	aenc.aenc.bitrate = ORIGINAL_FEATURE;
 
-	if(m_transcodingengine.IsCreated())
+	try
 	{
-		m_transcodingengine.Destroy();
+		if(m_transcodingengine.IsCreated())
+		{
+			m_transcodingengine.Destroy();
+		}
+		m_transcodingengine.Create(getmodel()->GetSelectedContent().path.c_str(), venc, aenc);
+		ecore_timer_thaw(m_timer);
+		m_transcodingengine.Start();
+		ecore_timer_freeze(m_timer);
+		m_pbpopup.Hide();
 	}
-	m_transcodingengine.Create(getmodel()->GetSelectedContent().path.c_str(), venc, aenc);
-	ecore_timer_thaw(m_timer);
-	m_transcodingengine.Start();
-	ecore_timer_freeze(m_timer);
-	m_pbpopup.Hide();
+	catch(const std::runtime_error& e)
+	{
+		dlog_print(DLOG_ERROR, "InfoView", e.what());
+	}
 
 
 }
@@ -275,7 +288,7 @@ void InfoView::cancel_func_transcoding_cb(void *data, Ecore_Thread *thread)
 
 void InfoView::starttranscoding()
 {
-#if 0 //TODO::
+
 	if(m_transcodingthread)
 	{
 		dlog_print(DLOG_ERROR, "InfoView", "transcoding thread is alive!!");
@@ -285,7 +298,7 @@ void InfoView::starttranscoding()
 	m_transcodingthread = ecore_thread_run(InfoView::long_func_transcoding_cb, InfoView::end_func_transcoding_cb
 			, InfoView::cancel_func_transcoding_cb, (void*)this);
 	dlog_print(DLOG_DEBUG, "InfoView", "ecore_thread_run [%p]", m_transcodingthread);
-#endif
+
 }
 
 

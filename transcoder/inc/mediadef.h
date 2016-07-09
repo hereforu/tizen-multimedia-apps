@@ -60,12 +60,13 @@ typedef union _CodecInfo
 typedef struct _TrackInfo
 {
 	_TrackInfo()
-	:queue(NULL)
+	:eos(false), count(0)
 	{
 
 	}
 	media_format_h fmt;
-	SharedQueue* queue;
+	bool eos;
+	unsigned int count;
 }TrackInfo;
 
 

@@ -14,6 +14,7 @@
 #include "videoencoder.h"
 #include "audiodecoder.h"
 #include "audioencoder.h"
+#include "imageresizer.h"
 
 
 class TranscodingEngine
@@ -44,23 +45,24 @@ public:
 	double GetProgress();
 
 private:
+	void process_track(int track_index, CodecBase* decoder, CodecBase* encoder);
+	bool feed_decoder_with_packet(CodecBase* decoder, int track_index, int& count);
+	bool feed_encoder_with_packet(CodecBase* decoder, CodecBase* encoder, int& count);
+	bool feed_muxer_with_packet(CodecBase* encoder, int& count);
 	void print_errorcode_for_debug();
-	void capture_current_packet_state_after_demuxing();
 	const char* generatedstfilename(const char* srcfilename);
 	void createdemuxer(const char* srcfilename);
 	void createcodec(CodecInfo& venc, CodecInfo& aenc);
 
 private:
-	unsigned int m_total_audio_packet_after_demuxing;
-	unsigned int m_total_video_packet_after_demuxing;
 
 	Demuxer m_demuxer;
 	VideoDecoder m_vdecoder;
 	VideoEncoder m_vencoder;
 	AudioDecoder m_adecoder;
 	AudioEncoder m_aencoder;
+	ImageResizer m_resizer;
 
-	SharedQueue m_queue[MAX_QUEUE][MAX_TRACKS];
 	std::string m_dstfilename; //auto generation
 	CodecInfo m_vencinfo;
 	CodecInfo m_aencinfo;

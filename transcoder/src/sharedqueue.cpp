@@ -12,13 +12,21 @@
 
 
 SharedQueue::SharedQueue()
-:m_max_size(5000)
+:m_max_size(100), m_name("queue")
 {
 	create();
 }
 SharedQueue::~SharedQueue()
 {
 	destroy();
+}
+void SharedQueue::SetName(const char* queuename)
+{
+	m_name = queuename;
+}
+void SharedQueue::SetMaxQueueSize(unsigned int size)
+{
+	m_max_size = size;
 }
 void SharedQueue::ClearAll()
 {
@@ -59,11 +67,22 @@ bool SharedQueue::Push(media_packet_h packet)
 	eina_lock_release(&m_mutex);
 	return true;
 }
+
 void SharedQueue::PushEoS()
 {
 	media_packet_h packet = END_OF_STREAM;
 	eina_lock_take(&m_mutex);
 	m_queue.push(packet);
+	eina_lock_release(&m_mutex);
+}
+void SharedQueue::SetBackToEoS()
+{
+	eina_lock_take(&m_mutex);
+	if(m_queue.empty() == false)
+	{
+		int ret = media_packet_set_flags(m_queue.back(), MEDIA_PACKET_END_OF_STREAM);
+		dlog_print(DLOG_DEBUG, "SharedQueue", "media_packet_set_flags as EOS%d [%s]", ret, m_name.c_str());
+	}
 	eina_lock_release(&m_mutex);
 }
 media_packet_h SharedQueue::Get()
@@ -86,11 +105,21 @@ media_packet_h SharedQueue::JustSee()
 
 bool SharedQueue::IsEmpty()
 {
-	return (m_queue.empty())?true:false;
+	if(m_queue.empty())
+	{
+		dlog_print(DLOG_DEBUG,"CodecBase" ,"%s is empty",m_name.c_str());
+		return true;
+	}
+	return false;
 }
 bool SharedQueue::IsFull()
 {
-	return (m_queue.size()==m_max_size)?true:false;
+	if(m_queue.size()==m_max_size)
+	{
+		dlog_print(DLOG_DEBUG, "CodecBase", "%s is full",m_name.c_str());
+		return true;
+	}
+	return false;
 }
 unsigned int SharedQueue::Size()
 {
