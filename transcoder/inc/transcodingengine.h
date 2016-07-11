@@ -36,7 +36,7 @@ public:
 	TranscodingEngine();
 	~TranscodingEngine();
 
-	void Create(const char* srcfilename, CodecInfo& venc, CodecInfo& aenc);
+	void Create(const char* srcfilename, unsigned int duration, CodecInfo& venc, CodecInfo& aenc);
 	void Destroy();
 	bool IsCreated();
 
@@ -55,7 +55,8 @@ private:
 	void createcodec(CodecInfo& venc, CodecInfo& aenc);
 
 private:
-
+	int m_progress_count;
+	int m_estimated_packets;
 	Demuxer m_demuxer;
 	VideoDecoder m_vdecoder;
 	VideoEncoder m_vencoder;

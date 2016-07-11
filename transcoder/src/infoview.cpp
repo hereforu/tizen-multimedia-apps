@@ -213,7 +213,7 @@ void InfoView::long_func_transcoding(Ecore_Thread *thread)
 		{
 			m_transcodingengine.Destroy();
 		}
-		m_transcodingengine.Create(getmodel()->GetSelectedContent().path.c_str(), venc, aenc);
+		m_transcodingengine.Create(getmodel()->GetSelectedContent().path.c_str(), getmodel()->GetSelectedContent().duration, venc, aenc);
 		ecore_timer_thaw(m_timer);
 		m_transcodingengine.Start();
 		ecore_timer_freeze(m_timer);

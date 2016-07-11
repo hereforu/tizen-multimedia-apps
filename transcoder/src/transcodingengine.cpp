@@ -13,7 +13,7 @@
 #include <stdexcept>
 
 TranscodingEngine::TranscodingEngine()
-:m_bcreated(false)
+:m_progress_count(0), m_estimated_packets(0), m_bcreated(false)
 {
 
 }
@@ -22,17 +22,20 @@ TranscodingEngine::~TranscodingEngine()
 
 }
 
-void TranscodingEngine::Create(const char* srcfilename, CodecInfo& venc, CodecInfo& aenc)
+void TranscodingEngine::Create(const char* srcfilename, unsigned int duration, CodecInfo& venc, CodecInfo& aenc)
 {
 	print_errorcode_for_debug();
 	m_dstfilename = generatedstfilename(srcfilename);
 	m_vencinfo = venc;
+	//for test, encoding is fail if othe codec is assigned!
+	m_vencinfo.venc.codecid = MEDIACODEC_MPEG4;
 	m_aencinfo = aenc;
+	m_estimated_packets = (int)(30.0*(double)duration)/1000.0;
 
 	try
 	{
 		createdemuxer(srcfilename);
-		createcodec(venc, aenc);
+		createcodec(m_vencinfo, m_aencinfo);
 	//	m_resizer.Create(venc.venc.width, venc.venc.height);
 		m_bcreated = true;
 	}
@@ -166,6 +169,8 @@ void TranscodingEngine::process_track(int track_index, CodecBase* decoder, Codec
 			throw std::runtime_error("fail to feed_muxer_with_packet");
 		}
 
+		m_progress_count = encoded_count;
+
 		if(encoder->IsEoS())
 		{
 			dlog_print(DLOG_DEBUG, "TranscodingEngine", "the end of %dth track processing", track_index);
@@ -212,14 +217,11 @@ void TranscodingEngine::Stop()
 }
 double TranscodingEngine::GetProgress()
 {
-#if 0
+
 	double progress = 0.0;
-	if(m_total_video_packet_after_demuxing != 0.0)
-		progress = (double)m_queue[AFTER_ENCODING_QUEUE][VIDEO_TRACK].Size()/(double)m_total_video_packet_after_demuxing;
-	if(m_vencoder.IsEoS())
-		progress = 1.0;
-#endif
-	return 1.0;
+	if(m_estimated_packets != 0)
+		progress = (double)m_progress_count/(double)m_estimated_packets;
+	return progress;
 }
 void TranscodingEngine::print_errorcode_for_debug()
 {
