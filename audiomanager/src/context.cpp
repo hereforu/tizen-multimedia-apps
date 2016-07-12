@@ -1,9 +1,11 @@
 /*
  * context.cpp
+
  *
  *  Created on: June 09, 2016
  *      Author: Hotak
  */
+
 #include "context.h"
 #include <dlog.h>
 
@@ -11,7 +13,9 @@ Context::Context()
 {
 	const ALCchar * m_defaultDeviceName = alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER);
 	m_device = alcOpenDevice(m_defaultDeviceName);
-	m_contextID = alcCreateContext(m_device, NULL);
+
+	ALCint attribs[] = {ALC_HRTF_SOFT, ALC_TRUE, 0 };
+	m_contextID = alcCreateContext(m_device, attribs);
 	alcMakeContextCurrent(m_contextID);
 
 }

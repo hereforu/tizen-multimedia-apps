@@ -20,7 +20,7 @@ AudioEncoder::~AudioEncoder()
 }
 void AudioEncoder::create(mediacodec_h mediacodec, const CodecInfo& codecinfo)
 {
-	AppTool::Iferror_throw(mediacodec_set_codec(mediacodec, codecinfo.venc.codecid, MEDIACODEC_ENCODER), "fail to mediacodec_set_codec");
+	AppTool::Iferror_throw(mediacodec_set_codec(mediacodec, codecinfo.venc.codecid, MEDIACODEC_ENCODER|MEDIACODEC_SUPPORT_TYPE_SW), "fail to mediacodec_set_codec");
 	AppTool::Iferror_throw(mediacodec_set_aenc_info(mediacodec,
 			codecinfo.aenc.samplerate, codecinfo.aenc.channel, codecinfo.aenc.bit, codecinfo.aenc.bitrate), "fail to mediacodec_set_aenc_info");
 

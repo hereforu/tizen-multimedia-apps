@@ -27,8 +27,6 @@ void TranscodingEngine::Create(const char* srcfilename, unsigned int duration, C
 	print_errorcode_for_debug();
 	m_dstfilename = generatedstfilename(srcfilename);
 	m_vencinfo = venc;
-	//for test, encoding is fail if othe codec is assigned!
-	m_vencinfo.venc.codecid = MEDIACODEC_MPEG4;
 	m_aencinfo = aenc;
 	m_estimated_packets = (int)(30.0*(double)duration)/1000.0;
 
@@ -53,8 +51,8 @@ void TranscodingEngine::Destroy()
 		m_vdecoder.Destroy();
 		m_vencoder.Destroy();
 	//	m_resizer.Destroy();
-	//	m_adecoder.Destroy();
-	//	m_aencoder.Destroy();
+		m_adecoder.Destroy();
+		m_aencoder.Destroy();
 		m_bcreated = false;
 	}
 	catch(const std::runtime_error& e)
@@ -194,15 +192,7 @@ void TranscodingEngine::Start()
 		}
 		if(audio_track_index != -1)
 		{
-		//	process_track(audio_track_index, (CodecBase*)&m_adecoder, (CodecBase*)&m_aencoder);
-			int count = 0;
-			m_demuxer.Prepare(audio_track_index);
-			while(m_demuxer.IsEoS(audio_track_index) == false)
-			{
-				feed_decoder_with_packet(NULL, audio_track_index, count);
-			}
-			m_demuxer.Unprepare(audio_track_index);
-
+			process_track(audio_track_index, (CodecBase*)&m_adecoder, (CodecBase*)&m_aencoder);
 		}
 	}
 	catch(const std::runtime_error& e)
@@ -304,8 +294,8 @@ void TranscodingEngine::createcodec(CodecInfo& venc, CodecInfo& aenc)
 
 		m_vdecoder.Create(vdec);
 		m_vencoder.Create(venc);
-	//	m_adecoder.Create(adec);
-	//	m_aencoder.Create(aenc);
+		m_adecoder.Create(adec);
+		m_aencoder.Create(aenc);
 	}
 	catch(const std::runtime_error& e)
 	{
