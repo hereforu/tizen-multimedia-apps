@@ -96,7 +96,7 @@ void VideoListView::popuptimeout_cb(void *data, Evas_Object *obj, void *event_in
 //TODO: need to manage memory leaks
 void VideoListView::clicked_exit_cb(void *data, Evas_Object *obj, void *event_info)
 {
-	ui_app_exit();
+	MOVE_PREVVIEW;
 }
 
 void VideoListView::select_video_cb(void *data, int id)

@@ -137,7 +137,7 @@ void ImageListView::popuptimeout_cb(void *data, Evas_Object *obj, void *event_in
 //TODO: need to manage memory leaks
 void ImageListView::clicked_exit_cb(void *data, Evas_Object *obj, void *event_info)
 {
-	ui_app_exit();
+	MOVE_PREVVIEW;
 }
 
 void ImageListView::select_image_cb(void *data, int id)

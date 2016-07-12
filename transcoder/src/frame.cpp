@@ -101,7 +101,7 @@ void FrameWindow::MovePrevView()
 	else
 	{
 		dlog_print(DLOG_FATAL, "FrameWindow", "this is the first view");
-		ui_app_exit();
+		elm_win_lower(m_framewnd);
 	}
 }
 

@@ -229,7 +229,7 @@ void MainView::clicked_srcsel_cb(void *data, Evas_Object *obj, void *event_info)
 //TODO: need to manage memory leaks
 void MainView::clicked_exit_cb(void *data, Evas_Object *obj, void *event_info)
 {
-	ui_app_exit();
+	MOVE_PREVVIEW;
 }
 
 void MainView::clicked_play_cb(void *data, Evas_Object *obj, void *event_info)

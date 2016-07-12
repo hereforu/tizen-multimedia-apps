@@ -20,10 +20,10 @@ PopupProgress::~PopupProgress()
 }
 void PopupProgress::Create(Evas_Object* parent, Porgress_Cancel_Cb cancel_cb, void* data)
 {
+	m_cancelcb = cancel_cb;
+	m_data = data;
 	try
 	{
-		m_cancelcb = cancel_cb;
-		m_data = data;
 		m_popup = createpopup(parent);
 		m_pb = createpb(m_popup);
 		m_cancelbtn = createcancelbtn(m_popup);
