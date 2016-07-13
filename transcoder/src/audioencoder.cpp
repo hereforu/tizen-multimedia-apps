@@ -10,6 +10,7 @@
 #include "audioencoder.h"
 
 AudioEncoder::AudioEncoder()
+:m_format(NULL)
 {
 
 
@@ -34,7 +35,8 @@ void AudioEncoder::create(mediacodec_h mediacodec, const CodecInfo& codecinfo)
 }
 void AudioEncoder::destroy()
 {
-	media_format_unref(m_format);
+	if(m_format)
+		media_format_unref(m_format);
 }
 media_format_h AudioEncoder::GetMediaFormat()
 {

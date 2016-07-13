@@ -45,14 +45,15 @@ public:
 	double GetProgress();
 
 private:
-	void process_track(int track_index, CodecBase* decoder, CodecBase* encoder);
+	void process_track(int track_index, int muxer_track_index, CodecBase* decoder, CodecBase* encoder);
 	bool feed_decoder_with_packet(CodecBase* decoder, int track_index, int& count);
 	bool feed_encoder_with_packet(CodecBase* decoder, CodecBase* encoder, int& count);
-	bool feed_muxer_with_packet(CodecBase* encoder, int& count);
+	bool feed_muxer_with_packet(CodecBase* encoder,int muxer_track_index, int& count);
 	void print_errorcode_for_debug();
 	const char* generatedstfilename(const char* srcfilename);
 	void createdemuxer(const char* srcfilename);
 	void createcodec(CodecInfo& venc, CodecInfo& aenc);
+	void createmuxer(const char* srcfilename);
 
 private:
 	int m_progress_count;
@@ -67,6 +68,8 @@ private:
 	std::string m_dstfilename; //auto generation
 	CodecInfo m_vencinfo;
 	CodecInfo m_aencinfo;
+	int m_muxer_video_track_index;
+	int m_muxer_audio_track_index;
 	bool m_bcreated;
 };
 //void start_transcoding(const char* srcfilename, CodecInfo& venc, CodecInfo& aenc);

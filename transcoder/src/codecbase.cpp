@@ -43,8 +43,10 @@ void CodecBase::Create(const CodecInfo& codecinfo)
 
 void CodecBase::Destroy()
 {
+	if(m_mediacodec == NULL)
+		return;
 	destroy();
-	iferror_throw(mediacodec_flush_buffers(m_mediacodec), "fail to mediacodec_flush_buffers [%s]");
+	//iferror_throw(mediacodec_flush_buffers(m_mediacodec), "fail to mediacodec_flush_buffers [%s]");
 	iferror_throw(mediacodec_unprepare(m_mediacodec), "fail to mediacodec_unprepare [%s]");
 	iferror_throw(mediacodec_destroy(m_mediacodec), "fail to mediacodec_destroy [%s]");
 	m_mediacodec = NULL;

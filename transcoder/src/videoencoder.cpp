@@ -8,6 +8,7 @@
 #include "videoencoder.h"
 
 VideoEncoder::VideoEncoder()
+:m_format(NULL)
 {
 
 
@@ -35,7 +36,8 @@ media_format_h VideoEncoder::GetMediaFormat()
 }
 void VideoEncoder::destroy()
 {
-	media_format_unref(m_format);
+	if(m_format)
+		media_format_unref(m_format);
 }
 const char* VideoEncoder::getname()
 {

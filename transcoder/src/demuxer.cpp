@@ -33,21 +33,20 @@ void Demuxer::Create(const char* srcfilename)
 
 void Demuxer::Destroy()
 {
-	dlog_print(DLOG_DEBUG, "Demuxer", "Demuxer destroy #1");
+	if(m_demuxer == NULL)
+		return;
 	for(int i= 0; i < m_tracks.size(); ++i)
 	{
-		media_format_unref(m_tracks[i].fmt);
+		if(m_tracks[i].fmt)
+			media_format_unref(m_tracks[i].fmt);
 	}
-	dlog_print(DLOG_DEBUG, "Demuxer", "Demuxer destroy #2");
 	m_tracks.clear();
-	dlog_print(DLOG_DEBUG, "Demuxer", "Demuxer destroy #3");
 	mediademuxer_unset_eos_cb(m_demuxer);
 	mediademuxer_unset_error_cb(m_demuxer);
+	//if ready state
 	mediademuxer_unprepare(m_demuxer);
 	mediademuxer_destroy(m_demuxer);
 	m_demuxer = NULL;
-	dlog_print(DLOG_DEBUG, "Demuxer", "Demuxer destroy #4");
-
 }
 
 

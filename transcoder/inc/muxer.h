@@ -16,15 +16,16 @@ extern "C" {
 #include "mediamuxer.h"
 #include "media_codec.h"
 
+//should be refactoring!!!
 
-
-typedef void (*ReadSampleCB)(void* data, int track_index, media_packet_h* inbuf, bool* eos);
 
 bool CreateMuxer(const char* dstfilepath, mediamuxer_output_format_e format);
 void DestroyMuxer();
 int AddTrack(media_format_h media_format);
-bool StartMuxer(ReadSampleCB readsamplecb, void* data);
-//bool StopMuxer();
+bool StartMuxer();
+bool WriteSample(int track_index, media_packet_h sample);
+bool CloseTrack(int track_index);
+bool StopMuxer();
 
 
 #ifdef __cplusplus

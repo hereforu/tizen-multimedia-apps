@@ -22,7 +22,7 @@ void muxer_only();
 #endif
 
 InfoView::InfoView()
-:m_timer(NULL), m_transcodingthread(NULL)
+:m_msgbox(NULL), m_timer(NULL), m_transcodingthread(NULL)
 {
 
 }
@@ -54,6 +54,7 @@ void InfoView::decorateview(Evas_Object* box)
 		m_pbpopup.Create(box, cancel_cb, (void*)this);
 		m_timer = ecore_timer_add(1.0, InfoView::timer_cb, (void*)this);
 		ecore_timer_freeze(m_timer);
+		m_msgbox = createmsgbox(box);
 	}
 	catch(const std::runtime_error& e)
 	{
@@ -63,6 +64,11 @@ void InfoView::decorateview(Evas_Object* box)
 
 void InfoView::destroyremains()
 {
+	if(m_msgbox)
+	{
+		evas_object_del(m_msgbox);
+		m_msgbox = NULL;
+	}
 	dlog_print(DLOG_DEBUG, "InfoView", "destroyremains #1");
 	ecore_timer_del(m_timer);
 	dlog_print(DLOG_DEBUG, "InfoView", "destroyremains #2");
@@ -195,7 +201,6 @@ void InfoView::long_func_transcoding(Ecore_Thread *thread)
 	dlog_print(DLOG_DEBUG, "InfoView", "long_func_transcoding has been called");
 	CodecInfo venc, aenc;
 	venc.venc.codecid = (mediacodec_codec_type_e)getmodel()->GetSelectedOption(VIDEO_CODEC_OPTION);
-	//venc.venc.codecid = MEDIACODEC_MPEG4;
 	getresolutionbycode(getmodel()->GetSelectedOption(RESOLUTION_OPTION), venc.venc.width, venc.venc.height);
 	venc.venc.fps = 30;
 	venc.venc.target_bits =(int)((double)venc.venc.width*(double)venc.venc.height*(double)venc.venc.fps*0.20);
@@ -209,19 +214,19 @@ void InfoView::long_func_transcoding(Ecore_Thread *thread)
 
 	try
 	{
-		if(m_transcodingengine.IsCreated())
-		{
-			m_transcodingengine.Destroy();
-		}
 		m_transcodingengine.Create(getmodel()->GetSelectedContent().path.c_str(), getmodel()->GetSelectedContent().duration, venc, aenc);
 		ecore_timer_thaw(m_timer);
 		m_transcodingengine.Start();
 		ecore_timer_freeze(m_timer);
+		m_transcodingengine.Destroy();
 		m_pbpopup.Hide();
 	}
 	catch(const std::runtime_error& e)
 	{
+		m_transcodingengine.Destroy();
+		m_pbpopup.Hide();
 		dlog_print(DLOG_ERROR, "InfoView", e.what());
+	//	showmsgbox(e.what());
 	}
 
 
@@ -298,8 +303,40 @@ void InfoView::starttranscoding()
 	m_transcodingthread = ecore_thread_run(InfoView::long_func_transcoding_cb, InfoView::end_func_transcoding_cb
 			, InfoView::cancel_func_transcoding_cb, (void*)this);
 	dlog_print(DLOG_DEBUG, "InfoView", "ecore_thread_run [%p]", m_transcodingthread);
-
 }
+
+
+void InfoView::msgboxtimeout_cb(void *data, Evas_Object *obj, void *event_info)
+{
+	InfoView* view = (InfoView*)data;
+	view->hidemsgbox();
+}
+
+Evas_Object* InfoView::createmsgbox(Evas_Object* box)
+{
+	Evas_Object* popup = elm_popup_add(box);
+	if(popup == NULL)
+	{
+		throw std::runtime_error("fail to create popalarm ");
+	}
+	elm_popup_orient_set(popup, ELM_POPUP_ORIENT_CENTER);
+	elm_object_style_set(popup, "toast");
+	evas_object_smart_callback_add(m_msgbox, "timeout", msgboxtimeout_cb, this);
+	return popup;
+}
+
+void InfoView::showmsgbox(const char* str)
+{
+	elm_popup_timeout_set(m_msgbox, 2.0);
+	elm_object_part_text_set(m_msgbox, "default", str);
+	evas_object_show(m_msgbox);
+}
+void InfoView::hidemsgbox()
+{
+	if(m_msgbox)
+		evas_object_hide(m_msgbox);
+}
+
 
 
 

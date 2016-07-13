@@ -60,7 +60,7 @@ typedef union _CodecInfo
 typedef struct _TrackInfo
 {
 	_TrackInfo()
-	:eos(false), count(0)
+	:fmt(NULL), eos(false), count(0)
 	{
 
 	}

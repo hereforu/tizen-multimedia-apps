@@ -13,7 +13,6 @@
 #define MAX_TRACK_FOR_MUXER 2
 
 static mediamuxer_h s_muxer = NULL;
-static bool s_trackindex[MAX_TRACK_FOR_MUXER] = {0, 0};
 static int s_numtrack = 0;
 
 bool CreateMuxer(const char* dstfilepath, mediamuxer_output_format_e format)
@@ -26,13 +25,13 @@ bool CreateMuxer(const char* dstfilepath, mediamuxer_output_format_e format)
 	ret = mediamuxer_create(&s_muxer);
 	if(ret != MEDIAMUXER_ERROR_NONE)
 	{
-		dlog_print(DLOG_DEBUG, "MUXER", "mediamuxer_create:%d", ret);
+		dlog_print(DLOG_ERROR, "MUXER", "mediamuxer_create:%d", ret);
 		return false;
 	}
 	ret = mediamuxer_set_data_sink(s_muxer, path, format);
 	if(ret != MEDIAMUXER_ERROR_NONE)
 	{
-		dlog_print(DLOG_DEBUG, "MUXER", "mediamuxer_set_data_sink:%d", ret);
+		dlog_print(DLOG_ERROR, "MUXER", "mediamuxer_set_data_sink:%d", ret);
 		return false;
 	}
 	s_numtrack = 0;
@@ -54,7 +53,7 @@ void DestroyMuxer()
 
 int AddTrack(media_format_h media_format)
 {
-#if 0
+
 	int ret = MEDIAMUXER_ERROR_NONE;
 	int index = MEDIAMUXER_ERROR_INVALID_PARAMETER;
 	if(s_muxer == NULL)
@@ -64,39 +63,11 @@ int AddTrack(media_format_h media_format)
 	{
 		dlog_print(DLOG_DEBUG, "MUXER", "mediamuxer_add_track:%d", ret);
 	}
-	s_trackindex[s_numtrack++] = index;
 	return index;
-#endif
-	int index = -1;
-	media_format_h video_fmt = NULL;
-	media_format_create(&video_fmt);
-	media_format_set_video_mime(video_fmt, MEDIA_FORMAT_H264_SP);
-	media_format_set_video_width(video_fmt, 640);
-	media_format_set_video_height(video_fmt, 480);
-	media_format_set_video_avg_bps(video_fmt, 256000);
-	media_format_set_video_max_bps(video_fmt, 256000);
-	int ret = mediamuxer_add_track(s_muxer, video_fmt, &index);
-	dlog_print(DLOG_DEBUG, "MUXER", "mediamuxer_add_track with video index %d:%d", index, ret);
-	s_trackindex[s_numtrack++] = index;
-
-	media_format_h audio_fmt = NULL;
-	media_format_create(&audio_fmt);
-	media_format_set_audio_mime(audio_fmt, MEDIA_FORMAT_AAC_LC);
-	media_format_set_audio_channel(audio_fmt, 2);
-	media_format_set_audio_samplerate(audio_fmt, 44100);
-	media_format_set_audio_bit(audio_fmt, 16);
-	media_format_set_audio_avg_bps(audio_fmt, 128000);
-	ret = mediamuxer_add_track(s_muxer, audio_fmt, &index);
-	dlog_print(DLOG_DEBUG, "MUXER", "mediamuxer_add_track with audio index %d:%d", index, ret);
-	s_trackindex[s_numtrack++] = index;
-
-	return 0;
-
 }
 
-bool StartMuxer(ReadSampleCB readsamplecb, void* data)
+bool StartMuxer()
 {
-
 	int ret = MEDIAMUXER_ERROR_NONE;
 	if(s_muxer == NULL)
 		return false;
@@ -115,35 +86,37 @@ bool StartMuxer(ReadSampleCB readsamplecb, void* data)
 		return false;
 	}
 	dlog_print(DLOG_DEBUG, "MUXER", "mediamuxer_start success", ret);
-
-	for(int i =0; i < s_numtrack; ++i)
+	return true;
+}
+bool WriteSample(int track_index, media_packet_h sample)
+{
+	int ret = mediamuxer_write_sample(s_muxer, track_index, sample);
+	if(ret != MEDIAMUXER_ERROR_NONE)
 	{
-		media_packet_h inbuf = NULL;
-		bool eos = false;
-		while(eos == false)
-		{
-			readsamplecb(data, s_trackindex[i], &inbuf, &eos);
-			ret = mediamuxer_write_sample(s_muxer, s_trackindex[i], inbuf);
-			if(ret != MEDIAMUXER_ERROR_NONE)
-			{
-				dlog_print(DLOG_DEBUG, "MUXER", "mediamuxer_prepare:%d", ret);
-				mediamuxer_stop(s_muxer);
-				mediamuxer_unprepare(s_muxer);
-				return false;
-			}
-		}
-		ret = mediamuxer_close_track(s_muxer, s_trackindex[i]);
-		if(ret != MEDIAMUXER_ERROR_NONE)
-		{
-			dlog_print(DLOG_DEBUG, "MUXER", "mediamuxer_prepare:%d", ret);
-			mediamuxer_stop(s_muxer);
-			mediamuxer_unprepare(s_muxer);
-			return false;
-		}
+		dlog_print(DLOG_DEBUG, "MUXER", "fail to mediamuxer_write_sample:%d", ret);
+		return false;
 	}
+	return true;
+}
+bool CloseTrack(int track_index)
+{
+	int ret = mediamuxer_close_track(s_muxer, track_index);
+	if(ret != MEDIAMUXER_ERROR_NONE)
+	{
+		dlog_print(DLOG_DEBUG, "MUXER", "fail to close track:%d", ret);
+		return false;
+	}
+	return true;
+}
+bool StopMuxer()
+{
+	if(s_muxer == NULL)
+		return false;
 	mediamuxer_stop(s_muxer);
 	mediamuxer_unprepare(s_muxer);
 	return true;
 }
+
+
 
 
