@@ -10,7 +10,7 @@
 #include <stdexcept>
 
 AudioRoom::AudioRoom()
-:m_eventrect(NULL)
+:m_eventrect(NULL), m_gesturelayer(NULL)
 {
 	for(int i = 0; i < ROOM_OBJECT_MAX; ++i)
 	{
@@ -28,18 +28,28 @@ void AudioRoom::Create(Evas_Object* box)
 	m_eventrect = evas_object_rectangle_add(evas_object_evas_get(box));
 	if(m_eventrect == NULL)
 	{
-		throw std::runtime_error("fail to create an audio room");
+		throw std::runtime_error("fail to evas_object_rectangle_add in audio room");
 	}
 	evas_object_size_hint_weight_set(m_eventrect, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
 	evas_object_size_hint_align_set(m_eventrect, EVAS_HINT_FILL, EVAS_HINT_FILL);
 	evas_object_color_set(m_eventrect, 255, 255, 255, 255);
 	evas_object_repeat_events_set(m_eventrect, EINA_TRUE);
 	elm_box_pack_end(box, m_eventrect);
+
+	m_gesturelayer = elm_gesture_layer_add(box);
+	if(m_gesturelayer == NULL)
+	{
+		throw std::runtime_error("fail to elm_gesture_layer_add in audio room");
+	}
+	elm_gesture_layer_attach(m_gesturelayer, m_eventrect);
 	evas_object_show(m_eventrect);
 
 	evas_object_event_callback_add(box, EVAS_CALLBACK_MOUSE_DOWN, mousedown_cb, this);
 	evas_object_event_callback_add(box, EVAS_CALLBACK_MOUSE_MOVE, mousemove_cb, this);
 	evas_object_event_callback_add(box, EVAS_CALLBACK_MOUSE_UP, mouseup_cb, this);
+
+	elm_gesture_layer_cb_set(m_gesturelayer, ELM_GESTURE_N_DOUBLE_TAPS, ELM_GESTURE_STATE_END,
+			dbclick_cb, this);
 
 	//TODO: remove all constants
 	for(int i = 0; i < ROOM_SOURCE_MAX; ++i)
@@ -51,6 +61,20 @@ void AudioRoom::Create(Evas_Object* box)
 	ListenerinRoom* listener = new ListenerinRoom();
 	listener->Create(300, 450, m_eventrect);
 	m_objects[LISTENER_INDEX] = (ObjectinRoom*)listener;
+}
+
+void AudioRoom::Destroy()
+{
+	for(int i = 0; i < ROOM_OBJECT_MAX; ++i)
+	{
+		m_objects[i]->Destroy();
+		delete m_objects[i];
+		m_objects[i] = NULL;
+	}
+	evas_object_del(m_gesturelayer);
+	m_gesturelayer = NULL;
+	evas_object_del(m_eventrect);
+	m_eventrect = NULL;
 }
 
 void AudioRoom::ConfigureSources(const std::vector<RoomSourceProperty>& sources)
@@ -150,17 +174,8 @@ const char* AudioRoom::GetSourceIconPath(int index)
 	return "images/default.png";
 }
 
-void AudioRoom::Destroy()
-{
-	for(int i = 0; i < ROOM_OBJECT_MAX; ++i)
-	{
-		m_objects[i]->Destroy();
-		delete m_objects[i];
-		m_objects[i] = NULL;
-	}
-	evas_object_del(m_eventrect);
-	m_eventrect = NULL;
-}
+
+
 EvasCoordRect AudioRoom::GetRect()
 {
 	EvasCoordRect rect;
@@ -203,6 +218,14 @@ void AudioRoom::handlemoveevent(Evas_Coord x, Evas_Coord y)
 	}
 }
 
+void AudioRoom::handledbclick(Evas_Coord x, Evas_Coord y)
+{
+	for(int i = 0; i < ROOM_OBJECT_MAX; ++i)
+	{
+		m_objects[i]->HandleDBClickEvent(x, y);
+	}
+}
+
 void AudioRoom::mousedown_cb(void *data, Evas *evas, Evas_Object *obj, void *event_info)
 {
 	Evas_Event_Mouse_Down *ev = (Evas_Event_Mouse_Down *) event_info;
@@ -231,6 +254,16 @@ void AudioRoom::mouseup_cb(void *data, Evas *evas, Evas_Object *obj, void *event
 	dlog_print(DLOG_DEBUG, "AudioRoom", "mouse up: (%d, %d)", x, y);
 	AudioRoom* room = (AudioRoom*)data;
 	room->handleupevent(x, y);
+}
+
+Evas_Event_Flags AudioRoom::dbclick_cb(void *data, void *event_info)
+{
+	Elm_Gesture_Taps_Info *p = (Elm_Gesture_Taps_Info *) event_info;
+
+	dlog_print(DLOG_DEBUG, "AudioRoom", "end of double click (%d, %d)", p->x, p->y);
+	AudioRoom* room = (AudioRoom*)data;
+	room->handledbclick(p->x, p->y);
+	return EVAS_EVENT_FLAG_ON_HOLD;
 }
 
 

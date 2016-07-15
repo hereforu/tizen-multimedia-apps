@@ -60,6 +60,7 @@ public:
 	void HandleDownEvent(Evas_Coord x, Evas_Coord y);
 	void HandleUpEvent(Evas_Coord x, Evas_Coord y);
 	void HandleMoveEvent(Evas_Coord x, Evas_Coord y);
+	void HandleDBClickEvent(Evas_Coord x, Evas_Coord y);
 
 protected:
 	void create(Evas_Coord x, Evas_Coord y, Evas_Object* parent);
@@ -76,6 +77,7 @@ private:
 	Evas_Object* m_parent;
 	int m_state;
 	int m_size;
+	int m_z_pos;
 	bool m_inroom;
 };
 

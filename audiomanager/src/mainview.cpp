@@ -77,16 +77,23 @@ AudioManagerModel* MainView::getModel()
 
 void MainView::decorateview(Evas_Object* box)
 {
-	m_room = new AudioRoom();
-	m_room->Create(box);
+	try
+	{
+		m_room = new AudioRoom();
+		m_room->Create(box);
 
-	m_pack = new ButtonPack();
-	m_pack->Create(box);
+		m_pack = new ButtonPack();
+		m_pack->Create(box);
 
-	add_defaultbtns();
+		add_defaultbtns();
 
-	m_timer = ecore_timer_add(0.5, MainView::timer_cb, (void*)this);
-	ecore_timer_freeze(m_timer);
+		m_timer = ecore_timer_add(0.5, MainView::timer_cb, (void*)this);
+		ecore_timer_freeze(m_timer);
+	}
+	catch(const std::runtime_error& e)
+	{
+		throw e;
+	}
 }
 
 void MainView::configure_room(const std::vector<RoomSourceProperty>& sources)
@@ -134,7 +141,7 @@ Posf MainView::convertrelativepos(const EvasCoordRect& rect, const Pos& pos)
 
 	posf.x = posf.x * max_x / (float)rect.w;
 	posf.y = posf.y * max_y / (float)rect.h;
-	posf.z = 0.0f;
+	posf.z = (float)pos.z;
 
 	return posf;
 }

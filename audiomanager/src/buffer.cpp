@@ -21,7 +21,7 @@ Buffer::~Buffer()
 void Buffer::Destroy()
 {
 	alDeleteBuffers(1, &m_buffer);
-	delete m_waveBuf;
+	delete[] m_waveBuf;
 	m_waveBuf = NULL;
 }
 
@@ -130,8 +130,8 @@ bool Buffer::parseWave(SUB_FORMAT_INFO* formatInfo, std::string waveFilePath)
 		int subChunkSize = readWaveFormat(formatInfo, waveFile);
 		readWaveDataInfo(subChunkSize, waveFile);
 
-		m_waveBuf = (void*)new char[m_waveFileSize];
-		readWaveData(m_waveBuf, waveFile);
+		m_waveBuf = new unsigned char[m_waveFileSize];
+		readWaveData((void*)m_waveBuf, waveFile);
 		fclose(waveFile);
 	}
 	catch(const std::runtime_error& e)

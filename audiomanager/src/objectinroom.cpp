@@ -9,8 +9,10 @@
 #include "base.h"
 #include <string>
 
+#define MIN_Z_POS -2
+#define MAX_Z_POS 2
 ObjectinRoom::ObjectinRoom()
-:m_state(NORMAL_STATE), m_inroom(false)
+:m_state(NORMAL_STATE), m_z_pos(0), m_inroom(false)
 {
 
 }
@@ -83,6 +85,19 @@ void ObjectinRoom::HandleMoveEvent(Evas_Coord x, Evas_Coord y)
 		}
 	}
 }
+void ObjectinRoom::HandleDBClickEvent(Evas_Coord x, Evas_Coord y)
+{
+	if(m_inroom && isthispointinrect(x, y))
+	{
+		++m_z_pos;
+		if(m_z_pos > MAX_Z_POS)
+		{
+			m_z_pos = MIN_Z_POS;
+		}
+		m_size = (int)(40 + (5*m_z_pos))* elm_config_scale_get();
+		evas_object_resize(m_object, m_size, m_size);
+	}
+}
 
 EvasCoordRect ObjectinRoom::GetRect()
 {
@@ -99,10 +114,11 @@ Pos ObjectinRoom::Get3DPos()
 	Pos pos;
 	pos.x = rect.x+rect.w/2;
 	pos.y = rect.y+rect.h/2;
-	pos.z = 1; //TODO: z
+	pos.z = m_z_pos*2;
 
 	return pos;
 }
+
 bool ObjectinRoom::IsSelectedState()
 {
 	return (m_state == SELECTED_STATE)? true:false;

@@ -71,7 +71,7 @@ private:
 	bool parseWave(SUB_FORMAT_INFO* formatInfo, std::string waveFilePath);
 
 	int m_waveFileSize;
-	void* m_waveBuf;
+	unsigned char* m_waveBuf;
 	ALuint m_buffer;
 };
 

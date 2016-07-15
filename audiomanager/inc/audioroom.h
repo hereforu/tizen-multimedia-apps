@@ -55,18 +55,21 @@ private:
 	void handledownevent(Evas_Coord x, Evas_Coord y);
 	void handleupevent(Evas_Coord x, Evas_Coord y);
 	void handlemoveevent(Evas_Coord x, Evas_Coord y);
+	void handledbclick(Evas_Coord x, Evas_Coord y);
 
 
 
 	static void mousedown_cb(void *data, Evas *evas, Evas_Object *obj, void *event_info);
 	static void mousemove_cb(void *data, Evas *evas, Evas_Object *obj, void *event_info);
 	static void mouseup_cb(void *data, Evas *evas, Evas_Object *obj, void *event_info);
+	static Evas_Event_Flags dbclick_cb(void *data, void *event_info);
 
 
 
 private:
 	ObjectinRoom* m_objects[ROOM_OBJECT_MAX];
 	Evas_Object* m_eventrect;
+	Evas_Object* m_gesturelayer;
 };
 
 
