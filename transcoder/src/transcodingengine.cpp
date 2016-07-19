@@ -284,7 +284,7 @@ void TranscodingEngine::createmuxer(const char* srcfilename)
 	if((m_muxer_video_track_index = AddTrack(m_demuxer.GetMediaFormat(video_track_index))) == MEDIAMUXER_ERROR_INVALID_PARAMETER)
 		throw std::runtime_error("fail to add a video track");
 	if((m_muxer_audio_track_index = AddTrack(m_demuxer.GetMediaFormat(audio_track_index))) == MEDIAMUXER_ERROR_INVALID_PARAMETER)
-		throw std::runtime_error("fail to add a audio track");
+		throw std::runtime_error("fail to add an audio track");
 
 	if(!StartMuxer())
 		throw std::runtime_error("fail to start muxer");

@@ -18,9 +18,9 @@ public:
 	View();
 	virtual ~View();
 
-	void CreateView(Evas_Object* naviframe, Evas_Object* conformant);
+	void Create(Evas_Object* naviframe, Evas_Object* conformant);
 	virtual void UpdateView() = 0; // ex. view_1 -> view_2 -> view_1, update view_1 if needed
-	void DestroyView();
+	void Destroy();
 	bool IsCreated();
 
 protected:
@@ -35,7 +35,6 @@ protected:
 
 private:
 	Evas_Object* m_naviframe;
-	Evas_Object* m_conformant;
 	Elm_Object_Item * m_Naviitem;
 };
 

@@ -1,6 +1,10 @@
-#include "base.h"
-#include "multimediaapp.h"
+#include "common/base.h"
+#include "common/multimediaapp.h"
 
+#include "mainview.h"
+#include "srcselectionview.h"
+#include "audioManagerModel.h"
+#include <vector>
 
 
 static bool
@@ -11,10 +15,11 @@ app_create(void *data)
 	   If this function returns true, the main loop of application starts
 	   If this function returns false, the application is terminated */
 	MultimediaApp *app = (MultimediaApp *)data;
-	app->HandlerAppCreate();
-	//create_base_gui(ad);
-
-	return true;
+	Model* model = (Model*)new AudioManagerModel;
+	std::vector<View*> views;
+	views.push_back(new MainView);
+	views.push_back(new SrcSelectionView);
+	return app->HandlerAppCreate(model, views);
 }
 
 static void

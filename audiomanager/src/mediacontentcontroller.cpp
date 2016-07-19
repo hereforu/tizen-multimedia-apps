@@ -8,7 +8,7 @@
 #include <stdexcept>
 #include <string>
 #include <stdlib.h>
-#include "base.h"
+#include "common/base.h"
 #include "mediacontentcontroller.h"
 #include <dlog.h>
 

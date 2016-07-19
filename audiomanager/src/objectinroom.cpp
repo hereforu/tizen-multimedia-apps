@@ -6,7 +6,7 @@
  */
 
 #include "objectinroom.h"
-#include "base.h"
+#include "common/base.h"
 #include <string>
 
 #define MIN_Z_POS -2

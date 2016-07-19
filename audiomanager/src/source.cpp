@@ -33,6 +33,7 @@ void Source::GenerateSource(ALuint buffer)
 	alGetSourcef(source, AL_MAX_DISTANCE, &m_max_distance);
 	alGetSourcef(source, AL_REFERENCE_DISTANCE, &m_reference_distance);
 	dlog_print(DLOG_DEBUG, "ALContext", "MAX_GAIN:%f, MIN_GAIN:%f, MAX_DIST:%f, REF_DIST:%f ", m_max_gain, m_min_gain, m_max_distance, m_reference_distance);
+
 	alSourcef(source, AL_GAIN, m_max_gain);
 	alSourcef(source, AL_MAX_DISTANCE, 5.0f);
 	alSource3f(source, AL_POSITION, 0.0f, 0.0f, 0.0f);

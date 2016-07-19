@@ -4,7 +4,7 @@
  *  Created on: June 09, 2016
  *      Author: Hotak
  */
-#include "base.h"
+#include "common/base.h"
 #include "audioManagerModel.h"
 #include <app_common.h>
 AudioManagerModel::AudioManagerModel()
@@ -16,76 +16,29 @@ AudioManagerModel::~AudioManagerModel()
 {
 
 }
-bool AudioManagerModel::creatspecifics()
+
+void AudioManagerModel::creatspecifics()
 {
 	getAudioListinDB();
-	return true;
+	m_context.Create();
 }
 
 void AudioManagerModel::destroyspecifics()
 {
+	m_context.Destroy();
 	removeAllSources();
-
+	m_audioList.clear();
 }
-
-void AudioManagerModel::getAudioListinDB()
-{
-	MediaContent mediaContent;
-	MediaContentParam param;
-	param.mediatype = MC_SOUND_TYPE | MC_MUSIC_TYPE;
-	if(!mediaContent.IsConnected())
-		mediaContent.ConnectDB();
-	mediaContent.GetItem(param, &m_audioList);
-	mediaContent.DisconnectDB();
-}
-
 
 unsigned int AudioManagerModel::GetNumAllMediaItems()
 {
 	return m_audioList.size();
 }
+
 MediaContentItem& AudioManagerModel::GetMediaInfo(int index)
 {
 	AppTool::Assert( index >= 0 && index <  m_audioList.size());
 	return m_audioList[index];
-}
-
-
-void AudioManagerModel::removeAllSources()
-{
-	ALObjectMap::iterator iter = m_objmap.begin();
-	while(iter != m_objmap.end())
-	{
-		ALObject obj = iter->second;
-
-		obj.source->Destroy();
-		delete obj.source;
-		obj.buffer->Destroy();
-		delete obj.buffer;
-
-		++iter;
-	}
-	m_objmap.clear();
-}
-
-void AudioManagerModel::createSources(const std::vector<unsigned int>& selectedsourceindex)
-{
-	for(int i = 0 ; i < selectedsourceindex.size() ; i++)
-	{
-		ALObject object;
-
-		object.buffer = new Buffer();
-		if(!object.buffer->GenerateBuffer(m_audioList[selectedsourceindex[i]].path))
-		{
-			dlog_print(DLOG_FATAL, "AudioManagerModel", "fail to create the buffer of %s",  m_audioList[selectedsourceindex[i]].path.c_str());
-			delete object.buffer;
-			continue;
-		}
-		object.source = new Source();
-		object.source->GenerateSource(object.buffer->GetBufferID());
-
-		m_objmap[selectedsourceindex[i]]=object;
-	}
 }
 
 void AudioManagerModel::UpdateSource(const std::vector<unsigned int>& selectedsourceindex)
@@ -105,21 +58,14 @@ bool AudioManagerModel::IsAlreadySelected(int index)
 	return ( m_objmap.find(index) !=m_objmap.end() )?true:false;
 }
 
-ALObject AudioManagerModel::getobjectbyindex(int index)
-{
-	ALObjectMap::iterator iter = m_objmap.find(index);
-	if(iter==m_objmap.end())
-	{
-		dlog_print(DLOG_FATAL, "AudioManagerModel", "fail play source(%d)", index);
-		return ALObject();
-	}
-	return iter->second;
-}
+
 void AudioManagerModel::PlaySource(unsigned int index)
 {
 	ALObject obj = getobjectbyindex(index);
 	if(obj.source)
+	{
 		obj.source->Play();
+	}
 }
 
 void AudioManagerModel::StopSources()
@@ -167,6 +113,64 @@ void AudioManagerModel::GetSelectedSourceIdx(std::vector<unsigned int>& selected
 		selectedsourceindex.push_back(iter->first);
 		++iter;
 	}
+}
+void AudioManagerModel::removeAllSources()
+{
+	ALObjectMap::iterator iter = m_objmap.begin();
+	while(iter != m_objmap.end())
+	{
+		ALObject obj = iter->second;
+
+		obj.source->Destroy();
+		delete obj.source;
+		obj.buffer->Destroy();
+		delete obj.buffer;
+		++iter;
+	}
+	m_objmap.clear();
+}
+
+void AudioManagerModel::createSources(const std::vector<unsigned int>& selectedsourceindex)
+{
+	for(int i = 0 ; i < selectedsourceindex.size() ; i++)
+	{
+		ALObject object;
+
+		object.buffer = new Buffer();
+		if(!object.buffer->GenerateBuffer(m_audioList[selectedsourceindex[i]].path))
+		{
+			dlog_print(DLOG_FATAL, "AudioManagerModel", "fail to create the buffer of %s",  m_audioList[selectedsourceindex[i]].path.c_str());
+			delete object.buffer;
+			continue;
+		}
+		object.source = new Source();
+		object.source->GenerateSource(object.buffer->GetBufferID());
+
+		m_objmap[selectedsourceindex[i]]=object;
+	}
+}
+
+void AudioManagerModel::getAudioListinDB()
+{
+	MediaContent mediaContent;
+	MediaContentParam param;
+	param.mediatype = MC_SOUND_TYPE | MC_MUSIC_TYPE;
+	if(!mediaContent.IsConnected())
+	{
+		mediaContent.ConnectDB();
+	}
+	mediaContent.GetItem(param, &m_audioList);
+	mediaContent.DisconnectDB();
+}
+ALObject AudioManagerModel::getobjectbyindex(int index)
+{
+	ALObjectMap::iterator iter = m_objmap.find(index);
+	if(iter==m_objmap.end())
+	{
+		dlog_print(DLOG_FATAL, "AudioManagerModel", "fail play source(%d)", index);
+		return ALObject();
+	}
+	return iter->second;
 }
 
 

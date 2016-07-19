@@ -12,7 +12,7 @@
 #define NORMALIZE_X 8
 #define NORMALIZE_Z 6
 
-#include "model.h"
+#include "common/model.h"
 #include "context.h"
 #include "source.h"
 #include "buffer.h"
@@ -69,7 +69,7 @@ public:
 	void LocateListener(float x, float y, float z);
 
 protected:
-	bool creatspecifics();
+	void creatspecifics();
 	void destroyspecifics();
 
 private:

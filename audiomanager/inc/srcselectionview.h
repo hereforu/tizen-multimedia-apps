@@ -9,8 +9,8 @@
 #ifndef SRCSELECTIONVIEW_H_
 #define SRCSELECTIONVIEW_H_
 
-#include "view.h"
-#include "multimediaapp.h"
+#include "common/view.h"
+#include "common/multimediaapp.h"
 #include "audioManagerModel.h"
 #include <stdexcept>
 #include <assert.h>

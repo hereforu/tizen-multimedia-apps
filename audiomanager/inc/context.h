@@ -24,6 +24,9 @@ public:
 	Context();
 	~Context();
 
+	void Create();
+	void Destroy();
+
 	void ResetSource();
 	void setSourcePos(ALuint source, float x, float y, float z);
 	void setListenerPos(float x, float y, float z);
@@ -37,7 +40,7 @@ private:
 
 private:
 	ALCdevice * m_device;
-	ALCcontext* m_contextID;
+	ALCcontext* m_context;
 	std::vector<Source*> m_ImportSourceIdx;
 };
 

@@ -8,23 +8,61 @@
 
 #include "context.h"
 #include <dlog.h>
+#include <stdexcept>
 
 Context::Context()
+:m_device(NULL), m_context(NULL)
 {
-	const ALCchar * m_defaultDeviceName = alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER);
-	m_device = alcOpenDevice(m_defaultDeviceName);
-
-	ALCint attribs[] = {ALC_HRTF_SOFT, ALC_TRUE, 0 };
-	m_contextID = alcCreateContext(m_device, attribs);
-	alcMakeContextCurrent(m_contextID);
-
 }
 
 Context::~Context()
 {
+}
+
+void Context::Create()
+{
+	const ALCchar* defaultDeviceName = alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER);
+	if(defaultDeviceName == NULL)
+	{
+		throw std::runtime_error("fail to alcGetString");
+	}
+	m_device = alcOpenDevice(defaultDeviceName);
+	if(m_device == NULL)
+	{
+		throw std::runtime_error("fail to alcOpenDevice");
+	}
+	ALCint attribs[] = {ALC_HRTF_SOFT, ALC_TRUE, 0 };
+	m_context = alcCreateContext(m_device, attribs);
+	if(m_context == NULL)
+	{
+		Destroy();
+		throw std::runtime_error("fail to alcCreateContext");
+	}
+	if(alcMakeContextCurrent(m_context) == ALC_FALSE)
+	{
+		Destroy();
+		throw std::runtime_error("fail to alcMakeContextCurrent");
+	}
+}
+
+void Context::Destroy()
+{
+	//you don't need to delete source objects here since they are managed by model object
 	alcMakeContextCurrent(NULL);
-	alcDestroyContext(m_contextID);
-	alcCloseDevice(m_device);
+	if(m_context)
+	{
+		alcDestroyContext(m_context);
+		m_context = NULL;
+	}
+	if(m_device)
+	{
+		alcCloseDevice(m_device);
+		m_device = NULL;
+	}
+}
+void Context::ResetSource()
+{
+	m_ImportSourceIdx.clear();
 }
 
 void Context::convertVecToArr(ALuint* arr)
@@ -35,10 +73,7 @@ void Context::convertVecToArr(ALuint* arr)
 	}
 }
 
-void Context::ResetSource()
-{
-	m_ImportSourceIdx.clear();
-}
+
 
 void Context::setSourcePos(ALuint source, float x, float y, float z)
 {
@@ -47,43 +82,42 @@ void Context::setSourcePos(ALuint source, float x, float y, float z)
 	ALenum ret = alGetError();
 	if (ret != AL_NO_ERROR)
 	{
-		dlog_print(DLOG_FATAL, "ALContext", "alSource3f error:%d", ret);
+		dlog_print(DLOG_ERROR, "ALContext", "alSource3f error:%d", ret);
 	}
 }
 
 void Context::setListenerPos(float x, float y, float z)
 {
-	//alListener3f(AL_ORIENTATION, 0.0f, 0.0f, -1.0f);
 	alListener3f(AL_POSITION, x, y, z);
 	dlog_print(DLOG_DEBUG, "ALContext", "listener:(%f, %f, %f)", x, y, z);
 	ALenum ret = alGetError();
 	if (ret != AL_NO_ERROR)
 	{
-		dlog_print(DLOG_FATAL, "ALContext", "alListener3f error:%d", ret);
+		dlog_print(DLOG_ERROR, "ALContext", "alListener3f error:%d", ret);
 	}
 }
 
 void Context::Play()
 {
-	ALuint source[MAXNUM];
+	ALuint source[MAXNUM]={0, };
 	convertVecToArr(source);
 	alSourcePlayv(m_ImportSourceIdx.size(), source);
 	ALenum ret = alGetError();
 	if (ret != AL_NO_ERROR)
 	{
-		dlog_print(DLOG_FATAL, "ALContext", "alSourcePlayv error:%d", ret);
+		dlog_print(DLOG_ERROR, "ALContext", "alSourcePlayv error:%d", ret);
 	}
 }
 
 void Context::Stop()
 {
-	ALuint source[MAXNUM];
+	ALuint source[MAXNUM]={0, };
 	convertVecToArr(source);
 	alSourceStopv(m_ImportSourceIdx.size(), source);
 	ALenum ret = alGetError();
 	if (ret != AL_NO_ERROR)
 	{
-		dlog_print(DLOG_FATAL, "ALContext", "alSourceStopv error:%d", ret);
+		dlog_print(DLOG_ERROR, "ALContext", "alSourceStopv error:%d", ret);
 	}
 }
 

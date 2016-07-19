@@ -5,9 +5,9 @@
  *      Author: Jason
  */
 
-#include "base.h"
-#include "MainView.h"
-#include "multimediaapp.h"
+#include "common/base.h"
+#include "common/multimediaapp.h"
+#include "mainview.h"
 #include <stdexcept>
 
 #define CB_NAME_MACRO(i) MainView::clicked_source##i_cb

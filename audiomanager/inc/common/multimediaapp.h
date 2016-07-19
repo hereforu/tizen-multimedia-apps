@@ -8,6 +8,7 @@
 #include "frame.h"
 #include "model.h"
 #include "templatesingleton.h"
+#include <vector>
 
 #ifndef MULTIMEDIAAPP_H_
 #define MULTIMEDIAAPP_H_
@@ -16,7 +17,7 @@ class MultimediaApp : public TemplateSingleton<MultimediaApp>
 {
 public:
 	MultimediaApp();
-	~MultimediaApp();
+	virtual ~MultimediaApp();
 
 	//change view
 	void MoveNextView();
@@ -24,7 +25,7 @@ public:
 	Model* GetModel();
 
 	//event handler
-	void HandlerAppCreate();
+	bool HandlerAppCreate(Model* model, const std::vector<View*>& views);
 	void HandlerAppTerminate();
 	void HandlerAppPause();
 	void HandlerAppResume();
@@ -34,7 +35,9 @@ public:
 	void HandleDeviceOrientationChangedEvent();
 	void HandleLanguageChangedEvent();
 	void HandleRegionFormatChangedEvent();
-
+private:
+	void destroymodel();
+	void destroyframe();
 private:
 	FrameWindow* m_frame;
 	Model* m_model;

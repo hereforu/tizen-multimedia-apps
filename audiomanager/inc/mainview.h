@@ -8,7 +8,7 @@
 #ifndef MAINVIEW_H_
 #define MAINVIEW_H_
 
-#include "view.h"
+#include "common/view.h"
 #include "audioroom.h"
 #include "buttonpack.h"
 #include "audioManagerModel.h"

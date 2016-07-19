@@ -5,8 +5,8 @@
  *      Author: Jason
  */
 
-#include "base.h"
-#include "frame.h"
+#include "common/base.h"
+#include "common/frame.h"
 #include <stdexcept>
 
 
@@ -22,7 +22,7 @@ FrameWindow::~FrameWindow()
 	deleteallviews();
 }
 
-void FrameWindow::CreateBaseFrame()
+void FrameWindow::Create()
 {
 	try
 	{
@@ -32,9 +32,14 @@ void FrameWindow::CreateBaseFrame()
 	}
 	catch(const std::runtime_error& e)
 	{
-		//how to delete evas_object ?
+		Destroy();
 		throw std::runtime_error(std::string("fail to create the frame wnd because ") +  e.what());
 	}
+}
+
+void FrameWindow::Destroy()
+{
+
 }
 
 void FrameWindow::AddView(View* view)
@@ -117,7 +122,7 @@ void FrameWindow::pushview(View* view)
 		AppTool::Assert(false);
 
 	}
-	view->CreateView(m_naviframe, m_conformant);
+	view->Create(m_naviframe, m_conformant);
 }
 
 void FrameWindow::popview(View* view)
@@ -128,7 +133,7 @@ void FrameWindow::popview(View* view)
 		AppTool::Assert(false);
 
 	}
-	view->DestroyView();
+	view->Destroy();
 }
 void FrameWindow::deleteallviews()
 {
