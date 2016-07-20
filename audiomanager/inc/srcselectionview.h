@@ -41,8 +41,6 @@ protected:
 
 private:
 	void createList(Evas_Object* box);
-	AudioManagerModel* getModel();
-
 	// genlist
 	static char* genlist_text_get_cb(void *data, Evas_Object *obj, const char *part);
 	static Evas_Object* genlist_content_get_cb(void *data, Evas_Object *obj, const char *part);

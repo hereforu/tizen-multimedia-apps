@@ -64,4 +64,9 @@ Evas_Object* View::createbox(Evas_Object* naviframe, Evas_Object* conformant)
 	return box;
 }
 
+Model* View::getmodel()
+{
+	return MultimediaApp::GetInstance()->GetModel();
+}
+
 

@@ -51,6 +51,11 @@ public:
 
 
 private:
+	void locate_new_added_srcs_in_emtpyslots(std::vector<SourceinRoom*>& emptyslots, std::vector<RoomSourceProperty>& new_added_srcs);
+	void remove_existingsrcs_and_get_newsrcs(const std::vector<RoomSourceProperty>& sources, std::vector<SourceinRoom*>& available_slots, std::vector<RoomSourceProperty>& new_added_srcs);
+	Evas_Object* create_eventrect(Evas_Object* parent);
+	Evas_Object* create_gesturelayer(Evas_Object* parent);
+	void create_sources_and_listener(Evas_Object* parent);
 	SourceinRoom* findsourcebyindex(int index);
 	void handledownevent(Evas_Coord x, Evas_Coord y);
 	void handleupevent(Evas_Coord x, Evas_Coord y);

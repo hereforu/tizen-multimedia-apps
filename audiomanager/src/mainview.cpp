@@ -56,10 +56,10 @@ void MainView::UpdateView()
 {
 	std::vector<unsigned int> selectedsourceindex;
 	std::vector<RoomSourceProperty> sources;
-	getModel()->GetSelectedSourceIdx(selectedsourceindex);
+	((AudioManagerModel*)getmodel())->GetSelectedSourceIdx(selectedsourceindex);
 	for(int i = 0; i < selectedsourceindex.size(); ++i)
 	{
-		MediaContentItem item = getModel()->GetMediaInfo(selectedsourceindex[i]);
+		MediaContentItem item = ((AudioManagerModel*)getmodel())->GetMediaInfo(selectedsourceindex[i]);
 		sources.push_back(RoomSourceProperty(selectedsourceindex[i], item.name.c_str()));
 	}
 	configure_room(sources);
@@ -68,12 +68,6 @@ void MainView::UpdateView()
 	add_defaultbtns();
 }
 
-AudioManagerModel* MainView::getModel()
-{
-	AudioManagerModel* amm = static_cast<AudioManagerModel*>(MODEL);
-	AppTool::Assert(amm != NULL);
-	return amm;
-}
 
 void MainView::decorateview(Evas_Object* box)
 {
@@ -151,16 +145,16 @@ void MainView::locateobjects()
 	EvasCoordRect rect = m_room->GetRect();
 	Pos pos = m_room->GetListenerPos();
 	Posf posf = convertrelativepos(rect, pos);
-	getModel()->LocateListener(posf.x, posf.y, posf.z);
+	((AudioManagerModel*)getmodel())->LocateListener(posf.x, posf.y, posf.z);
 
-	getModel()->ResetSource();
+	((AudioManagerModel*)getmodel())->ResetSource();
 	std::vector<ObjectPos> sources_pos;
 	m_room->GetPosofSourcesinRoom(sources_pos);
 	for(int i = 0; i < sources_pos.size(); ++i)
 	{
 		posf = convertrelativepos(rect, sources_pos[i].pos);
-		getModel()->LocateSource(sources_pos[i].objidx, posf.x , posf.y, posf.z);
-		getModel()->PushSource(sources_pos[i].objidx);
+		((AudioManagerModel*)getmodel())->LocateSource(sources_pos[i].objidx, posf.x , posf.y, posf.z);
+		((AudioManagerModel*)getmodel())->PushSource(sources_pos[i].objidx);
 	}
 }
 
@@ -178,14 +172,14 @@ void MainView::handlesourcebtn(int btnid)
 void MainView::handleplaybtn()
 {
 	locateobjects();
-	getModel()->PlaySources();
+	((AudioManagerModel*)getmodel())->PlaySources();
 	ecore_timer_thaw(m_timer);
 }
 
 void MainView::handlestopbtn()
 {
 	ecore_timer_freeze(m_timer);
-	getModel()->StopSources();
+	((AudioManagerModel*)getmodel())->StopSources();
 }
 
 void MainView::handlesrcselbtn()

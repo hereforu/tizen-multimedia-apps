@@ -24,6 +24,7 @@ public:
 	bool IsCreated();
 
 protected:
+	Model* getmodel();
 	virtual void decorateview(Evas_Object* box) = 0;
 	//do not delete elm objects which are attached to the box
 	virtual void destroyremains()=0;

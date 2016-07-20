@@ -52,7 +52,7 @@ private:
 	void locateobjects();
 	void handletimer();
 
-	AudioManagerModel* getModel();
+
 	Posf convertrelativepos(const EvasCoordRect& rect, const Pos& pos);
 private:
 	static void clicked_source0_cb(void *data, Evas_Object *obj, void *event_info);

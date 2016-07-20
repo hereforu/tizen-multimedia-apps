@@ -32,7 +32,7 @@ const char* SrcSelectionView::getedcfilename()
 void SrcSelectionView::decorateview(Evas_Object* box)
 {
 	/* construction */
-	m_srcNum = getModel()->GetNumAllMediaItems();
+	m_srcNum = ((AudioManagerModel*)getmodel())->GetNumAllMediaItems();
 	if(!m_srcNum)
 		popAlarm("No audio files");
 
@@ -48,7 +48,7 @@ void SrcSelectionView::decorateview(Evas_Object* box)
 void SrcSelectionView::destroyremains()
 {
 	/* send current selected list to model */
-	getModel()->UpdateSource(m_selectedidxvec);
+	((AudioManagerModel*)getmodel())->UpdateSource(m_selectedidxvec);
 
 	/* destruction */
 	delete[] m_list_usrData;
@@ -65,16 +65,8 @@ void SrcSelectionView::UpdateView()
 void SrcSelectionView::getSelectedSrc()
 {
 	m_selectedidxvec.clear();
-	getModel()->GetSelectedSourceIdx(m_selectedidxvec);
+	((AudioManagerModel*)getmodel())->GetSelectedSourceIdx(m_selectedidxvec);
 }
-
-AudioManagerModel* SrcSelectionView::getModel()
-{
-	AudioManagerModel* amm = static_cast<AudioManagerModel*>(MODEL);
-	AppTool::Assert(amm != NULL);
-	return amm;
-}
-
 
 /* list */
 bool SrcSelectionView::delete_if_alreadyselected(int idx)
@@ -131,7 +123,7 @@ void SrcSelectionView::src_selected_cb(void *data, Evas_Object *obj, void *event
 
 const char* SrcSelectionView::getsourcedisplayname(int idx)
 {
-	return getModel()->GetMediaInfo(idx).name.c_str();
+	return ((AudioManagerModel*)getmodel())->GetMediaInfo(idx).name.c_str();
 }
 
 char* SrcSelectionView::genlist_text_get_cb(void *data, Evas_Object *obj, const char *part)

@@ -46,6 +46,5 @@ private:
 
 #define MOVE_NEXTVIEW MultimediaApp::GetInstance()->MoveNextView()
 #define MOVE_PREVVIEW MultimediaApp::GetInstance()->MovePrevView()
-#define MODEL MultimediaApp::GetInstance()->GetModel()
 
 #endif /* MULTIMEDIAAPP_H_ */
