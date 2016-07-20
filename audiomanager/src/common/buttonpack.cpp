@@ -6,7 +6,7 @@
  */
 
 #include "common/base.h"
-#include "buttonpack.h"
+#include "common/buttonpack.h"
 
 ButtonPack::ButtonPack()
 :m_parent(NULL)
@@ -28,7 +28,6 @@ void ButtonPack::Destroy()
 	ResetAllButtons();
 	m_parent = NULL;
 }
-
 
 void ButtonPack::AddPacksHorizontally(std::vector<BTPackParam>& params)
 {
