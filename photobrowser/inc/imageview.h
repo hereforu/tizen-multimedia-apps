@@ -9,7 +9,7 @@
 #define IMAGEVIEW_H_
 
 
-#include "view.h"
+#include "common/view.h"
 #include "photobrowsermodel.h"
 #include "exif.h"
 

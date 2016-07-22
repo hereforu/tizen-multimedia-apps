@@ -20,7 +20,9 @@ public:
 	FrameWindow();
 	~FrameWindow();
 
-	void CreateBaseFrame();
+	void Create();
+	void Destroy();
+
 	void AddView(View* view);
 
 

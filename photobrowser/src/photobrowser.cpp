@@ -1,5 +1,9 @@
-#include "base.h"
-#include "multimediaapp.h"
+#include "common/base.h"
+#include "common/multimediaapp.h"
+#include "photobrowsermodel.h"
+#include "imagelistview.h"
+#include "exifview.h"
+#include "imageview.h"
 
 static bool
 app_create(void *data)
@@ -9,10 +13,12 @@ app_create(void *data)
 	   If this function returns true, the main loop of application starts
 	   If this function returns false, the application is terminated */
 	MultimediaApp *app = (MultimediaApp *)data;
-	app->HandlerAppCreate();
-	//create_base_gui(ad);
-
-	return true;
+	Model* model = (Model*)new PhotoBrowserModel;
+	std::vector<View*> views;
+	views.push_back(new ImageListView);
+	views.push_back(new ExifView);
+	views.push_back(new ImageView);
+	return app->HandlerAppCreate(model, views);
 }
 
 static void

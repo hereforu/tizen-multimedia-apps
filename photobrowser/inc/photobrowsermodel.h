@@ -10,8 +10,8 @@
 
 #include <string>
 #include "exif.h"
-#include "model.h"
-#include "mediacontentcontroller.h"
+#include "common/model.h"
+#include "common/mediacontentcontroller.h"
 
 
 
@@ -32,7 +32,7 @@ public:
 
 protected:
 	bool loadexif(const char* imagefilename);
-	bool creatspecifics();
+	void creatspecifics();
 	void destroyspecifics();
 	void buildcontentslist();
 

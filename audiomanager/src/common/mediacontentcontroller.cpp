@@ -9,7 +9,7 @@
 #include <string>
 #include <stdlib.h>
 #include "common/base.h"
-#include "mediacontentcontroller.h"
+#include "common/mediacontentcontroller.h"
 #include <dlog.h>
 
 
@@ -97,7 +97,6 @@ filter_h MediaContent::createfilter(const MediaContentParam& param)
 		media_filter_destroy(filter);
 		throw std::runtime_error(std::string("fail to set condition to the filter with code:")+AppTool::ToString<int>(ret));
 	}
-
 	media_content_order_e order_type = (param.isASC)? MEDIA_CONTENT_ORDER_ASC:MEDIA_CONTENT_ORDER_DESC;
 	if((ret = media_filter_set_order(filter, order_type, param.order_keyword.c_str(), collate_type)) != MEDIA_CONTENT_ERROR_NONE)
 	{

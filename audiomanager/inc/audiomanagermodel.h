@@ -16,7 +16,7 @@
 #include "context.h"
 #include "source.h"
 #include "buffer.h"
-#include "mediacontentcontroller.h"
+#include "common/mediacontentcontroller.h"
 #include <stdlib.h>
 #include <vector>
 #include <string>

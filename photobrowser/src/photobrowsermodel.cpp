@@ -4,9 +4,9 @@
  *  Created on: Jun 29, 2016
  *      Author: Jason
  */
-#include "base.h"
+#include "common/base.h"
 #include "photobrowsermodel.h"
-#include "mediacontentcontroller.h"
+#include "common/mediacontentcontroller.h"
 #include <stdexcept>
 
 const int no_selected_content = -1;
@@ -93,10 +93,9 @@ void PhotoBrowserModel::buildcontentslist()
 }
 
 
-bool PhotoBrowserModel::creatspecifics()
+void PhotoBrowserModel::creatspecifics()
 {
 	buildcontentslist();
-	return true;
 }
 
 void PhotoBrowserModel::destroyspecifics()

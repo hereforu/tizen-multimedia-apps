@@ -9,9 +9,9 @@
 #define EXIFVIEW_H_
 
 
-#include "view.h"
-#include "listctrl.h"
-#include "buttonpack.h"
+#include "common/view.h"
+#include "common/listctrl.h"
+#include "common/buttonpack.h"
 #include "exif.h"
 
 

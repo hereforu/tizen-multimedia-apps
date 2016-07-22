@@ -5,7 +5,7 @@
  *      Author: Jason
  */
 
-#include "genctrl.h"
+#include "common/genctrl.h"
 #include <stdexcept>
 
 

@@ -8,8 +8,8 @@
 #include <stdexcept>
 #include <string>
 #include <stdlib.h>
-#include "base.h"
-#include "mediacontentcontroller.h"
+#include "common/base.h"
+#include "common/mediacontentcontroller.h"
 #include <dlog.h>
 
 

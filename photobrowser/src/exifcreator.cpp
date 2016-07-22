@@ -5,7 +5,7 @@
  *      Author: Jason
  */
 
-#include "base.h"
+#include "common/base.h"
 #include "exifcreator.h"
 #include <stdexcept>
 
@@ -82,7 +82,7 @@ void EXIFCreator::readjpegfile(const char* jpegfilename, unsigned char** jpeg_da
 		fclose(fp);
 		throw std::runtime_error("fail to fseek to the end ");
 	}
-	const int image_start_offset = 20; //from FF DB!! offset is 20 generally
+	const int image_start_offset = 20; //from SOI (FF D8)!! offset is 20 generally
 	*length = ftell(fp)-image_start_offset;
 	if(fseek(fp, image_start_offset, SEEK_SET) != 0)
 	{

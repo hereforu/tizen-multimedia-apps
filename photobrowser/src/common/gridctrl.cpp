@@ -5,7 +5,7 @@
  *      Author: Jason
  */
 
-#include "gridctrl.h"
+#include "common/gridctrl.h"
 
 GridCtrl::GridCtrl()
 {

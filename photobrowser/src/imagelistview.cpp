@@ -7,7 +7,7 @@
 
 
 #include "ImageListView.h"
-#include "multimediaapp.h"
+#include "common/multimediaapp.h"
 #include <stdexcept>
 #include "exifcreator.h"
 
@@ -32,7 +32,7 @@ const char* ImageListView::getedcfilename()
 
 void ImageListView::UpdateView()
 {
-	getmodel()->RebuildContentsList();
+	((PhotoBrowserModel*)getmodel())->RebuildContentsList();
 	m_list.RemoveAllItems();
 	buildthelist(m_list);
 }
@@ -90,7 +90,7 @@ void ImageListView::PrintExif(const char* imagefilename)
 
 void ImageListView::buildthelist(ListCtrl& list)
 {
-	const std::vector<MediaContentItem>& contents = getmodel()->GetContentsList();
+	const std::vector<MediaContentItem>& contents = ((PhotoBrowserModel*)getmodel())->GetContentsList();
 	std::vector<GenCtrlItem> items;
 	for(int i= 0;i < contents.size(); ++i)
 	{
@@ -102,20 +102,20 @@ void ImageListView::buildthelist(ListCtrl& list)
 
 void ImageListView::gotonextview(int id)
 {
-	if(getmodel()->SetSelectedContentIndexifExif(id))
+	if(((PhotoBrowserModel*)getmodel())->SetSelectedContentIndexifExif(id))
 	{
 		MOVE_NEXTVIEW;
 	}
 	else
 	{
-		getmodel()->SetSelectedContentIndex(id);
+		((PhotoBrowserModel*)getmodel())->SetSelectedContentIndex(id);
 		showpopup("EXIF가 없는 이미지 파일입니다! EXIF를 만들어 이미지 파일에 삽입하시겠습니까?");
 	}
 }
 
 void ImageListView::addexif_yes()
 {
-	MediaContentItem content = getmodel()->GetSelectedContent();
+	MediaContentItem content = ((PhotoBrowserModel*)getmodel())->GetSelectedContent();
 	EXIFCreator ec;
 	ec.Create(content.path.c_str());
 	ec.AddResolution(content.width, content.height);

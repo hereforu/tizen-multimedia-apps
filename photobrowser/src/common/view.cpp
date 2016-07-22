@@ -5,56 +5,50 @@
  *      Author: Jason
  */
 
-#include "base.h"
-#include "multimediaapp.h"
-#include "view.h"
+#include "common/multimediaapp.h"
+#include "common/base.h"
+#include "common/view.h"
 #include <stdexcept>
 
 View::View()
-	:m_box(NULL),m_naviframe(NULL), m_conformant(NULL), m_Naviitem(NULL)
+	:m_box(NULL),m_naviframe(NULL), m_Naviitem(NULL)
 {
 
 }
 View::~View()
 {
-	//how to delete layout??
 }
 
-void View::CreateView(Evas_Object* naviframe, Evas_Object* conformant)
+void View::Create(Evas_Object* naviframe, Evas_Object* conformant)
 {
 	try
 	{
 		m_naviframe = naviframe;
-		m_conformant = conformant;
 		m_box = createbox(naviframe, conformant);
 		decorateview(m_box);
 	}
 	catch(const std::runtime_error& e)
 	{
 		//how to delete evas_object ?
-		std::string msg = "fail to create view becuase ";
+		std::string msg = "fail to create view because ";
 		msg += e.what();
 		throw std::runtime_error(msg);
 	}
 }
 
-void View::DestroyView()
+void View::Destroy()
 {
+	destroyremains();
 	elm_box_clear(m_box);
 	elm_naviframe_item_pop(m_naviframe);
 	m_box = NULL;
 	m_naviframe = NULL;
-	m_conformant = NULL;
-
-	destroyremains();
 }
 
 bool View::IsCreated()
 {
 	return (m_box)?true:false;
 }
-
-
 
 Evas_Object* View::createbox(Evas_Object* naviframe, Evas_Object* conformant)
 {
@@ -69,9 +63,10 @@ Evas_Object* View::createbox(Evas_Object* naviframe, Evas_Object* conformant)
 
 	return box;
 }
-PhotoBrowserModel* View::getmodel()
+
+Model* View::getmodel()
 {
-	PhotoBrowserModel* model = static_cast<PhotoBrowserModel*>(MODEL);
-	AppTool::Assert(model != NULL);
-	return model;
+	return MultimediaApp::GetInstance()->GetModel();
 }
+
+

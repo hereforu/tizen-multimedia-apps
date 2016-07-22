@@ -14,19 +14,6 @@
 
 namespace AppTool
 {
-
-	template<typename TClass>
-	class ObjectFactory
-	{
-	public:
-		static TClass* CreateInstance()
-		{
-			TClass* pobject = new TClass;
-			return pobject;
-		}
-	};
-
-
 	template <typename Type>
 	std::string ToString(Type val)
 	{
@@ -36,8 +23,6 @@ namespace AppTool
 	}
 
 	void Assert(bool condition);
-
-	void Iferror_throw(int ret, const char* msg);
 }
 
 #endif /* BASE_H_ */

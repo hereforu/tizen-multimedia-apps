@@ -7,7 +7,8 @@
 
 
 #include "exifview.h"
-#include "multimediaapp.h"
+#include "common/multimediaapp.h"
+#include "photobrowsermodel.h"
 #include <stdexcept>
 
 
@@ -23,7 +24,7 @@ ExifView::~ExifView()
 
 const char* ExifView::getedcfilename()
 {
-	return getmodel()->GetSelectedContent().name.c_str();
+	return ((PhotoBrowserModel*)getmodel())->GetSelectedContent().name.c_str();
 }
 
 void ExifView::decorateview(Evas_Object* box)
@@ -31,7 +32,7 @@ void ExifView::decorateview(Evas_Object* box)
 	try
 	{
 		m_list.Create(box, change_optionview_cb, (void*)this, ListCtrl::SMALL_ITEM_SIZE);
-		setinfo_tolist(m_list, getmodel()->GetExif_of_SelectedContent());
+		setinfo_tolist(m_list, ((PhotoBrowserModel*)getmodel())->GetExif_of_SelectedContent());
 		m_btnpack.Create(box);
 		add_defaultbtns(m_btnpack);
 	}
@@ -82,7 +83,7 @@ std::string ExifView::getresiconpath(const char* iconname)
 void ExifView::UpdateView()
 {
 	m_list.RemoveAllItems();
-	setinfo_tolist(m_list, getmodel()->GetExif_of_SelectedContent());
+	setinfo_tolist(m_list, ((PhotoBrowserModel*)getmodel())->GetExif_of_SelectedContent());
 }
 
 void ExifView::change_optionview(int id)

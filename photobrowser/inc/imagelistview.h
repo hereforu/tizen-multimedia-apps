@@ -8,11 +8,11 @@
 #ifndef IMAGELISTVIEW_H_
 #define IMAGELISTVIEW_H_
 
-#include "view.h"
-#include "gridctrl.h"
-#include "listctrl.h"
+#include "common/view.h"
+#include "common/gridctrl.h"
+#include "common/listctrl.h"
 #include "photobrowsermodel.h"
-#include "buttonpack.h"
+#include "common/buttonpack.h"
 #include "exif.h"
 
 class ImageListView : public View

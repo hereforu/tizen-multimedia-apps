@@ -5,7 +5,7 @@
  *      Author: Jason
  */
 
-#include "base.h"
+#include "common/base.h"
 #include "imageview.h"
 
 ImageView::ImageView()
@@ -53,8 +53,8 @@ void ImageView::decorateview(Evas_Object* box)
 		dlog_print(DLOG_ERROR, "IMAGEVIEW", "fail to evas_object_image_filled_add");
 		return;
 	}
-	m_contents = getmodel()->GetContentsList();
-	m_currentimageindex = getmodel()->GetSelectedIndex();
+	m_contents = ((PhotoBrowserModel*)getmodel())->GetContentsList();
+	m_currentimageindex = ((PhotoBrowserModel*)getmodel())->GetSelectedIndex();
 	elm_image_file_set(m_image, m_contents[m_currentimageindex].path.c_str(), NULL);
 	evas_object_show(m_image);
 
