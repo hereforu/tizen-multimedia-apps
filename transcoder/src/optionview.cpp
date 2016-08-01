@@ -6,9 +6,9 @@
  */
 
 #include "optionview.h"
-#include "multimediaapp.h"
+#include "common/multimediaapp.h"
 #include <stdexcept>
-#include "mediacontentcontroller.h"
+#include "common/mediacontentcontroller.h"
 
 
 
@@ -33,7 +33,7 @@ void OptionView::decorateview(Evas_Object* box)
 	try
 	{
 		m_list.Create(box, choose_one_cb, (void*)this);
-		setinfo_tolist(m_list, getmodel()->GetSelectedContent());
+		setinfo_tolist(m_list, ((TranscoderModel*)getmodel())->GetSelectedContent());
 		m_list.SelectItem(0);
 		m_btnpack.Create(box);
 		add_defaultbtns(m_btnpack);
@@ -62,8 +62,8 @@ void OptionView::setinfo_tolist(ListCtrl& list, const MediaContentItem& content)
 {
 	try
 	{
-		TranscodingOptionType type = getmodel()->GetSelectedTypeofOptions();
-		std::vector<TranscodingOption>& options = getmodel()->GetOptionSet(type);
+		TranscodingOptionType type = ((TranscoderModel*)getmodel())->GetSelectedTypeofOptions();
+		std::vector<TranscodingOption>& options = ((TranscoderModel*)getmodel())->GetOptionSet(type);
 
 		std::vector<GenCtrlItem> items;
 		for(unsigned int i = 0; i < options.size(); ++i)
@@ -81,12 +81,6 @@ std::string OptionView::getresiconpath(const char* iconname)
 {
 	return std::string(app_get_resource_path()) + iconname;
 }
-TranscoderModel* OptionView::getmodel()
-{
-	TranscoderModel* model = static_cast<TranscoderModel*>(MODEL);
-	AppTool::Assert(model != NULL);
-	return model;
-}
 
 
 void OptionView::UpdateView()
@@ -96,8 +90,8 @@ void OptionView::UpdateView()
 
 void OptionView::chooseone(int id)
 {
-	TranscodingOptionType type = getmodel()->GetSelectedTypeofOptions();
-	getmodel()->SelectOption(type, id);
+	TranscodingOptionType type = ((TranscoderModel*)getmodel())->GetSelectedTypeofOptions();
+	((TranscoderModel*)getmodel())->SelectOption(type, id);
 	MOVE_PREVVIEW;
 }
 

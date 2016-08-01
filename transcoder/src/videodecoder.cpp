@@ -4,7 +4,7 @@
  *  Created on: Jul 2, 2016
  *      Author: Jason
  */
-#include "base.h"
+#include "common/base.h"
 #include "videodecoder.h"
 
 VideoDecoder::VideoDecoder()

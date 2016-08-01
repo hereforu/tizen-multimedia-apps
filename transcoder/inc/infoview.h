@@ -9,10 +9,10 @@
 #define INFOVIEW_H_
 
 
-#include "view.h"
-#include "listctrl.h"
+#include "common/view.h"
+#include "common/listctrl.h"
 #include "transcodermodel.h"
-#include "buttonpack.h"
+#include "common/buttonpack.h"
 #include "videoplayer.h"
 #include "popupprogress.h"
 #include "transcodingengine.h"

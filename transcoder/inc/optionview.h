@@ -10,10 +10,10 @@
 
 
 
-#include "view.h"
-#include "listctrl.h"
+#include "common/view.h"
+#include "common/listctrl.h"
 #include "transcodermodel.h"
-#include "buttonpack.h"
+#include "common/buttonpack.h"
 
 
 class OptionView : public View
@@ -36,7 +36,6 @@ private:
 	std::string getresiconpath(const char* iconname);
 	void add_defaultbtns(ButtonPack& btnpack);
 	void setinfo_tolist(ListCtrl& list, const MediaContentItem& content);
-	TranscoderModel* getmodel();
 	void chooseone(int id);
 
 	static void clicked_prev_cb(void *data, Evas_Object *obj, void *event_info);

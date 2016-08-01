@@ -8,11 +8,11 @@
 #ifndef VIDEOLISTVIEW_H_
 #define VIDEOLISTVIEW_H_
 
-#include "view.h"
-#include "gridctrl.h"
-#include "listctrl.h"
+#include "common/view.h"
+#include "common/gridctrl.h"
+#include "common/listctrl.h"
 #include "transcodermodel.h"
-#include "buttonpack.h"
+#include "common/buttonpack.h"
 
 class VideoListView : public View
 {

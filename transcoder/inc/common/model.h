@@ -17,27 +17,18 @@ public:
 	Model();
 	virtual ~Model();
 
-	bool Create();
+	void Create();
 	void Destroy();
 
 	//serialize
 	bool Serialize();
 	bool Load();
 
-
-	void AddSrcToList(const char* srcFileName);
-	const char* GetSrcFromList(int index);
-	int GetSizeOfList();
-
-
 protected:
-	virtual bool creatspecifics() = 0;
+	virtual void creatspecifics() = 0;
 	virtual void destroyspecifics() = 0;
 
 private:
-	bool m_created;
-	std::vector<std::string> m_SrcList;
-
 };
 
 

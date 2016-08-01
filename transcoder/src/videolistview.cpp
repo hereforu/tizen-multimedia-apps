@@ -6,8 +6,8 @@
  */
 
 
-#include "VideoListView.h"
-#include "multimediaapp.h"
+#include "videolistview.h"
+#include "common/multimediaapp.h"
 #include <stdexcept>
 
 
@@ -31,8 +31,8 @@ const char* VideoListView::getedcfilename()
 
 void VideoListView::UpdateView()
 {
-	getmodel()->RebuildContentsList();
-	getmodel()->ResetOptions();
+	((TranscoderModel*)getmodel())->RebuildContentsList();
+	((TranscoderModel*)getmodel())->ResetOptions();
 	m_list.RemoveAllItems();
 	buildthelist(m_list);
 }
@@ -73,7 +73,7 @@ void VideoListView::destroyremains()
 
 void VideoListView::buildthelist(ListCtrl& list)
 {
-	const std::vector<MediaContentItem>& contents = getmodel()->GetContentsList();
+	const std::vector<MediaContentItem>& contents = ((TranscoderModel*)getmodel())->GetContentsList();
 	std::vector<GenCtrlItem> items;
 	for(int i= 0;i < contents.size(); ++i)
 	{
@@ -85,7 +85,7 @@ void VideoListView::buildthelist(ListCtrl& list)
 
 void VideoListView::gotonextview(int id)
 {
-	getmodel()->SetSelectedContentIndex(id);
+	((TranscoderModel*)getmodel())->SetSelectedContentIndex(id);
 	MOVE_NEXTVIEW;
 }
 void VideoListView::popuptimeout_cb(void *data, Evas_Object *obj, void *event_info)

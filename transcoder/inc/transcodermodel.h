@@ -9,8 +9,8 @@
 #define TRANSCODERMODEL_H_
 
 #include <string>
-#include "model.h"
-#include "mediacontentcontroller.h"
+#include "common/model.h"
+#include "common/mediacontentcontroller.h"
 #include "options.h"
 
 
@@ -35,7 +35,7 @@ public:
 	void ResetOptions();
 
 protected:
-	bool creatspecifics();
+	void creatspecifics();
 	void destroyspecifics();
 	void buildcontentslist();
 

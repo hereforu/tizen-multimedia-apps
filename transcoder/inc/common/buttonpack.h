@@ -53,7 +53,8 @@ public:
 	void Destroy();
 	void AddPacksHorizontally(std::vector<BTPackParam>& params);
 	void ResetAllButtons();
-
+private:
+	Evas_Object* createbutton(Evas_Object* parent, const BTPackParam& param);
 
 private:
 	std::vector<BTPack> m_btpacks;

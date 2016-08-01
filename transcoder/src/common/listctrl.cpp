@@ -7,7 +7,7 @@
 
 
 
-#include "listctrl.h"
+#include "common/listctrl.h"
 #include <stdexcept>
 
 ListCtrl::ListCtrl()
@@ -36,7 +36,7 @@ Evas_Object* ListCtrl::creategenctrl(Evas_Object* parent)
 	}
 	return ctrl;
 }
-Elm_Object_Item* ListCtrl::appenditem(Elm_Gen_Item_Class* itc, DataforGenCtrlCB* cbdata, Evas_Smart_Cb selectcb)
+Elm_Object_Item* ListCtrl::appenditem(GenCtrlItem& item, Elm_Gen_Item_Class* itc, DataforGenCtrlCB* cbdata, Evas_Smart_Cb selectcb)
 {
 	Elm_Object_Item* objectitem = elm_genlist_item_append(getctrl(), itc, (void*)cbdata, NULL, ELM_GENLIST_ITEM_NONE, selectcb, (void*)cbdata);
 	if(objectitem ==NULL)
@@ -44,6 +44,8 @@ Elm_Object_Item* ListCtrl::appenditem(Elm_Gen_Item_Class* itc, DataforGenCtrlCB*
 		dlog_print(DLOG_DEBUG, "GenCtrl", "fail to append an item to list ctrl");
 		throw std::runtime_error("fail to append");
 	}
+	if(item.displayname.size() > 25) //too long to display the given text in a line!
+		elm_genlist_item_tooltip_text_set(objectitem, item.displayname.c_str());
 	return objectitem;
 }
 

@@ -7,9 +7,9 @@
 
 
 #include "infoview.h"
-#include "multimediaapp.h"
+#include "common/multimediaapp.h"
 #include <stdexcept>
-#include "mediacontentcontroller.h"
+#include "common/mediacontentcontroller.h"
 #include "transcodingengine.h"
 
 //#define SUPPORT_PLAYER
@@ -34,7 +34,7 @@ InfoView::~InfoView()
 
 const char* InfoView::getedcfilename()
 {
-	return getmodel()->GetSelectedContent().name.c_str();
+	return ((TranscoderModel*)((TranscoderModel*)getmodel()))->GetSelectedContent().name.c_str();
 }
 
 void InfoView::decorateview(Evas_Object* box)
@@ -42,11 +42,11 @@ void InfoView::decorateview(Evas_Object* box)
 	try
 	{
 		m_list.Create(box, change_optionview_cb, (void*)this);
-		setinfo_tolist(m_list, getmodel()->GetSelectedContent());
+		setinfo_tolist(m_list, ((TranscoderModel*)getmodel())->GetSelectedContent());
 #ifdef SUPPORT_PLAYER
 		m_display = createdisplay(box);
 		m_player.Create();
-		m_player.SetMediaAndPrepare(getmodel()->GetSelectedContent().path.c_str(), m_display);
+		m_player.SetMediaAndPrepare(((TranscoderModel*)getmodel())->GetSelectedContent().path.c_str(), m_display);
 		m_player.Play();
 #endif
 		m_btnpack.Create(box);
@@ -123,12 +123,12 @@ void InfoView::setinfo_tolist(ListCtrl& list, const MediaContentItem& content)
 		VideoInfo info;
 		getoriginalvideoinfo(content.path.c_str(), info);
 
-		unsigned int video_option = getmodel()->GetSelectedOption(VIDEO_CODEC_OPTION);
-		unsigned int audio_option = getmodel()->GetSelectedOption(AUDIO_CODEC_OPTION);
-		unsigned int resolution_option = getmodel()->GetSelectedOption(RESOLUTION_OPTION);
-		std::string video_codec = (video_option == ORIGINAL_FEATURE)?info.video_codec:getmodel()->GetOptionName(VIDEO_CODEC_OPTION, video_option);
-		std::string audio_codec = (audio_option == ORIGINAL_FEATURE)?info.audio_codec:getmodel()->GetOptionName(AUDIO_CODEC_OPTION, audio_option);
-		std::string resolution = (resolution_option == ORIGINAL_FEATURE)? AppTool::ToString(content.width)+" X "+AppTool::ToString(content.height):getmodel()->GetOptionName(RESOLUTION_OPTION, resolution_option);
+		unsigned int video_option = ((TranscoderModel*)getmodel())->GetSelectedOption(VIDEO_CODEC_OPTION);
+		unsigned int audio_option = ((TranscoderModel*)getmodel())->GetSelectedOption(AUDIO_CODEC_OPTION);
+		unsigned int resolution_option = ((TranscoderModel*)getmodel())->GetSelectedOption(RESOLUTION_OPTION);
+		std::string video_codec = (video_option == ORIGINAL_FEATURE)?info.video_codec:((TranscoderModel*)getmodel())->GetOptionName(VIDEO_CODEC_OPTION, video_option);
+		std::string audio_codec = (audio_option == ORIGINAL_FEATURE)?info.audio_codec:((TranscoderModel*)getmodel())->GetOptionName(AUDIO_CODEC_OPTION, audio_option);
+		std::string resolution = (resolution_option == ORIGINAL_FEATURE)? AppTool::ToString(content.width)+" X "+AppTool::ToString(content.height):((TranscoderModel*)getmodel())->GetOptionName(RESOLUTION_OPTION, resolution_option);
 
 		items.push_back(GenCtrlItem(VIDEO_CODEC_OPTION, video_codec.c_str(), "no media", getresiconpath("images/video.png").c_str()));
 		items.push_back(GenCtrlItem(AUDIO_CODEC_OPTION, audio_codec.c_str(), "no media", getresiconpath("images/audio.png").c_str()));
@@ -153,14 +153,14 @@ std::string InfoView::getresiconpath(const char* iconname)
 void InfoView::UpdateView()
 {
 	m_list.RemoveAllItems();
-	setinfo_tolist(m_list, getmodel()->GetSelectedContent());
+	setinfo_tolist(m_list, ((TranscoderModel*)getmodel())->GetSelectedContent());
 }
 
 void InfoView::change_optionview(int id)
 {
 	if(id < MAX_OPTION)
 	{
-		getmodel()->SelectTypeofOptions((TranscodingOptionType)id);
+		((TranscoderModel*)getmodel())->SelectTypeofOptions((TranscodingOptionType)id);
 		MOVE_NEXTVIEW;
 	}
 }
@@ -185,8 +185,8 @@ void InfoView::getresolutionbycode(unsigned int code, int& width, int& height)
 {
 	if(code == ORIGINAL_FEATURE)
 	{
-		width = getmodel()->GetSelectedContent().width;
-		height = getmodel()->GetSelectedContent().height;
+		width = ((TranscoderModel*)getmodel())->GetSelectedContent().width;
+		height = ((TranscoderModel*)getmodel())->GetSelectedContent().height;
 	}
 	else
 	{
@@ -200,13 +200,13 @@ void InfoView::long_func_transcoding(Ecore_Thread *thread)
 {
 	dlog_print(DLOG_DEBUG, "InfoView", "long_func_transcoding has been called");
 	CodecInfo venc, aenc;
-	venc.venc.codecid = (mediacodec_codec_type_e)getmodel()->GetSelectedOption(VIDEO_CODEC_OPTION);
-	getresolutionbycode(getmodel()->GetSelectedOption(RESOLUTION_OPTION), venc.venc.width, venc.venc.height);
+	venc.venc.codecid = (mediacodec_codec_type_e)((TranscoderModel*)getmodel())->GetSelectedOption(VIDEO_CODEC_OPTION);
+	getresolutionbycode(((TranscoderModel*)getmodel())->GetSelectedOption(RESOLUTION_OPTION), venc.venc.width, venc.venc.height);
 	venc.venc.fps = 30;
 	venc.venc.target_bits =(int)((double)venc.venc.width*(double)venc.venc.height*(double)venc.venc.fps*0.20);
 
 
-	aenc.aenc.codecid = (mediacodec_codec_type_e)getmodel()->GetSelectedOption(AUDIO_CODEC_OPTION);
+	aenc.aenc.codecid = (mediacodec_codec_type_e)((TranscoderModel*)getmodel())->GetSelectedOption(AUDIO_CODEC_OPTION);
 	aenc.aenc.channel = ORIGINAL_FEATURE;
 	aenc.aenc.samplerate = ORIGINAL_FEATURE;
 	aenc.aenc.bit = ORIGINAL_FEATURE;
@@ -214,7 +214,7 @@ void InfoView::long_func_transcoding(Ecore_Thread *thread)
 
 	try
 	{
-		m_transcodingengine.Create(getmodel()->GetSelectedContent().path.c_str(), getmodel()->GetSelectedContent().duration, venc, aenc);
+		m_transcodingengine.Create(((TranscoderModel*)getmodel())->GetSelectedContent().path.c_str(), ((TranscoderModel*)getmodel())->GetSelectedContent().duration, venc, aenc);
 		ecore_timer_thaw(m_timer);
 		m_transcodingengine.Start();
 		ecore_timer_freeze(m_timer);

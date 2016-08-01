@@ -4,12 +4,8 @@
  *  Created on: May 24, 2016
  *      Author: Jason
  */
-#include "base.h"
-#include "multimediaapp.h"
-#include "transcodermodel.h"
-#include "videolistview.h"
-#include "infoview.h"
-#include "optionview.h"
+#include "common/base.h"
+#include "common/multimediaapp.h"
 #include <stdexcept>
 
 
@@ -42,36 +38,37 @@ Model* MultimediaApp::GetModel()
 	return m_model;
 }
 
-void MultimediaApp::HandlerAppCreate()
+bool MultimediaApp::HandlerAppCreate(Model* model, const std::vector<View*>& views)
 {
-	//todo: add exception handling
 	try
 	{
-		m_model = (Model*)new TranscoderModel();
+		m_model = model;
 		m_model->Create();
-		//create frame
 		m_frame = new FrameWindow;
-		m_frame->CreateBaseFrame();
-		m_frame->AddView(AppTool::ObjectFactory<VideoListView>::CreateInstance());
-		m_frame->AddView(AppTool::ObjectFactory<InfoView>::CreateInstance());
-		m_frame->AddView(AppTool::ObjectFactory<OptionView>::CreateInstance());
+		m_frame->Create();
+		for(unsigned int i = 0; i < views.size(); ++i)
+		{
+			m_frame->AddView(views[i]);
+		}
 		m_frame->ActivateFirstView();
 		m_frame->Show();
 	}
 	catch(const std::runtime_error& e)
 	{
+		destroyframe();
+		destroymodel();
 		std::string msg = "fail to create App because ";
 		msg += e.what();
 		dlog_print(DLOG_FATAL, "FrameWindow", msg.c_str());
+		return false;
 	}
+	return true;
 }
 
 void MultimediaApp::HandlerAppTerminate()
 {
-	delete m_frame;
-	m_frame = NULL;
-	delete m_model;
-	m_model = NULL;
+	destroyframe();
+	destroymodel();
 }
 void MultimediaApp::HandlerAppPause()
 {
@@ -108,6 +105,23 @@ void MultimediaApp::HandleRegionFormatChangedEvent()
 {
 
 }
-
+void MultimediaApp::destroymodel()
+{
+	if(m_model)
+	{
+		m_model->Destroy();
+		delete m_model;
+		m_model = NULL;
+	}
+}
+void MultimediaApp::destroyframe()
+{
+	if(m_frame)
+	{
+		m_frame->Destroy();
+		delete m_frame;
+		m_frame = NULL;
+	}
+}
 
 

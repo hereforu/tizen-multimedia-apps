@@ -8,7 +8,7 @@
 #ifndef POPUPPROGRESS_H_
 #define POPUPPROGRESS_H_
 
-#include "base.h"
+#include "common/base.h"
 #include <Elementary.h>
 
 typedef void (*Porgress_Cancel_Cb)(void *data); //for cancel

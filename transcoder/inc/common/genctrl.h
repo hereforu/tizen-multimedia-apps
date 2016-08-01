@@ -47,11 +47,16 @@ typedef void (*GenCtrl_Select_Cb)(void *data, int index);
 class GenCtrl
 {
 public:
+	enum
+	{
+		BIG_ITEM_SIZE = 100,
+		SMALL_ITEM_SIZE = 50
+	};
 
 	GenCtrl();
 	virtual ~GenCtrl();
 
-	void Create(Evas_Object* parent, GenCtrl_Select_Cb selectcb_toview = NULL, void* data = NULL);
+	void Create(Evas_Object* parent, GenCtrl_Select_Cb selectcb_toview = NULL, void* data = NULL, int iconsize = BIG_ITEM_SIZE);
 	void Destroy();
 
 	void AppendItem(GenCtrlItem& item);
@@ -67,7 +72,7 @@ public:
 protected:
 	Evas_Object* getctrl();
 	virtual Evas_Object* creategenctrl(Evas_Object* parent) = 0;
-	virtual Elm_Object_Item* appenditem(Elm_Gen_Item_Class* itc, DataforGenCtrlCB* cbdata, Evas_Smart_Cb selectcb) = 0;
+	virtual Elm_Object_Item* appenditem(GenCtrlItem& item, Elm_Gen_Item_Class* itc, DataforGenCtrlCB* cbdata, Evas_Smart_Cb selectcb) = 0;
 	virtual Elm_Gen_Item_Class* createitc(Elm_Gen_Item_Text_Get_Cb textcb, Elm_Gen_Item_Content_Get_Cb contentcb, Elm_Gen_Item_Del_Cb delcb) = 0;
 	virtual void freeitc(Elm_Gen_Item_Class* itc) = 0;
 	virtual void removeallitems() = 0;
@@ -84,6 +89,7 @@ private:
 	static void item_selected_cb(void *data, Evas_Object *obj, void *event_info);
 
 private:
+	int m_iconsize;
 	int m_selectedid;
 	GenCtrl_Select_Cb m_cbtoview;
 	void* m_cbtoview_data;

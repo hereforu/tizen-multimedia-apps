@@ -5,7 +5,7 @@
  *      Author: Jason
  */
 
-#include "gridctrl.h"
+#include "common/gridctrl.h"
 
 GridCtrl::GridCtrl()
 {
@@ -31,7 +31,7 @@ Evas_Object* GridCtrl::creategenctrl(Evas_Object* parent)
 	}
 	return ctrl;
 }
-Elm_Object_Item* GridCtrl::appenditem(Elm_Gen_Item_Class* itc, DataforGenCtrlCB* cbdata, Evas_Smart_Cb selectcb)
+Elm_Object_Item* GridCtrl::appenditem(GenCtrlItem& item, Elm_Gen_Item_Class* itc, DataforGenCtrlCB* cbdata, Evas_Smart_Cb selectcb)
 {
 	return elm_gengrid_item_append(getctrl(), itc, (void*)cbdata, selectcb, (void*)cbdata);
 }
