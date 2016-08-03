@@ -29,6 +29,13 @@ public:
 	};
 	enum
 	{
+		DEMUX_COUNTER = 0,
+		DECODE_COUNTER,
+		ENCODE_COUNTER,
+		MAX_COUNTER
+	};
+	enum
+	{
 		VIDEO_TRACK = 0,
 		AUDIO_TRACK,
 		MAX_TRACKS
@@ -45,7 +52,8 @@ public:
 	double GetProgress();
 
 private:
-	void process_track(int track_index, int muxer_track_index, CodecBase* decoder, CodecBase* encoder);
+	void transcoding();
+	void process_track(int track_index, int muxer_track_index, CodecBase* decoder, CodecBase* encoder, int counter[]);
 	bool feed_decoder_with_packet(CodecBase* decoder, int track_index, int& count);
 	bool feed_encoder_with_packet(CodecBase* decoder, CodecBase* encoder, int& count);
 	bool feed_muxer_with_packet(CodecBase* encoder,int muxer_track_index, int& count);

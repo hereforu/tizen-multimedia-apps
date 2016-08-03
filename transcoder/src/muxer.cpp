@@ -28,7 +28,8 @@ bool CreateMuxer(const char* dstfilepath, mediamuxer_output_format_e format)
 		dlog_print(DLOG_ERROR, "MUXER", "mediamuxer_create:%d", ret);
 		return false;
 	}
-	ret = mediamuxer_set_data_sink(s_muxer, path, format);
+	dlog_print(DLOG_ERROR, "MUXER", "mediamuxer_set_data_sink param:%s, format:%d", path, (int)format);
+	ret = mediamuxer_set_data_sink(s_muxer, const_cast<char*>(dstfilepath), format);
 	if(ret != MEDIAMUXER_ERROR_NONE)
 	{
 		dlog_print(DLOG_ERROR, "MUXER", "mediamuxer_set_data_sink:%d", ret);
@@ -81,8 +82,9 @@ bool StartMuxer()
 	ret = mediamuxer_start(s_muxer);
 	if(ret != MEDIAMUXER_ERROR_NONE)
 	{
+		dlog_print(DLOG_ERROR, "MUXER", "mediamuxer_start:%d before unprepare", ret);
 		mediamuxer_unprepare(s_muxer);
-		dlog_print(DLOG_ERROR, "MUXER", "mediamuxer_start:%d", ret);
+		dlog_print(DLOG_ERROR, "MUXER", "mediamuxer_start:%d after unprepare", ret);
 		return false;
 	}
 	dlog_print(DLOG_DEBUG, "MUXER", "mediamuxer_start success", ret);

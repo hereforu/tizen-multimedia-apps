@@ -13,6 +13,17 @@
 #include "mediadef.h"
 #include <vector>
 
+typedef struct _TrackForDemuxer
+{
+	_TrackForDemuxer()
+	:packet(NULL)
+	{
+
+	}
+	TrackInfo info;
+	media_packet_h packet;
+}TrackForDemuxer;
+
 class Demuxer
 {
 public:
@@ -22,10 +33,10 @@ public:
 	void Create(const char* srcfilename);
 	void Destroy();
 
-	void Prepare(int track_index);
+	void Prepare();
 	bool ReadSeample(int track_index, media_packet_h* packet);
 	bool IsEoS(int track_index);
-	void Unprepare(int track_index);
+	void Unprepare();
 
 	unsigned int GetNumTracks();
 	media_format_h GetMediaFormat(int track_index);
@@ -38,7 +49,7 @@ public:
 
 
 private:
-	bool read_sample(int track_index, media_packet_h* packet);
+	int read_sample(int track_index, media_packet_h* packet);
 	void extract_tracks();
 	void iferror_throw(int ret, const char* msg);
 	void handle_eos(int track_num);
@@ -46,13 +57,12 @@ private:
 	static void demuxer_eos_cb(int track_num, void *user_data);
 	static void demuxer_error_cb (mediademuxer_error_e error, void *user_data);
 private:
-	media_packet_h m_packet;
+
 	int m_videotrackindex;
 	int m_audiotrackindex;
 	mediademuxer_h m_demuxer;
-	std::vector<TrackInfo> m_tracks;
-	bool m_eosflag;
 
+	std::vector<TrackForDemuxer> m_tracks;
 };
 
 
