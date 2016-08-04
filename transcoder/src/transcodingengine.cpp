@@ -54,8 +54,7 @@ void TranscodingEngine::Destroy()
 {
 	try
 	{
-		StopMuxer();
-		DestroyMuxer();
+		m_muxer.Destroy();
 		m_demuxer.Destroy();
 		m_vdecoder.Destroy();
 		m_vencoder.Destroy();
@@ -149,7 +148,7 @@ bool TranscodingEngine::feed_muxer_with_packet(CodecBase* encoder, int muxer_tra
 		if(encoder->Get_Packets(encoded_packet))
 		{
 			++count;
-			if(WriteSample(muxer_track_index, encoded_packet)==false)
+			if(m_muxer.WriteSample(muxer_track_index, encoded_packet)==false)
 			{
 				media_packet_destroy(encoded_packet);
 				return false;
@@ -212,9 +211,9 @@ void TranscodingEngine::transcoding()
 	}
 	dlog_print(DLOG_DEBUG, "TranscodingEngine", "the end of transcoding");
 	if(video_track_index != -1)
-		CloseTrack(m_muxer_video_track_index);
+		m_muxer.CloseTrack(m_muxer_video_track_index);
 	if(audio_track_index != -1)
-		CloseTrack(m_muxer_audio_track_index);
+		m_muxer.CloseTrack(m_muxer_audio_track_index);
 
 }
 void TranscodingEngine::Start()
@@ -222,7 +221,9 @@ void TranscodingEngine::Start()
 	try
 	{
 		m_demuxer.Prepare();
+		m_muxer.Start();
 		transcoding();
+		m_muxer.Stop();
 		m_demuxer.Unprepare();
 	}
 	catch(const std::runtime_error& e)
@@ -299,21 +300,10 @@ void TranscodingEngine::createdemuxer(const char* srcfilename)
 }
 void TranscodingEngine::createmuxer(const char* srcfilename)
 {
-	if(!CreateMuxer(generatedstfilename(srcfilename), MEDIAMUXER_CONTAINER_FORMAT_MP4))
-		throw std::runtime_error("fail to create muxer. please check muxer error");
-
-	int video_track_index = m_demuxer.GetVideoTrackIndex();
-	if((m_muxer_video_track_index = AddTrack(m_demuxer.GetMediaFormat(video_track_index))) == MEDIAMUXER_ERROR_INVALID_PARAMETER)
-		throw std::runtime_error("fail to add a video track");
-
-	int audio_track_index = m_demuxer.GetAudioTrackIndex();
-	if(audio_track_index != -1)
-	{
-		if((m_muxer_audio_track_index = AddTrack(m_demuxer.GetMediaFormat(audio_track_index))) == MEDIAMUXER_ERROR_INVALID_PARAMETER)
-			throw std::runtime_error("fail to add an audio track");
-	}
-	if(!StartMuxer())
-		throw std::runtime_error("fail to start muxer");
+	m_muxer.Create(generatedstfilename(srcfilename), MEDIAMUXER_CONTAINER_FORMAT_MP4);
+	m_muxer_video_track_index = m_muxer.AddTrack(m_demuxer.GetMediaFormat(m_demuxer.GetVideoTrackIndex()));
+	if(m_demuxer.GetAudioTrackIndex() != -1)
+		m_muxer_audio_track_index = m_muxer.AddTrack(m_demuxer.GetMediaFormat(m_demuxer.GetAudioTrackIndex()));
 }
 
 void TranscodingEngine::createcodec(CodecInfo& venc, CodecInfo& aenc)

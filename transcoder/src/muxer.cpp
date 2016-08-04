@@ -5,119 +5,83 @@
  *      Author: Jason
  */
 
+#include "common/base.h"
 #include "muxer.h"
 #include "transcoder.h"
-#include <string.h>
+#include <stdexcept>
 
 
-#define MAX_TRACK_FOR_MUXER 2
-
-static mediamuxer_h s_muxer = NULL;
-static int s_numtrack = 0;
-
-bool CreateMuxer(const char* dstfilepath, mediamuxer_output_format_e format)
+Muxer::Muxer()
+:m_muxer(NULL)
 {
-	char path[256]={0, };
-	int ret = MEDIAMUXER_ERROR_NONE;
-	strcpy(path, dstfilepath);
-	if(s_muxer != NULL)
-		return false;
-	ret = mediamuxer_create(&s_muxer);
-	if(ret != MEDIAMUXER_ERROR_NONE)
-	{
-		dlog_print(DLOG_ERROR, "MUXER", "mediamuxer_create:%d", ret);
-		return false;
-	}
-	dlog_print(DLOG_ERROR, "MUXER", "mediamuxer_set_data_sink param:%s, format:%d", path, (int)format);
-	ret = mediamuxer_set_data_sink(s_muxer, const_cast<char*>(dstfilepath), format);
-	if(ret != MEDIAMUXER_ERROR_NONE)
-	{
-		dlog_print(DLOG_ERROR, "MUXER", "mediamuxer_set_data_sink:%d", ret);
-		return false;
-	}
-	s_numtrack = 0;
-	return true;
+
+}
+Muxer::~Muxer()
+{
+
 }
 
-void DestroyMuxer()
+void Muxer::Create(const char* dstfilepath, mediamuxer_output_format_e format)
 {
+	m_dstfilename = dstfilepath;
+	AppTool::Iferror_throw(mediamuxer_create(&m_muxer), "fail to mediamuxer_create");
 	int ret = MEDIAMUXER_ERROR_NONE;
-	if(s_muxer == NULL)
-		return;
-	ret = mediamuxer_destroy(s_muxer);
-	if(ret != MEDIAMUXER_ERROR_NONE)
+	if((ret = mediamuxer_set_data_sink(m_muxer, const_cast<char*>(m_dstfilename.c_str()), format))!= MEDIAMUXER_ERROR_NONE)
 	{
-		dlog_print(DLOG_DEBUG, "MUXER", "mediamuxer_destroy:%d", ret);
-		return;
+		mediamuxer_destroy(m_muxer);
+		m_muxer = NULL;
+		throw std::runtime_error("fail to mediamuxer_set_data_sinkr");
 	}
 }
 
-int AddTrack(media_format_h media_format)
+void Muxer::Destroy()
 {
+	AppTool::Iferror_throw(mediamuxer_destroy(m_muxer), "fail to mediamuxer_destroy");
+}
 
-	int ret = MEDIAMUXER_ERROR_NONE;
+int Muxer::AddTrack(media_format_h media_format)
+{
 	int index = MEDIAMUXER_ERROR_INVALID_PARAMETER;
-	if(s_muxer == NULL)
-		return MEDIAMUXER_ERROR_INVALID_OPERATION;
-	ret = mediamuxer_add_track(s_muxer, media_format, &index);
-	if(ret != MEDIAMUXER_ERROR_NONE)
-	{
-		dlog_print(DLOG_DEBUG, "MUXER", "mediamuxer_add_track:%d", ret);
-	}
+	AppTool::Iferror_throw(mediamuxer_add_track(m_muxer, media_format, &index), "fail to mediamuxer_add_track");
 	return index;
 }
 
-bool StartMuxer()
+void Muxer::CloseTrack(int track_index)
+{
+	AppTool::Iferror_throw(mediamuxer_close_track(m_muxer, track_index), "fail to mediamuxer_close_track");
+}
+
+void Muxer::Start()
+{
+	AppTool::Iferror_throw(mediamuxer_prepare(m_muxer), "fail to mediamuxer_prepare");
+	int ret = MEDIAMUXER_ERROR_NONE;
+	if((ret = mediamuxer_start(m_muxer))!= MEDIAMUXER_ERROR_NONE)
+	{
+		mediamuxer_unprepare(m_muxer);
+		m_muxer = NULL;
+		throw std::runtime_error("fail to mediamuxer_start");
+	}
+}
+bool Muxer::WriteSample(int track_index, media_packet_h sample)
 {
 	int ret = MEDIAMUXER_ERROR_NONE;
-	if(s_muxer == NULL)
-		return false;
-	ret = mediamuxer_prepare(s_muxer);
-	if(ret != MEDIAMUXER_ERROR_NONE)
+	if((ret = mediamuxer_write_sample(m_muxer, track_index, sample))!= MEDIAMUXER_ERROR_NONE)
 	{
-		dlog_print(DLOG_ERROR, "MUXER", "mediamuxer_prepare:%d", ret);
+		dlog_print(DLOG_ERROR, "Muxer", "fail to mediamuxer_write_sample:%d", ret);
 		return false;
 	}
-	dlog_print(DLOG_DEBUG, "MUXER", "mediamuxer_prepare success", ret);
-	ret = mediamuxer_start(s_muxer);
-	if(ret != MEDIAMUXER_ERROR_NONE)
-	{
-		dlog_print(DLOG_ERROR, "MUXER", "mediamuxer_start:%d before unprepare", ret);
-		mediamuxer_unprepare(s_muxer);
-		dlog_print(DLOG_ERROR, "MUXER", "mediamuxer_start:%d after unprepare", ret);
-		return false;
-	}
-	dlog_print(DLOG_DEBUG, "MUXER", "mediamuxer_start success", ret);
 	return true;
 }
-bool WriteSample(int track_index, media_packet_h sample)
+void Muxer::Stop()
 {
-	int ret = mediamuxer_write_sample(s_muxer, track_index, sample);
+	int ret = mediamuxer_stop(m_muxer);
 	if(ret != MEDIAMUXER_ERROR_NONE)
-	{
-		dlog_print(DLOG_DEBUG, "MUXER", "fail to mediamuxer_write_sample:%d", ret);
-		return false;
-	}
-	return true;
-}
-bool CloseTrack(int track_index)
-{
-	int ret = mediamuxer_close_track(s_muxer, track_index);
+		dlog_print(DLOG_ERROR, "Muxer", "fail to mediamuxer_stop:%d", ret);
+	ret = mediamuxer_unprepare(m_muxer);
 	if(ret != MEDIAMUXER_ERROR_NONE)
-	{
-		dlog_print(DLOG_DEBUG, "MUXER", "fail to close track:%d", ret);
-		return false;
-	}
-	return true;
+		dlog_print(DLOG_ERROR, "Muxer", "fail to mediamuxer_unprepare:%d", ret);
 }
-bool StopMuxer()
-{
-	if(s_muxer == NULL)
-		return false;
-	mediamuxer_stop(s_muxer);
-	mediamuxer_unprepare(s_muxer);
-	return true;
-}
+
 
 
 

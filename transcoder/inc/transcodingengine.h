@@ -10,6 +10,7 @@
 
 #include "mediadef.h"
 #include "demuxer.h"
+#include "muxer.h"
 #include "videodecoder.h"
 #include "videoencoder.h"
 #include "audiodecoder.h"
@@ -67,6 +68,7 @@ private:
 	int m_progress_count;
 	int m_estimated_packets;
 	Demuxer m_demuxer;
+	Muxer m_muxer;
 	VideoDecoder m_vdecoder;
 	VideoEncoder m_vencoder;
 	AudioDecoder m_adecoder;
