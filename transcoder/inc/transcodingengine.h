@@ -61,8 +61,10 @@ private:
 	void print_errorcode_for_debug();
 	const char* generatedstfilename(const char* srcfilename);
 	void createdemuxer(const char* srcfilename);
-	void createcodec(CodecInfo& venc, CodecInfo& aenc);
+	void createvideocodec(CodecInfo& venc);
+	void createaudiocodec(CodecInfo& aenc);
 	void createmuxer(const char* srcfilename);
+	bool isaudioavailable();
 
 private:
 	int m_progress_count;

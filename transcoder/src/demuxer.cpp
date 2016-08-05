@@ -88,7 +88,9 @@ int Demuxer::read_sample(int track_index, media_packet_h* packet)
 {
 	if(m_tracks[track_index].info.eos == true)
 		return MEDIADEMUXER_ERROR_NONE;
+	dlog_print(DLOG_DEBUG, "Demuxer", "enter mediademuxer_read_sample");
 	int ret = mediademuxer_read_sample(m_demuxer, track_index, packet);
+	dlog_print(DLOG_DEBUG, "Demuxer", "exit from mediademuxer_read_sample(%d)", ret);
 	if(ret != MEDIADEMUXER_ERROR_NONE)
 	{
 		dlog_print(DLOG_ERROR, "Demuxer", "mediademuxer_read_sample(%d)", ret);
@@ -116,10 +118,12 @@ unsigned int Demuxer::GetNumTracks()
 {
 	return m_tracks.size();
 }
+
 media_format_h Demuxer::GetMediaFormat(int track_index)
 {
 	return m_tracks[track_index].info.fmt;
 }
+
 bool Demuxer::GetVideoDecInfo(CodecInfo& vdec)
 {
 	if(m_videotrackindex == -1)
@@ -141,6 +145,7 @@ bool Demuxer::GetVideoDecInfo(CodecInfo& vdec)
 
 	return false;
 }
+
 bool Demuxer::GetAudioDecInfo(CodecInfo& adec)
 {
 	if(m_audiotrackindex == -1)
@@ -163,7 +168,6 @@ bool Demuxer::GetAudioDecInfo(CodecInfo& adec)
 	return false;
 }
 
-
 int Demuxer::GetVideoTrackIndex()
 {
 	return m_videotrackindex;
@@ -173,6 +177,7 @@ int Demuxer::GetAudioTrackIndex()
 {
 	return m_audiotrackindex;
 }
+
 void Demuxer::extract_tracks()
 {
 	int trackcount = 0;
