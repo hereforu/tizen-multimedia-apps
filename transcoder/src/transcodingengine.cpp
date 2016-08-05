@@ -13,7 +13,7 @@
 #include <stdexcept>
 
 //#define IMAGE_RESIZER_ON
-#define AUDIO_EXCLUDED
+//#define AUDIO_EXCLUDED
 
 
 TranscodingEngine::TranscodingEngine()
@@ -232,11 +232,19 @@ void TranscodingEngine::transcoding()
 }
 void TranscodingEngine::Start()
 {
+#ifdef AUDIO_EXCLUDED
+	m_demuxer.Prepare(true);
+#else
 	m_demuxer.Prepare();
+#endif
 	m_muxer.Start();
 	transcoding();
 	m_muxer.Stop();
+#ifdef AUDIO_EXCLUDED
+	m_demuxer.Unprepare(true);
+#else
 	m_demuxer.Unprepare();
+#endif
 }
 
 void TranscodingEngine::Stop()

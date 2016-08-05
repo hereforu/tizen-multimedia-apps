@@ -33,10 +33,10 @@ public:
 	void Create(const char* srcfilename);
 	void Destroy();
 
-	void Prepare();
+	void Prepare(bool forcevideoonly = false);
 	bool ReadSeample(int track_index, media_packet_h* packet);
 	bool IsEoS(int track_index);
-	void Unprepare();
+	void Unprepare(bool forcevideoonly = false);
 
 	unsigned int GetNumTracks();
 	media_format_h GetMediaFormat(int track_index);

@@ -37,6 +37,7 @@ void Muxer::Create(const char* dstfilepath, mediamuxer_output_format_e format)
 void Muxer::Destroy()
 {
 	AppTool::Iferror_throw(mediamuxer_destroy(m_muxer), "fail to mediamuxer_destroy");
+	m_muxer = NULL;
 }
 
 int Muxer::AddTrack(media_format_h media_format)
@@ -65,21 +66,21 @@ void Muxer::Start()
 bool Muxer::WriteSample(int track_index, media_packet_h sample)
 {
 	int ret = MEDIAMUXER_ERROR_NONE;
+	dlog_print(DLOG_DEBUG, "Muxer", "enter mediamuxer_write_sample");
 	if((ret = mediamuxer_write_sample(m_muxer, track_index, sample))!= MEDIAMUXER_ERROR_NONE)
 	{
 		dlog_print(DLOG_ERROR, "Muxer", "fail to mediamuxer_write_sample:%d", ret);
 		return false;
 	}
+	dlog_print(DLOG_DEBUG, "Muxer", "exit mediamuxer_write_sample:%d", ret);
 	return true;
 }
 void Muxer::Stop()
 {
 	int ret = mediamuxer_stop(m_muxer);
-	if(ret != MEDIAMUXER_ERROR_NONE)
-		dlog_print(DLOG_ERROR, "Muxer", "fail to mediamuxer_stop:%d", ret);
+	dlog_print(DLOG_DEBUG, "Muxer", "mediamuxer_stop:%d", ret);
 	ret = mediamuxer_unprepare(m_muxer);
-	if(ret != MEDIAMUXER_ERROR_NONE)
-		dlog_print(DLOG_ERROR, "Muxer", "fail to mediamuxer_unprepare:%d", ret);
+	dlog_print(DLOG_DEBUG, "Muxer", "mediamuxer_unprepare:%d", ret);
 }
 
 

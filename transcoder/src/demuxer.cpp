@@ -51,18 +51,19 @@ void Demuxer::Destroy()
 
 
 
-void Demuxer::Prepare()
+void Demuxer::Prepare(bool forcevideoonly)
 {
 	if(m_videotrackindex != -1)
 		iferror_throw(mediademuxer_select_track(m_demuxer, m_videotrackindex), "fail to mediademuxer_select_track for video: ");
-	if(m_audiotrackindex != -1)
+	if(m_audiotrackindex != -1 && forcevideoonly==false)
 		iferror_throw(mediademuxer_select_track(m_demuxer, m_audiotrackindex), "fail to mediademuxer_select_track for audio: ");
 
 	iferror_throw(mediademuxer_start(m_demuxer), "fail to mediademuxer_start: ");
 
 	if(m_videotrackindex != -1)
 		iferror_throw(read_sample(m_videotrackindex, &m_tracks[m_videotrackindex].packet), "fail to read a sample in the prepare stage for video: ");
-	if(m_audiotrackindex != -1)
+
+	if(m_audiotrackindex != -1 && forcevideoonly==false)
 		iferror_throw(read_sample(m_audiotrackindex, &m_tracks[m_audiotrackindex].packet), "fail to read a sample in the prepare stage for audio: ");
 }
 
@@ -104,12 +105,12 @@ bool Demuxer::IsEoS(int track_index)
 	return m_tracks[track_index].info.eos;
 }
 
-void Demuxer::Unprepare()
+void Demuxer::Unprepare(bool forcevideoonly)
 {
 	iferror_throw(mediademuxer_stop(m_demuxer), "fail to mediademuxer_stop: ");
 	if(m_videotrackindex != -1)
 		iferror_throw(mediademuxer_unselect_track(m_demuxer, m_videotrackindex), "fail to mediademuxer_unselect_track for video: ");
-	if(m_audiotrackindex != -1)
+	if(m_audiotrackindex != -1 && forcevideoonly == false)
 		iferror_throw(mediademuxer_unselect_track(m_demuxer, m_audiotrackindex), "fail to mediademuxer_unselect_track for audio: ");
 }
 
