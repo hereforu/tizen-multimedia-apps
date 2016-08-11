@@ -75,6 +75,7 @@ bool Muxer::WriteSample(int track_index, media_packet_h sample)
 	dlog_print(DLOG_DEBUG, "Muxer", "exit mediamuxer_write_sample:%d", ret);
 	return true;
 }
+
 void Muxer::Stop()
 {
 	int ret = mediamuxer_stop(m_muxer);

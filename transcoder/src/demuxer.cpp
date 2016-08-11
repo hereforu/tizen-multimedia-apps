@@ -60,6 +60,7 @@ void Demuxer::Prepare(bool forcevideoonly)
 
 	iferror_throw(mediademuxer_start(m_demuxer), "fail to mediademuxer_start: ");
 
+	//read a sample in advance to check the end of stream manually
 	if(m_videotrackindex != -1)
 		iferror_throw(read_sample(m_videotrackindex, &m_tracks[m_videotrackindex].packet), "fail to read a sample in the prepare stage for video: ");
 
