@@ -20,9 +20,6 @@ public:
 	void Create();
 	void Destroy();
 
-	//serialize
-	bool Serialize();
-	bool Load();
 
 protected:
 	virtual void creatspecifics() = 0;

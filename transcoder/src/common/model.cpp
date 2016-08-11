@@ -39,14 +39,4 @@ void Model::Destroy()
 	destroyspecifics();
 }
 
-//serialize
-bool Model::Serialize()
-{
-	return true;
-}
-
-bool Model::Load()
-{
-	return true;
-}
 
