@@ -33,10 +33,10 @@ public:
 	void Create(const char* srcfilename);
 	void Destroy();
 
-	void Prepare(bool forcevideoonly = false);
+	void Start();
 	bool ReadSeample(int track_index, media_packet_h* packet);
 	bool IsEoS(int track_index);
-	void Unprepare(bool forcevideoonly = false);
+	void Stop();
 
 	unsigned int GetNumTracks();
 	media_format_h GetMediaFormat(int track_index);
@@ -50,7 +50,7 @@ public:
 
 private:
 	int read_sample(int track_index, media_packet_h* packet);
-	void extract_tracks();
+	void extract_trackinfo();
 	void iferror_throw(int ret, const char* msg);
 	void handle_eos(int track_num);
 	void handle_error(mediademuxer_error_e error);

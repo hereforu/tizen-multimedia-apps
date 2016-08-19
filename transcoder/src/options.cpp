@@ -69,10 +69,10 @@ void Options::buildoptionset()
 void Options::buildoptionset_videocodec(std::vector<TranscodingOption>& optionset)
 {
 	optionset.push_back(TranscodingOption("Original", ORIGINAL_FEATURE, "images/video.png"));
-	optionset.push_back(TranscodingOption("H.264", MEDIACODEC_H264, "images/video.png"));
+	optionset.push_back(TranscodingOption("H.263", MEDIACODEC_H263, "images/video.png"));
 	optionset.push_back(TranscodingOption("MPEG4", MEDIACODEC_MPEG4, "images/video.png"));
-	optionset.push_back(TranscodingOption("HEVC", MEDIACODEC_HEVC, "images/video.png"));
-	optionset.push_back(TranscodingOption("VC1", MEDIACODEC_VC1, "images/video.png"));
+	optionset.push_back(TranscodingOption("MPEG2", MEDIACODEC_MPEG2, "images/video.png"));
+	optionset.push_back(TranscodingOption("VP9", MEDIACODEC_VP9, "images/video.png"));
 }
 
 void Options::buildoptionset_audiocodec(std::vector<TranscodingOption>& optionset)

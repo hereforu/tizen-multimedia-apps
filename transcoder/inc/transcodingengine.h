@@ -54,8 +54,8 @@ public:
 
 private:
 	void transcoding();
-	void process_track(int track_index, int muxer_track_index, CodecBase* decoder, CodecBase* encoder, int counter[]);
-	bool feed_decoder_with_packet(CodecBase* decoder, int track_index, int& count);
+	void process_track(int track_index, int muxer_track_index, CodecBase* decoder, CodecBase* encoder, int counter[], unsigned int& pts);
+	bool feed_decoder_with_packet(CodecBase* decoder, int track_index, int& count, unsigned int& pts);
 	bool feed_encoder_with_packet(CodecBase* decoder, CodecBase* encoder, int& count);
 	bool feed_muxer_with_packet(CodecBase* encoder,int muxer_track_index, int& count);
 	void print_errorcode_for_debug();

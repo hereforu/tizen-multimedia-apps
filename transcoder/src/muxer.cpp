@@ -36,6 +36,9 @@ void Muxer::Create(const char* dstfilepath, mediamuxer_output_format_e format)
 
 void Muxer::Destroy()
 {
+	if(m_muxer == NULL)
+		return;
+
 	AppTool::Iferror_throw(mediamuxer_destroy(m_muxer), "fail to mediamuxer_destroy");
 	m_muxer = NULL;
 }
