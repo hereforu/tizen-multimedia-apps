@@ -12,7 +12,7 @@
 #include "muxer.h"
 #include <stdexcept>
 
-//#define IMAGE_RESIZER_ON
+#define IMAGE_RESIZER_ON
 
 
 
@@ -270,6 +270,7 @@ double TranscodingEngine::GetProgress()
 void TranscodingEngine::createdemuxer(const char* srcfilename)
 {
 	m_demuxer.Create(srcfilename);
+	m_demuxer.ExtractTrackinfo();
 }
 
 void TranscodingEngine::createmuxer(const char* srcfilename)

@@ -24,6 +24,7 @@ public:
 	bool Resize(media_packet_h packet, media_packet_h* resized_packet);
 
 private:
+	void print_packet_info(media_packet_h packet);
 	void resize_completed(media_packet_h *dst, int error_code);
 	static void resize_completed_cb(media_packet_h *dst, int error_code, void *user_data);
 

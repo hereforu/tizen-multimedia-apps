@@ -34,6 +34,7 @@ public:
 	void Destroy();
 
 	void Start();
+	void ExtractTrackinfo();
 	bool ReadSeample(int track_index, media_packet_h* packet);
 	bool IsEoS(int track_index);
 	void Stop();
@@ -42,15 +43,13 @@ public:
 	media_format_h GetMediaFormat(int track_index);
 	bool GetVideoDecInfo(CodecInfo& vdec);
 	bool GetAudioDecInfo(CodecInfo& adec);
-	bool SetVideoQueue(SharedQueue* queue);
-	bool SetAudioQueue(SharedQueue* queue);
 	int GetVideoTrackIndex();
 	int GetAudioTrackIndex();
 
 
 private:
+	void prefetch_sample();
 	int read_sample(int track_index, media_packet_h* packet);
-	void extract_trackinfo();
 	void iferror_throw(int ret, const char* msg);
 	void handle_eos(int track_num);
 	void handle_error(mediademuxer_error_e error);

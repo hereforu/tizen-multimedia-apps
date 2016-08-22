@@ -48,6 +48,8 @@ void ImageResizer::Destroy()
 
 bool ImageResizer::Resize(media_packet_h packet, media_packet_h* resized_packet)
 {
+	dlog_print(DLOG_DEBUG, "ImageResizer", "========================original packet===========================");
+	print_packet_info(packet);
 	int ret = image_util_transform_run(m_handle, packet, ImageResizer::resize_completed_cb, (void*)this);
 	dlog_print(DLOG_DEBUG, "ImageResizer", "image_util_transform_run[%d]", ret);
 	if(ret != IMAGE_UTIL_ERROR_NONE)
@@ -56,6 +58,8 @@ bool ImageResizer::Resize(media_packet_h packet, media_packet_h* resized_packet)
 	}
 	eina_condition_wait(&m_cond);
 	*resized_packet = *m_result;
+	dlog_print(DLOG_DEBUG, "ImageResizer", "========================resized packet===========================");
+	print_packet_info(*resized_packet);
 	dlog_print(DLOG_DEBUG, "ImageResizer", "image_util_transform_run signaled");
 	return true;
 }
@@ -71,6 +75,52 @@ void ImageResizer::resize_completed_cb(media_packet_h *dst, int error_code, void
 {
 	ImageResizer* resizer = (ImageResizer*)user_data;
 	resizer->resize_completed(dst, error_code);
+}
+
+void ImageResizer::print_packet_info(media_packet_h packet)
+{
+	uint64_t	dts = 0;
+	media_packet_get_dts(packet, &dts);
+	dlog_print(DLOG_DEBUG, "ImageResizer", "media_packet_get_dts [%llu]", dts);
+
+	uint64_t	duration = 0;
+	media_packet_get_duration(packet, &duration);
+	dlog_print(DLOG_DEBUG, "ImageResizer", "media_packet_get_duration [%llu]", dts);
+
+	media_format_h fmt = NULL;
+	media_format_mimetype_e mimetype;
+	int width = 0, height = 0, avg_bps=0, max_bps = 0;
+	int ret = media_packet_get_format(packet, &fmt);
+	dlog_print(DLOG_DEBUG, "ImageResizer", "media_packet_get_format: [%p] [%d]=====", fmt, ret);
+	media_format_get_video_info(fmt, &mimetype, &width, &height, &avg_bps, &max_bps);
+	dlog_print(DLOG_DEBUG, "ImageResizer", "media_format_get_video_info: vidoe mimetype: %x, w:%d, h:%d, avg_bps:%d, max_bps:%d =====", (int)mimetype, width, height, avg_bps, max_bps);
+	media_format_unref(fmt);
+
+	bool codec_config = false;
+	media_packet_is_codec_config(packet, &codec_config);
+	dlog_print(DLOG_DEBUG, "ImageResizer", "media_packet_is_codec_config [%d]", (int)codec_config);
+
+	bool is_encoded = false;
+	media_packet_is_encoded(packet, &is_encoded);
+	dlog_print(DLOG_DEBUG, "ImageResizer", "media_packet_is_encoded [%d]", (int)is_encoded);
+
+	bool is_eos = false;
+	media_packet_is_end_of_stream(packet, &is_eos);
+	dlog_print(DLOG_DEBUG, "ImageResizer", "media_packet_is_end_of_stream [%d]", (int)is_eos);
+
+	bool is_raw = false;
+	media_packet_is_raw(packet, &is_raw);
+	dlog_print(DLOG_DEBUG, "ImageResizer", "media_packet_is_raw [%d]", (int)is_raw);
+
+	bool is_sync = false;
+	media_packet_is_sync_frame(packet, &is_sync);
+	dlog_print(DLOG_DEBUG, "ImageResizer", "media_packet_is_sync_frame [%d]", (int)is_sync);
+
+	bool is_video = false;
+	media_packet_is_video(packet, &is_video);
+	dlog_print(DLOG_DEBUG, "ImageResizer", "media_packet_is_video [%d]", (int)is_video);
+
+
 }
 
 
