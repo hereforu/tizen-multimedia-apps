@@ -32,7 +32,7 @@ private:
 	transformation_h m_handle;
 	Eina_Lock m_mutex;
 	Eina_Condition m_cond;
-	media_packet_h* m_result;
+	media_packet_h m_result;
 
 
 

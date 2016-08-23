@@ -59,8 +59,13 @@ void Demuxer::Destroy()
 	mediademuxer_unset_eos_cb(m_demuxer);
 	mediademuxer_unset_error_cb(m_demuxer);
 	//if ready state
-	mediademuxer_unprepare(m_demuxer);
-	mediademuxer_destroy(m_demuxer);
+	int ret = mediademuxer_unprepare(m_demuxer);
+	if(ret != MEDIAMUXER_ERROR_NONE)
+		dlog_print(DLOG_ERROR, "Demuxer", "fail to mediademuxer_unprepare:%d", ret);
+
+	ret = mediademuxer_destroy(m_demuxer);
+	if(ret != MEDIAMUXER_ERROR_NONE)
+		dlog_print(DLOG_ERROR, "Demuxer", "fail to mediademuxer_destroy:%d", ret);
 	m_demuxer = NULL;
 }
 

@@ -17,7 +17,7 @@ public:
 	~VideoDecoder();
 
 protected:
-	void create(mediacodec_h mediacodec, const CodecInfo& codecinfo);
+	bool create(mediacodec_h mediacodec, const CodecInfo& codecinfo);
 	void destroy();
 	const char* getname();
 

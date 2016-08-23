@@ -18,11 +18,21 @@ AudioDecoder::~AudioDecoder()
 {
 
 }
-void AudioDecoder::create(mediacodec_h mediacodec, const CodecInfo& codecinfo)
+bool AudioDecoder::create(mediacodec_h mediacodec, const CodecInfo& codecinfo)
 {
-	iferror_throw(mediacodec_set_codec(mediacodec, codecinfo.venc.codecid, MEDIACODEC_DECODER|MEDIACODEC_SUPPORT_TYPE_SW), "fail to mediacodec_set_codec");
-	iferror_throw(mediacodec_set_adec_info(mediacodec,
-			codecinfo.adec.samplerate, codecinfo.adec.channel, codecinfo.adec.bit), "fail to mediacodec_set_adec_info");
+	int ret = MEDIACODEC_ERROR_NONE;
+	if((ret = mediacodec_set_codec(mediacodec, codecinfo.venc.codecid, MEDIACODEC_DECODER|MEDIACODEC_SUPPORT_TYPE_SW)) != MEDIACODEC_ERROR_NONE)
+	{
+		dlog_print(DLOG_ERROR, "CodecBase", "fail to mediacodec_set_codec [%d]", ret);
+		return false;
+	}
+	if((ret = mediacodec_set_adec_info(mediacodec,
+			codecinfo.adec.samplerate, codecinfo.adec.channel, codecinfo.adec.bit)) != MEDIACODEC_ERROR_NONE)
+	{
+		dlog_print(DLOG_ERROR, "CodecBase", "fail to mediacodec_set_adec_info [%d]", ret);
+		return false;
+	}
+	return true;
 }
 void AudioDecoder::destroy()
 {

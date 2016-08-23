@@ -59,8 +59,8 @@ bool ImageResizer::Resize(media_packet_h packet, media_packet_h* resized_packet)
 		return false;
 	}
 	eina_condition_wait(&m_cond);
-	*resized_packet = *m_result;
-	dlog_print(DLOG_DEBUG, "ImageResizer", "========================resized packet===========================");
+	*resized_packet = m_result;
+	dlog_print(DLOG_DEBUG, "ImageResizer", "========================resized packet=================[%p], [%p]", *resized_packet, m_result);
 	print_packet_info(*resized_packet);
 	dlog_print(DLOG_DEBUG, "ImageResizer", "image_util_transform_run signaled");
 	return true;
@@ -68,13 +68,14 @@ bool ImageResizer::Resize(media_packet_h packet, media_packet_h* resized_packet)
 
 void ImageResizer::resize_completed(media_packet_h *dst, int error_code)
 {
-	m_result = dst;
-	dlog_print(DLOG_DEBUG, "ImageResizer", "condition signal dst[%p], error_code[%d]", dst, error_code);
+	m_result = *dst;
+	dlog_print(DLOG_DEBUG, "ImageResizer", "condition signal dst[%p], error_code[%d]", *dst, error_code);
 	eina_condition_signal(&m_cond);
 }
 
 void ImageResizer::resize_completed_cb(media_packet_h *dst, int error_code, void *user_data)
 {
+	dlog_print(DLOG_DEBUG, "ImageResizer", "resize_completed_cb is called [%p]", *dst );
 	ImageResizer* resizer = (ImageResizer*)user_data;
 	resizer->resize_completed(dst, error_code);
 }

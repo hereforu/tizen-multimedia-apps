@@ -33,49 +33,33 @@ void TranscodingEngine::Create(const char* srcfilename, unsigned int duration, C
 	m_vencinfo = venc;
 	m_aencinfo = aenc;
 	m_estimated_packets = (int)(30.0*(double)duration)/1000.0;
-
-	try
+	createdemuxer(srcfilename);
+	createvideocodec(m_vencinfo);
+	if(isaudioavailable())
 	{
-		createdemuxer(srcfilename);
-		createvideocodec(m_vencinfo);
-		if(isaudioavailable())
-		{
-			createaudiocodec(m_aencinfo);
-		}
-		createmuxer(srcfilename);
+		createaudiocodec(m_aencinfo);
+	}
+	createmuxer(srcfilename);
 #ifdef IMAGE_RESIZER_ON
-		m_resizer.Create(venc.venc.width, venc.venc.height);
+	m_resizer.Create(venc.venc.width, venc.venc.height);
 #endif
-		m_bcreated = true;
-	}
-	catch(const std::runtime_error& e)
-	{
-		dlog_print(DLOG_ERROR, "TranscodingEngine", e.what());
-		throw e;
-	}
+	m_bcreated = true;
 }
 void TranscodingEngine::Destroy()
 {
-	try
+	m_muxer.Destroy();
+	m_demuxer.Destroy();
+	m_vdecoder.Destroy();
+	m_vencoder.Destroy();
+	if(isaudioavailable())
 	{
-		m_muxer.Destroy();
-		m_demuxer.Destroy();
-		m_vdecoder.Destroy();
-		m_vencoder.Destroy();
-		if(isaudioavailable())
-		{
-			m_adecoder.Destroy();
-			m_aencoder.Destroy();
-		}
+		m_adecoder.Destroy();
+		m_aencoder.Destroy();
+	}
 #ifdef IMAGE_RESIZER_ON
-		m_resizer.Destroy();
+	m_resizer.Destroy();
 #endif
-		m_bcreated = false;
-	}
-	catch(const std::runtime_error& e)
-	{
-		dlog_print(DLOG_ERROR, "TranscodingEngine", e.what());
-	}
+	m_bcreated = false;
 }
 
 bool TranscodingEngine::IsCreated()

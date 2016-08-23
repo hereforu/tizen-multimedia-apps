@@ -10,6 +10,15 @@
 #include <stdexcept>
 
 
+#define throw_error_and_destroy_codec(codec, msg, error_code)\
+	{\
+		if(codec)\
+		{\
+			mediacodec_destroy(codec);\
+			codec = NULL;\
+		}\
+		throw std::runtime_error(std::string(msg)+to_string(error_code));\
+	}\
 
 CodecBase::CodecBase()
 :m_mediacodec(NULL), m_in_count(0)
@@ -24,19 +33,19 @@ CodecBase::~CodecBase()
 void CodecBase::Create(const CodecInfo& codecinfo)
 {
 	iferror_throw(mediacodec_create(&m_mediacodec), "fail to create mediacodec_create");
-	try
-	{
-		create(m_mediacodec, codecinfo); //codec info setting
-	}
-	catch(const std::runtime_error& e)
-	{
-		throw e;
-	}
-	iferror_throw(mediacodec_set_eos_cb(m_mediacodec, mc_eos_cb, (void*)this), "fail to mediacodec_set_eos_cb");
-	iferror_throw(mediacodec_set_error_cb(m_mediacodec, mc_error_cb, (void*)this), "fail to mediacodec_set_error_cb");
-	iferror_throw(mediacodec_set_input_buffer_used_cb(m_mediacodec, mc_input_buffer_used_cb, (void*)this), "fail to mediacodec_set_input_buffer_used_cb");
-	iferror_throw(mediacodec_set_output_buffer_available_cb(m_mediacodec, mc_output_buffer_available_cb, (void*)this), "fail to mediacodec_set_output_buffer_available_cb");
-	iferror_throw(mediacodec_prepare(m_mediacodec), "fail to mediacodec_create [%s]");
+	if(create(m_mediacodec, codecinfo) == false)//codec info setting
+		throw_error_and_destroy_codec(m_mediacodec, "fail to create specific codec", 0)
+	int ret = MEDIACODEC_ERROR_NONE;
+	if((ret = mediacodec_set_eos_cb(m_mediacodec, mc_eos_cb, (void*)this)) != MEDIACODEC_ERROR_NONE)
+		throw_error_and_destroy_codec(m_mediacodec, "fail to mediacodec_set_eos_cb", ret);
+	if((ret = mediacodec_set_error_cb(m_mediacodec, mc_error_cb, (void*)this)) != MEDIACODEC_ERROR_NONE)
+		throw_error_and_destroy_codec(m_mediacodec, "fail to mediacodec_set_error_cb", ret);
+	if((ret = mediacodec_set_input_buffer_used_cb(m_mediacodec, mc_input_buffer_used_cb, (void*)this)) != MEDIACODEC_ERROR_NONE)
+		throw_error_and_destroy_codec(m_mediacodec, "fail to mediacodec_set_input_buffer_used_cb", ret);
+	if((ret = mediacodec_set_output_buffer_available_cb(m_mediacodec, mc_output_buffer_available_cb, (void*)this)) != MEDIACODEC_ERROR_NONE)
+		throw_error_and_destroy_codec(m_mediacodec, "fail to mediacodec_set_output_buffer_available_cb", ret);
+	if((ret = mediacodec_prepare(m_mediacodec)) != MEDIACODEC_ERROR_NONE)
+		throw_error_and_destroy_codec(m_mediacodec, "fail to mediacodec_prepare", ret);
 
 	m_out.queue.SetName(getname());
 }
@@ -47,8 +56,12 @@ void CodecBase::Destroy()
 		return;
 	destroy();
 	//iferror_throw(mediacodec_flush_buffers(m_mediacodec), "fail to mediacodec_flush_buffers [%s]");
-	iferror_throw(mediacodec_unprepare(m_mediacodec), "fail to mediacodec_unprepare [%s]");
-	iferror_throw(mediacodec_destroy(m_mediacodec), "fail to mediacodec_destroy [%s]");
+	int ret = mediacodec_unprepare(m_mediacodec);
+	if(ret != MEDIAMUXER_ERROR_NONE)
+		dlog_print(DLOG_ERROR, "CodecBase", "fail to mediacodec_unprepare:%d", ret);
+	ret = mediacodec_destroy(m_mediacodec);
+	if(ret != MEDIAMUXER_ERROR_NONE)
+		dlog_print(DLOG_ERROR, "CodecBase", "fail to mediacodec_destroy:%d", ret);
 	m_mediacodec = NULL;
 	m_in_count = 0;
 	m_out.count = 0;
@@ -66,8 +79,7 @@ bool CodecBase::GetPacket(media_packet_h& packet)
 
 bool CodecBase::InsertPacket(media_packet_h packet)
 {
-	int ret = 0;
-		ret = mediacodec_process_input(m_mediacodec, packet, 1000);
+	int ret = mediacodec_process_input(m_mediacodec, packet, 1000);
 	if(ret != MEDIACODEC_ERROR_NONE)
 	{
 		dlog_print(DLOG_ERROR, "CodecBase", "fail to mediacodec_process_input %d [%s]", ret, getname());

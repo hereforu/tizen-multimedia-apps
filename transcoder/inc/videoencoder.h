@@ -18,11 +18,12 @@ public:
 	~VideoEncoder();
 	media_format_h GetMediaFormat();
 protected:
-	void create(mediacodec_h mediacodec, const CodecInfo& codecinfo);
+	bool create(mediacodec_h mediacodec, const CodecInfo& codecinfo);
 	void destroy();
 	const char* getname();
 
 private:
+	bool create_format(const CodecInfo& codecinfo);
 	media_format_h m_format;
 
 

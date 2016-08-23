@@ -37,8 +37,6 @@ public:
 
 
 private:
-	void create();
-	void destroy();
 	std::queue<media_packet_h> m_queue;
 	unsigned int m_max_size;
 	Eina_Lock m_mutex;

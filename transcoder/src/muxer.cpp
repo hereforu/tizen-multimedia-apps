@@ -39,7 +39,10 @@ void Muxer::Destroy()
 	if(m_muxer == NULL)
 		return;
 
-	iferror_throw(mediamuxer_destroy(m_muxer), "fail to mediamuxer_destroy");
+	int ret = mediamuxer_destroy(m_muxer);
+	if(ret != MEDIAMUXER_ERROR_NONE)
+		dlog_print(DLOG_ERROR, "Muxer", "fail to mediamuxer_destroy:%d", ret);
+
 	m_muxer = NULL;
 }
 

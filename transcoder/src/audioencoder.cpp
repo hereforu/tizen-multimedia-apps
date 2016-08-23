@@ -19,20 +19,40 @@ AudioEncoder::~AudioEncoder()
 {
 
 }
-void AudioEncoder::create(mediacodec_h mediacodec, const CodecInfo& codecinfo)
+bool AudioEncoder::create(mediacodec_h mediacodec, const CodecInfo& codecinfo)
 {
-	iferror_throw(mediacodec_set_codec(mediacodec, codecinfo.venc.codecid, MEDIACODEC_ENCODER|MEDIACODEC_SUPPORT_TYPE_SW), "fail to mediacodec_set_codec");
-	iferror_throw(mediacodec_set_aenc_info(mediacodec,
-			codecinfo.aenc.samplerate, codecinfo.aenc.channel, codecinfo.aenc.bit, codecinfo.aenc.bitrate), "fail to mediacodec_set_aenc_info");
+	int ret = MEDIACODEC_ERROR_NONE;
+	if((ret = mediacodec_set_codec(mediacodec, codecinfo.aenc.codecid, MEDIACODEC_ENCODER|MEDIACODEC_SUPPORT_TYPE_SW)) != MEDIACODEC_ERROR_NONE)
+	{
+		dlog_print(DLOG_ERROR, "CodecBase", "fail to mediacodec_set_codec [%d]", ret);
+		return false;
+	}
+	if((ret = mediacodec_set_aenc_info(mediacodec,
+			codecinfo.aenc.samplerate, codecinfo.aenc.channel, codecinfo.aenc.bit, codecinfo.aenc.bitrate)) != MEDIACODEC_ERROR_NONE)
+	{
+		dlog_print(DLOG_ERROR, "CodecBase", "fail to mediacodec_set_aenc_info [%d]", ret);
+		return false;
+	}
 
-	media_format_create(&m_format);
+	return create_format(codecinfo);
+}
+
+bool AudioEncoder::create_format(const CodecInfo& codecinfo)
+{
+	int ret = MEDIACODEC_ERROR_NONE;
+	if((ret = media_format_create(&m_format)) != MEDIACODEC_ERROR_NONE)
+	{
+		dlog_print(DLOG_ERROR, "CodecBase", "fail to media_format_create [%d]", ret);
+		m_format = NULL;
+		return false;
+	}
 	media_format_set_audio_mime(m_format, (media_format_mimetype_e)(MEDIA_FORMAT_AUDIO | MEDIA_FORMAT_ENCODED | codecinfo.aenc.codecid));
 	media_format_set_audio_channel(m_format, codecinfo.aenc.channel);
 	media_format_set_audio_samplerate(m_format, codecinfo.aenc.samplerate);
 	media_format_set_audio_bit(m_format, codecinfo.aenc.bit);
 	media_format_set_audio_avg_bps(m_format, codecinfo.aenc.bitrate);
+	return true;
 }
-
 void AudioEncoder::destroy()
 {
 	if(m_format)

@@ -35,7 +35,7 @@ protected:
 	virtual const char* getname() = 0;
 	mediacodec_h getmediacodec();
 	bool pushpacket_to_outputqueue(const media_packet_h& packet);
-	virtual void create(mediacodec_h mediacodec, const CodecInfo& codecinfo) = 0;
+	virtual bool create(mediacodec_h mediacodec, const CodecInfo& codecinfo) = 0;
 	virtual void destroy() = 0;
 
 

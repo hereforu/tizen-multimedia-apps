@@ -16,10 +16,21 @@ VideoDecoder::~VideoDecoder()
 {
 
 }
-void VideoDecoder::create(mediacodec_h mediacodec, const CodecInfo& codecinfo)
+bool VideoDecoder::create(mediacodec_h mediacodec, const CodecInfo& codecinfo)
 {
-	iferror_throw(mediacodec_set_codec(mediacodec, codecinfo.vdec.codecid, MEDIACODEC_DECODER|MEDIACODEC_SUPPORT_TYPE_SW), "fail to mediacodec_set_codec");
-	iferror_throw(mediacodec_set_vdec_info(mediacodec, codecinfo.vdec.width, codecinfo.vdec.height), "fail to mediacodec_set_vdec_info");
+	int ret = MEDIACODEC_ERROR_NONE;
+	if((ret = mediacodec_set_codec(mediacodec, codecinfo.vdec.codecid, MEDIACODEC_DECODER|MEDIACODEC_SUPPORT_TYPE_SW)) != MEDIACODEC_ERROR_NONE)
+	{
+		dlog_print(DLOG_ERROR, "CodecBase", "fail to mediacodec_set_codec [%d]", ret);
+		return false;
+	}
+	if((ret = mediacodec_set_vdec_info(mediacodec,
+			codecinfo.vdec.width, codecinfo.vdec.height)) != MEDIACODEC_ERROR_NONE)
+	{
+		dlog_print(DLOG_ERROR, "CodecBase", "fail to mediacodec_set_vdec_info [%d]", ret);
+		return false;
+	}
+	return true;
 }
 
 void VideoDecoder::destroy()

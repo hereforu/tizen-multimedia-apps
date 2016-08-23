@@ -14,11 +14,16 @@
 SharedQueue::SharedQueue()
 :m_max_size(100), m_name("queue")
 {
-	create();
+	Eina_Bool ret = eina_lock_new(&m_mutex);
+	if(ret == EINA_FALSE)
+	{
+		throw std::runtime_error("fail to create eina_lock_new");
+	}
 }
 SharedQueue::~SharedQueue()
 {
-	destroy();
+	ClearAll();
+	eina_lock_free(&m_mutex);
 }
 void SharedQueue::SetName(const char* queuename)
 {
@@ -43,20 +48,7 @@ void SharedQueue::ClearAll()
 	}
 	eina_lock_release(&m_mutex);
 }
-void SharedQueue::create()
-{
-	Eina_Bool ret = eina_lock_new(&m_mutex);
-	if(ret == EINA_FALSE)
-	{
-		throw std::runtime_error("fail to create eina_lock_new");
-	}
 
-}
-void SharedQueue::destroy()
-{
-	ClearAll();
-	eina_lock_free(&m_mutex);
-}
 
 bool SharedQueue::Push(media_packet_h packet)
 {
