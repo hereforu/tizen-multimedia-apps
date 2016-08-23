@@ -29,13 +29,13 @@ void TranscoderModel::RebuildContentsList()
 
 void TranscoderModel::SetSelectedContentIndex(int index)
 {
-	AppTool::Assert(0 <= index && index < m_contents.size());
+	assert_ifnot(0 <= index && index < m_contents.size());
 	m_selectedcontentindex = index;
 }
 
 const MediaContentItem& TranscoderModel::GetSelectedContent()
 {
-	AppTool::Assert(m_selectedcontentindex != no_selected_content);
+	assert_ifnot(m_selectedcontentindex != no_selected_content);
 	return m_contents[m_selectedcontentindex];
 }
 

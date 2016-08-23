@@ -44,7 +44,7 @@ void FrameWindow::Destroy()
 
 void FrameWindow::AddView(View* view)
 {
-	AppTool::Assert(m_framewnd!= NULL && m_conformant!=NULL);
+	assert_ifnot(m_framewnd!= NULL && m_conformant!=NULL);
 	m_views.push_back(view);
 
 }
@@ -119,7 +119,7 @@ void FrameWindow::pushview(View* view)
 	if(view->IsCreated())
 	{
 		dlog_print(DLOG_FATAL, "FrameWindow", "this view is already activated");
-		AppTool::Assert(false);
+		assert_ifnot(false);
 
 	}
 	view->Create(m_naviframe, m_conformant);
@@ -130,7 +130,7 @@ void FrameWindow::popview(View* view)
 	if(!view->IsCreated())
 	{
 		dlog_print(DLOG_FATAL, "FrameWindow", "this view is already deactivated");
-		AppTool::Assert(false);
+		assert_ifnot(false);
 
 	}
 	view->Destroy();

@@ -128,12 +128,12 @@ void InfoView::setinfo_tolist(ListCtrl& list, const MediaContentItem& content)
 		unsigned int resolution_option = ((TranscoderModel*)getmodel())->GetSelectedOption(RESOLUTION_OPTION);
 		std::string video_codec = (video_option == ORIGINAL_FEATURE)?info.video_codec:((TranscoderModel*)getmodel())->GetOptionName(VIDEO_CODEC_OPTION, video_option);
 		std::string audio_codec = (audio_option == ORIGINAL_FEATURE)?info.audio_codec:((TranscoderModel*)getmodel())->GetOptionName(AUDIO_CODEC_OPTION, audio_option);
-		std::string resolution = (resolution_option == ORIGINAL_FEATURE)? AppTool::ToString(content.width)+" X "+AppTool::ToString(content.height):((TranscoderModel*)getmodel())->GetOptionName(RESOLUTION_OPTION, resolution_option);
+		std::string resolution = (resolution_option == ORIGINAL_FEATURE)? to_string(content.width)+" X "+to_string(content.height):((TranscoderModel*)getmodel())->GetOptionName(RESOLUTION_OPTION, resolution_option);
 
 		items.push_back(GenCtrlItem(VIDEO_CODEC_OPTION, video_codec.c_str(), "no media", getresiconpath("images/video.png").c_str()));
 		items.push_back(GenCtrlItem(AUDIO_CODEC_OPTION, audio_codec.c_str(), "no media", getresiconpath("images/audio.png").c_str()));
 		items.push_back(GenCtrlItem(RESOLUTION_OPTION, resolution.c_str(), "no media", getresiconpath("images/resolution.png").c_str()));
-		std::string duration = AppTool::ToString(content.duration) + " ms";
+		std::string duration = to_string(content.duration) + " ms";
 		items.push_back(GenCtrlItem(3, duration.c_str(), "no media", getresiconpath("images/duration.png").c_str()));
 		list.AppendItems(items);
 	}

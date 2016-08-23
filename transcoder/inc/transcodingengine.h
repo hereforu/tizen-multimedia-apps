@@ -23,13 +23,6 @@ class TranscodingEngine
 public:
 	enum
 	{
-		AFTER_DEMUXING_QUEUE = 0,
-		AFTER_DECODING_QUEUE,
-		AFTER_ENCODING_QUEUE,
-		MAX_QUEUE
-	};
-	enum
-	{
 		DEMUX_COUNTER = 0,
 		DECODE_COUNTER,
 		ENCODE_COUNTER,
@@ -43,11 +36,9 @@ public:
 	};
 	TranscodingEngine();
 	~TranscodingEngine();
-
 	void Create(const char* srcfilename, unsigned int duration, CodecInfo& venc, CodecInfo& aenc);
 	void Destroy();
 	bool IsCreated();
-
 	void Start();
 	void Stop();
 	double GetProgress();
@@ -58,13 +49,13 @@ private:
 	bool feed_decoder_with_packet(CodecBase* decoder, int track_index, int& count, unsigned int& pts);
 	bool feed_encoder_with_packet(CodecBase* decoder, CodecBase* encoder, int& count);
 	bool feed_muxer_with_packet(CodecBase* encoder,int muxer_track_index, int& count);
-	void print_errorcode_for_debug();
 	const char* generatedstfilename(const char* srcfilename);
 	void createdemuxer(const char* srcfilename);
 	void createvideocodec(CodecInfo& venc);
 	void createaudiocodec(CodecInfo& aenc);
 	void createmuxer(const char* srcfilename);
 	bool isaudioavailable();
+	void print_errorcode_for_debug();
 
 private:
 	int m_progress_count;

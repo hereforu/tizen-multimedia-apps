@@ -27,8 +27,8 @@ public:
 
 	void Create(const CodecInfo& codecinfo);
 	void Destroy();
-	bool Get_Packets(media_packet_h& packet);
-	bool Input_Packets(media_packet_h packet);
+	bool GetPacket(media_packet_h& packet);
+	bool InsertPacket(media_packet_h packet);
 	bool IsEoS();
 
 protected:
@@ -41,7 +41,6 @@ protected:
 
 private:
 	void analyze_packet_for_debug(media_packet_h pkt);
-	void iferror_throw(int ret, const char* msg);
 	void handle_input_buffer_used(media_packet_h pkt);
 	void handle_output_buffer_available(media_packet_h pkt);
 	void handle_error(mediacodec_error_e error);

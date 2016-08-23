@@ -19,8 +19,8 @@ VideoEncoder::~VideoEncoder()
 }
 void VideoEncoder::create(mediacodec_h mediacodec, const CodecInfo& codecinfo)
 {
-	AppTool::Iferror_throw(mediacodec_set_codec(mediacodec, codecinfo.venc.codecid, MEDIACODEC_ENCODER|MEDIACODEC_SUPPORT_TYPE_SW), "fail to mediacodec_set_codec");
-	AppTool::Iferror_throw(mediacodec_set_venc_info(mediacodec,
+	iferror_throw(mediacodec_set_codec(mediacodec, codecinfo.venc.codecid, MEDIACODEC_ENCODER|MEDIACODEC_SUPPORT_TYPE_SW), "fail to mediacodec_set_codec");
+	iferror_throw(mediacodec_set_venc_info(mediacodec,
 			codecinfo.venc.width, codecinfo.venc.height, codecinfo.venc.fps, codecinfo.venc.target_bits), "fail to mediacodec_set_venc_info");
 
 	media_format_create(&m_format);
@@ -29,6 +29,7 @@ void VideoEncoder::create(mediacodec_h mediacodec, const CodecInfo& codecinfo)
 	media_format_set_video_height(m_format, codecinfo.venc.height);
 	media_format_set_video_avg_bps(m_format, codecinfo.venc.target_bits);
 	media_format_set_video_max_bps(m_format, codecinfo.venc.target_bits);
+	media_format_set_video_frame_rate(m_format, codecinfo.venc.fps);
 }
 media_format_h VideoEncoder::GetMediaFormat()
 {

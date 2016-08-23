@@ -15,16 +15,18 @@
 namespace AppTool
 {
 	template <typename Type>
-	std::string ToString(Type val)
+	std::string to_string(Type val)
 	{
 	    std::stringstream stream;
 	    stream << val;
 	    return stream.str();
 	}
 
-	void Assert(bool condition);
+	void assert_ifnot(bool condition);
 
-	void Iferror_throw(int ret, const char* msg);
+	void iferror_throw(int ret, const char* msg);
 }
+
+using namespace AppTool;
 
 #endif /* BASE_H_ */

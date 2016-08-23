@@ -33,7 +33,9 @@ void ImageResizer::Create(int target_width, int target_height)
 
 	int ret = image_util_transform_create(&m_handle);
 	if(ret != IMAGE_UTIL_ERROR_NONE)
-		throw std::runtime_error(std::string("fail to image_util_transform_create: ")+AppTool::ToString(ret));
+	{
+		throw std::runtime_error(std::string("fail to image_util_transform_create: ")+to_string(ret));
+	}
 	ret = image_util_transform_set_resolution(m_handle, target_width, target_height);
 }
 
@@ -67,7 +69,7 @@ bool ImageResizer::Resize(media_packet_h packet, media_packet_h* resized_packet)
 void ImageResizer::resize_completed(media_packet_h *dst, int error_code)
 {
 	m_result = dst;
-	dlog_print(DLOG_DEBUG, "ImageResizer", "condition signal");
+	dlog_print(DLOG_DEBUG, "ImageResizer", "condition signal dst[%p], error_code[%d]", dst, error_code);
 	eina_condition_signal(&m_cond);
 }
 

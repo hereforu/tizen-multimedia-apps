@@ -24,7 +24,7 @@ Muxer::~Muxer()
 void Muxer::Create(const char* dstfilepath, mediamuxer_output_format_e format)
 {
 	m_dstfilename = dstfilepath;
-	AppTool::Iferror_throw(mediamuxer_create(&m_muxer), "fail to mediamuxer_create");
+	iferror_throw(mediamuxer_create(&m_muxer), "fail to mediamuxer_create");
 	int ret = MEDIAMUXER_ERROR_NONE;
 	if((ret = mediamuxer_set_data_sink(m_muxer, const_cast<char*>(m_dstfilename.c_str()), format))!= MEDIAMUXER_ERROR_NONE)
 	{
@@ -39,25 +39,25 @@ void Muxer::Destroy()
 	if(m_muxer == NULL)
 		return;
 
-	AppTool::Iferror_throw(mediamuxer_destroy(m_muxer), "fail to mediamuxer_destroy");
+	iferror_throw(mediamuxer_destroy(m_muxer), "fail to mediamuxer_destroy");
 	m_muxer = NULL;
 }
 
 int Muxer::AddTrack(media_format_h media_format)
 {
-	int index = MEDIAMUXER_ERROR_INVALID_PARAMETER;
-	AppTool::Iferror_throw(mediamuxer_add_track(m_muxer, media_format, &index), "fail to mediamuxer_add_track");
+	int index = -1;
+	iferror_throw(mediamuxer_add_track(m_muxer, media_format, &index), "fail to mediamuxer_add_track");
 	return index;
 }
 
 void Muxer::CloseTrack(int track_index)
 {
-	AppTool::Iferror_throw(mediamuxer_close_track(m_muxer, track_index), "fail to mediamuxer_close_track");
+	iferror_throw(mediamuxer_close_track(m_muxer, track_index), "fail to mediamuxer_close_track");
 }
 
 void Muxer::Start()
 {
-	AppTool::Iferror_throw(mediamuxer_prepare(m_muxer), "fail to mediamuxer_prepare");
+	iferror_throw(mediamuxer_prepare(m_muxer), "fail to mediamuxer_prepare");
 	int ret = MEDIAMUXER_ERROR_NONE;
 	if((ret = mediamuxer_start(m_muxer))!= MEDIAMUXER_ERROR_NONE)
 	{

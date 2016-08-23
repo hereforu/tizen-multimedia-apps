@@ -16,7 +16,7 @@
 			mediademuxer_destroy(demuxer);\
 			demuxer = NULL;\
 		}\
-		throw std::runtime_error(std::string(msg)+AppTool::ToString(error_code));\
+		throw std::runtime_error(std::string(msg)+to_string(error_code));\
 	}\
 
 
@@ -239,7 +239,7 @@ int Demuxer::read_sample(int track_index, media_packet_h* packet)
 void Demuxer::iferror_throw(int ret, const char* msg)
 {
 	if(ret != MEDIADEMUXER_ERROR_NONE)
-		throw std::runtime_error(std::string(msg)+AppTool::ToString(ret));
+		throw std::runtime_error(std::string(msg)+to_string(ret));
 }
 
 void Demuxer::handle_eos(int track_num)

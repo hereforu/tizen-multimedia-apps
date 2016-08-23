@@ -26,7 +26,7 @@ void VideoPlayer::Create()
 	int ret = PLAYER_ERROR_NONE;
 	if((ret = player_create(&m_player))!= PLAYER_ERROR_NONE)
 	{
-		throw std::runtime_error(std::string("fail to create player")+AppTool::ToString(ret));
+		throw std::runtime_error(std::string("fail to create player")+to_string(ret));
 	}
 
 }
@@ -49,19 +49,19 @@ void VideoPlayer::SetMediaAndPrepare(const char* filepath, Evas_Object* display)
 	int ret = PLAYER_ERROR_NONE;
 	if((ret = player_set_uri(m_player, filepath))!= PLAYER_ERROR_NONE)
 	{
-		throw std::runtime_error(std::string("fail to set ") + filepath + AppTool::ToString(ret));
+		throw std::runtime_error(std::string("fail to set ") + filepath + to_string(ret));
 	}
 	if(display)
 	{
 		if((ret = player_set_display(m_player, PLAYER_DISPLAY_TYPE_EVAS, GET_DISPLAY(display)))!= PLAYER_ERROR_NONE)
 		{
-			throw std::runtime_error(std::string("fail to player_set_display")+AppTool::ToString(ret));
+			throw std::runtime_error(std::string("fail to player_set_display")+to_string(ret));
 		}
 	//	player_set_display_mode(m_player, PLAYER_DISPLAY_MODE_ORIGIN_OR_LETTER);
 	}
 	if((ret = player_prepare(m_player))!= PLAYER_ERROR_NONE)
 	{
-		throw std::runtime_error(std::string("fail to prepare ") + filepath + AppTool::ToString(ret));
+		throw std::runtime_error(std::string("fail to prepare ") + filepath + to_string(ret));
 	}
 	dlog_print(DLOG_DEBUG, "VideoPlayer", "%s is set to the player", filepath);
 

@@ -14,7 +14,7 @@
 
 
 #define MAKE_MEDIATYPE_STRING(addor, media_type) \
-	(addor)? std::string(" OR MEDIA_TYPE = ") + AppTool::ToString<int>(media_type) : std::string(" MEDIA_TYPE = ") + AppTool::ToString<int>(media_type)
+	(addor)? std::string(" OR MEDIA_TYPE = ") + to_string<int>(media_type) : std::string(" MEDIA_TYPE = ") + to_string<int>(media_type)
 
 #undef LOG_TAG
 #define LOG_TAG "APP_TAG"
@@ -33,30 +33,30 @@ MediaContent::~MediaContent()
 
 void MediaContent::ConnectDB()
 {
-	AppTool::Assert(m_isconnected == false);
+	assert_ifnot(m_isconnected == false);
 
 	int ret = media_content_connect();
 	if(ret != MEDIA_CONTENT_ERROR_NONE)
 	{
-		throw std::runtime_error(std::string("fail to connect to the media content DB with code:")+AppTool::ToString<int>(ret));
+		throw std::runtime_error(std::string("fail to connect to the media content DB with code:")+to_string<int>(ret));
 	}
 	m_isconnected = true;
 	//register db update callback
 	if((ret = media_content_set_db_updated_cb(_noti_cb, NULL)) != MEDIA_CONTENT_ERROR_NONE)
 	{
-		throw std::runtime_error(std::string("fail to media_content_set_db_updated_db with code:") + AppTool::ToString<int>(ret));
+		throw std::runtime_error(std::string("fail to media_content_set_db_updated_db with code:") + to_string<int>(ret));
 	}
 }
 
 void MediaContent::DisconnectDB()
 {
-	AppTool::Assert(m_isconnected == true);
+	assert_ifnot(m_isconnected == true);
 
 	// deregister db update callback
 	int ret = media_content_unset_db_updated_cb();
 	if(ret != MEDIA_CONTENT_ERROR_NONE)
 	{
-		throw std::runtime_error(std::string("fail to media_content_unset_db_updated_cb with code:")+AppTool::ToString<int>(ret));
+		throw std::runtime_error(std::string("fail to media_content_unset_db_updated_cb with code:")+to_string<int>(ret));
 	}
 	media_content_disconnect();
 	m_isconnected = false;
@@ -66,7 +66,7 @@ void MediaContent::DisconnectDB()
 
 void MediaContent::GetItem(const MediaContentParam& param, std::vector<MediaContentItem>* itemlist)
 {
-	AppTool::Assert(m_isconnected == true);
+	assert_ifnot(m_isconnected == true);
 
 	filter_h filter = NULL;
 	try
@@ -88,7 +88,7 @@ filter_h MediaContent::createfilter(const MediaContentParam& param)
 	int ret;
 	if((ret = media_filter_create(&filter)) != MEDIA_CONTENT_ERROR_NONE)
 	{
-		throw std::runtime_error(std::string("fail to create filter with code:")+AppTool::ToString<int>(ret));
+		throw std::runtime_error(std::string("fail to create filter with code:")+to_string<int>(ret));
 	}
 
 	media_content_collation_e collate_type = MEDIA_CONTENT_COLLATE_NOCASE;
@@ -96,14 +96,14 @@ filter_h MediaContent::createfilter(const MediaContentParam& param)
 	if((ret = media_filter_set_condition(filter, condition.c_str(), collate_type)) != MEDIA_CONTENT_ERROR_NONE)
 	{
 		media_filter_destroy(filter);
-		throw std::runtime_error(std::string("fail to set condition to the filter with code:")+AppTool::ToString<int>(ret));
+		throw std::runtime_error(std::string("fail to set condition to the filter with code:")+to_string<int>(ret));
 	}
 
 	media_content_order_e order_type = (param.isASC)? MEDIA_CONTENT_ORDER_ASC:MEDIA_CONTENT_ORDER_DESC;
 	if((ret = media_filter_set_order(filter, order_type, param.order_keyword.c_str(), collate_type)) != MEDIA_CONTENT_ERROR_NONE)
 	{
 		media_filter_destroy(filter);
-		throw std::runtime_error(std::string("fail to set order type to the filter with code:")+AppTool::ToString<int>(ret));
+		throw std::runtime_error(std::string("fail to set order type to the filter with code:")+to_string<int>(ret));
 	}
 
 	return filter;
@@ -174,7 +174,7 @@ void MediaContent::getitemlist(filter_h filter, std::vector<MediaContentItem>* i
 	 */
 	if((ret = media_info_foreach_media_from_db(filter, media_cb, (void*)itemlist)) != MEDIA_CONTENT_ERROR_NONE)
 	{
-		throw std::runtime_error(std::string("fail to media_info_foreach_media_from_db with code:")+AppTool::ToString<int>(ret));
+		throw std::runtime_error(std::string("fail to media_info_foreach_media_from_db with code:")+to_string<int>(ret));
 	}
 }
 void MediaContent::destroyfilter(filter_h& filter)

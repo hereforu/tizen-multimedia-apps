@@ -56,7 +56,7 @@ void CodecBase::Destroy()
 	m_out.queue.ClearAll();
 }
 
-bool CodecBase::Get_Packets(media_packet_h& packet)
+bool CodecBase::GetPacket(media_packet_h& packet)
 {
 	if(m_out.queue.IsEmpty())
 		return false;
@@ -64,7 +64,7 @@ bool CodecBase::Get_Packets(media_packet_h& packet)
 	return true;
 }
 
-bool CodecBase::Input_Packets(media_packet_h packet)
+bool CodecBase::InsertPacket(media_packet_h packet)
 {
 	int ret = 0;
 		ret = mediacodec_process_input(m_mediacodec, packet, 1000);
@@ -145,11 +145,6 @@ void CodecBase::mc_eos_cb(void *user_data)
 	codec->handle_eos();
 }
 
-void CodecBase::iferror_throw(int ret, const char* msg)
-{
-	if(ret != MEDIACODEC_ERROR_NONE)
-		throw std::runtime_error(std::string(msg)+AppTool::ToString(ret)+std::string(getname()));
-}
 
 #if 0
 void transform_completed_cb(media_packet_h *dst, int error_code, void *user_data)

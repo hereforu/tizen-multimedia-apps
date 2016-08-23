@@ -102,7 +102,7 @@ bool TranscodingEngine::feed_decoder_with_packet(CodecBase* decoder, int track_i
 			}
 			else
 			{
-				if(!decoder->Input_Packets(demux_packet))
+				if(!decoder->InsertPacket(demux_packet))
 				{
 					dlog_print(DLOG_ERROR, "TranscodingEngine", "while putting the %d th packet to the decoder", count);
 					return false;
@@ -121,7 +121,7 @@ bool TranscodingEngine::feed_encoder_with_packet(CodecBase* decoder, CodecBase* 
 
 	if(decoder->IsEoS()==false)
 	{
-		if(decoder->Get_Packets(decoded_packet))
+		if(decoder->GetPacket(decoded_packet))
 		{
 			++count;
 			dlog_print(DLOG_DEBUG, "TranscodingEngine", "%dth decoded packet", count);
@@ -142,7 +142,7 @@ bool TranscodingEngine::feed_encoder_with_packet(CodecBase* decoder, CodecBase* 
 				}
 			}
 #endif
-			if(!encoder->Input_Packets(decoded_packet))
+			if(!encoder->InsertPacket(decoded_packet))
 			{
 				dlog_print(DLOG_ERROR, "TranscodingEngine", "while putting the %d th packet to the encoder", count);
 				return false;
@@ -159,7 +159,7 @@ bool TranscodingEngine::feed_muxer_with_packet(CodecBase* encoder, int muxer_tra
 	media_packet_h encoded_packet;
 	if(encoder->IsEoS()==false)
 	{
-		if(encoder->Get_Packets(encoded_packet))
+		if(encoder->GetPacket(encoded_packet))
 		{
 			++count;
 			if(m_muxer.WriteSample(muxer_track_index, encoded_packet)==false)
@@ -276,10 +276,15 @@ void TranscodingEngine::createdemuxer(const char* srcfilename)
 void TranscodingEngine::createmuxer(const char* srcfilename)
 {
 	m_muxer.Create(generatedstfilename(srcfilename), MEDIAMUXER_CONTAINER_FORMAT_MP4);
-	m_muxer_video_track_index = m_muxer.AddTrack(m_demuxer.GetMediaFormat(m_demuxer.GetVideoTrackIndex()));
+	dlog_print(DLOG_INFO, "TranscodingEngine", "add video track");
+	m_muxer_video_track_index = m_muxer.AddTrack(m_vencoder.GetMediaFormat());
 	if(isaudioavailable())
-		m_muxer_audio_track_index = m_muxer.AddTrack(m_demuxer.GetMediaFormat(m_demuxer.GetAudioTrackIndex()));
+	{
+		dlog_print(DLOG_INFO, "TranscodingEngine", "add audio track");
+		m_muxer_audio_track_index = m_muxer.AddTrack(m_aencoder.GetMediaFormat());
+	}
 }
+
 
 void TranscodingEngine::createvideocodec(CodecInfo& venc)
 {

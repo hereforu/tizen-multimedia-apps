@@ -22,14 +22,14 @@ MultimediaApp::~MultimediaApp()
 
 void MultimediaApp::MoveNextView()
 {
-	AppTool::Assert(m_frame!= NULL);
+	assert_ifnot(m_frame!= NULL);
 	m_frame->MoveNextView();
 
 }
 
 void MultimediaApp::MovePrevView()
 {
-	AppTool::Assert(m_frame!= NULL);
+	assert_ifnot(m_frame!= NULL);
 	m_frame->MovePrevView();
 }
 
