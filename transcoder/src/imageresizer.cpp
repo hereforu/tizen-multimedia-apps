@@ -53,6 +53,9 @@ bool ImageResizer::Resize(media_packet_h packet, media_packet_h* resized_packet)
 	print_packet_info(packet);
 	bool is_eos = false;
 	media_packet_is_end_of_stream(packet, &is_eos);
+	uint64_t	pts = 0;
+	media_packet_get_pts(packet, &pts);
+
 	int ret = image_util_transform_run(m_handle, packet, ImageResizer::resize_completed_cb, (void*)this);
 	dlog_print(DLOG_DEBUG, "ImageResizer", "image_util_transform_run[%d]", ret);
 	if(ret != IMAGE_UTIL_ERROR_NONE)
@@ -66,6 +69,7 @@ bool ImageResizer::Resize(media_packet_h packet, media_packet_h* resized_packet)
 	{
 		media_packet_set_flags(*resized_packet, MEDIA_PACKET_END_OF_STREAM);
 	}
+	media_packet_set_pts(*resized_packet, pts);
 	print_packet_info(*resized_packet);
 	dlog_print(DLOG_DEBUG, "ImageResizer", "image_util_transform_run signaled");
 	return true;
@@ -87,6 +91,10 @@ void ImageResizer::resize_completed_cb(media_packet_h *dst, int error_code, void
 
 void ImageResizer::print_packet_info(media_packet_h packet)
 {
+	uint64_t	pts = 0;
+	media_packet_get_pts(packet, &pts);
+	dlog_print(DLOG_DEBUG, "ImageResizer", "media_packet_get_pts [%llu]", pts);
+
 	uint64_t	dts = 0;
 	media_packet_get_dts(packet, &dts);
 	dlog_print(DLOG_DEBUG, "ImageResizer", "media_packet_get_dts [%llu]", dts);
