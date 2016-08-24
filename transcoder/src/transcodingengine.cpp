@@ -18,10 +18,13 @@
 
 
 TranscodingEngine::TranscodingEngine()
-:m_progress_count(0), m_estimated_packets(0),m_muxer_video_track_index(-1), m_muxer_audio_track_index(-1), m_bcreated(false)
+:m_progress_count(0), m_estimated_packets(0),
+ m_muxer_video_track_index(-1), m_muxer_audio_track_index(-1),
+ m_bcreated(false), m_bcanceled(false)
 {
 
 }
+
 TranscodingEngine::~TranscodingEngine()
 {
 
@@ -46,6 +49,7 @@ void TranscodingEngine::Create(const char* srcfilename, unsigned int duration, C
 #endif
 	m_bcreated = true;
 }
+
 void TranscodingEngine::Destroy()
 {
 	m_muxer.Destroy();
@@ -110,7 +114,6 @@ bool TranscodingEngine::feed_encoder_with_packet(CodecBase* decoder, CodecBase* 
 		{
 			++count;
 			dlog_print(DLOG_DEBUG, "TranscodingEngine", "%dth decoded packet", count);
-
 #ifdef IMAGE_RESIZER_ON
 			bool isvideo = false;
 			if(media_packet_is_video(decoded_packet, &isvideo) == MEDIA_PACKET_ERROR_NONE && isvideo==true)
@@ -191,7 +194,8 @@ void TranscodingEngine::transcoding()
 	int audio_counter[MAX_COUNTER] = {0,};
 	int iteration = 0;
 	unsigned int video_pts = 0, audio_pts = 0;
-	while(1)
+	m_bcanceled = false;
+	while(!m_bcanceled)
 	{
 		dlog_print(DLOG_DEBUG, "TranscodingEngine", "%dth iteration for transcoding", iteration++);
 		if(m_vencoder.IsEoS()==false)
@@ -229,7 +233,8 @@ void TranscodingEngine::transcoding()
 		m_muxer.CloseTrack(m_muxer_audio_track_index);
 	usleep(1000000);
 }
-void TranscodingEngine::Start()
+
+void TranscodingEngine::Transcoding()
 {
 	device_power_request_lock(POWER_LOCK_CPU, 0);
 	m_demuxer.Start();
@@ -240,9 +245,9 @@ void TranscodingEngine::Start()
 	device_power_release_lock(POWER_LOCK_CPU);
 }
 
-void TranscodingEngine::Stop()
+void TranscodingEngine::Cancel()
 {
-
+	m_bcanceled = true;
 }
 
 double TranscodingEngine::GetProgress()
@@ -252,7 +257,14 @@ double TranscodingEngine::GetProgress()
 		progress = (double)m_progress_count/(double)m_estimated_packets;
 	return progress;
 }
-
+const char* TranscodingEngine::GetDstFileName()
+{
+	return m_dstfilename.c_str();
+}
+bool TranscodingEngine::IsCanceled()
+{
+	return m_bcanceled;
+}
 
 void TranscodingEngine::createdemuxer(const char* srcfilename)
 {
@@ -311,9 +323,23 @@ void TranscodingEngine::createaudiocodec(CodecInfo& aenc)
 
 const char* TranscodingEngine::generatedstfilename(const char* srcfilename)
 {
-	m_dstfilename = srcfilename;
-	size_t dot_pos = m_dstfilename.find_last_of('.');
-	m_dstfilename.insert(dot_pos, "_trans");
+	int i = 0;
+	while(1)
+	{
+		m_dstfilename = srcfilename;
+		size_t dot_pos = m_dstfilename.find_last_of('.');
+		std::string postfix = "_trans";
+		if(i > 0)
+		{
+			postfix += to_string<int>(i);
+		}
+		m_dstfilename.insert(dot_pos, postfix.c_str());
+		if(access(m_dstfilename.c_str(), F_OK) == -1)
+		{
+			break;
+		}
+		++i;
+	}
 	dlog_print(DLOG_DEBUG, "TranscodingEngine", "dest file name is %s", m_dstfilename.c_str());
 	return m_dstfilename.c_str();
 }

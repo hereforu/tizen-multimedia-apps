@@ -39,9 +39,11 @@ public:
 	void Create(const char* srcfilename, unsigned int duration, CodecInfo& venc, CodecInfo& aenc);
 	void Destroy();
 	bool IsCreated();
-	void Start();
-	void Stop();
+	void Transcoding();
+	void Cancel();
 	double GetProgress();
+	const char* GetDstFileName();
+	bool IsCanceled();
 
 private:
 	void transcoding();
@@ -58,8 +60,6 @@ private:
 	void print_errorcode_for_debug();
 
 private:
-	int m_progress_count;
-	int m_estimated_packets;
 	Demuxer m_demuxer;
 	Muxer m_muxer;
 	VideoDecoder m_vdecoder;
@@ -71,9 +71,13 @@ private:
 	std::string m_dstfilename; //auto generation
 	CodecInfo m_vencinfo;
 	CodecInfo m_aencinfo;
+
+	int m_progress_count;
+	int m_estimated_packets;
 	int m_muxer_video_track_index;
 	int m_muxer_audio_track_index;
 	bool m_bcreated;
+	bool m_bcanceled;
 };
 //void start_transcoding(const char* srcfilename, CodecInfo& venc, CodecInfo& aenc);
 #endif /* TRANSCODINGENGINE_H_ */

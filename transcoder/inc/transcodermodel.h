@@ -22,6 +22,7 @@ public:
 	~TranscoderModel();
 
 	void RebuildContentsList();
+	void AddFileToDB(const char* filename);
 	const std::vector<MediaContentItem>& GetContentsList();
 	void SetSelectedContentIndex(int index);
 	const MediaContentItem& GetSelectedContent();

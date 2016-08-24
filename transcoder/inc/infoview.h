@@ -44,6 +44,7 @@ private:
 	void change_optionview(int id);
 	void move_prev();
 	void ontime();
+	void canceltranscoding();
 	Evas_Object* createmsgbox(Evas_Object* box);
 	void showmsgbox(const char* str);
 	void hidemsgbox();

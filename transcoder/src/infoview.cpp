@@ -176,6 +176,11 @@ void InfoView::ontime()
 	m_pbpopup.SetValue(progress);
 }
 
+void InfoView::canceltranscoding()
+{
+
+}
+
 void InfoView::update_progress()
 {
 
@@ -216,10 +221,24 @@ void InfoView::long_func_transcoding(Ecore_Thread *thread)
 	{
 		m_transcodingengine.Create(((TranscoderModel*)getmodel())->GetSelectedContent().path.c_str(), ((TranscoderModel*)getmodel())->GetSelectedContent().duration, venc, aenc);
 		ecore_timer_thaw(m_timer);
-		m_transcodingengine.Start();
+		m_transcodingengine.Transcoding();
 		ecore_timer_freeze(m_timer);
+		if(m_transcodingengine.IsCanceled()==false)
+		{
+			((TranscoderModel*)getmodel())->AddFileToDB(m_transcodingengine.GetDstFileName());
+		}
+		else
+		{
+			if(access(m_transcodingengine.GetDstFileName(), F_OK) != -1)
+			{
+				remove(m_transcodingengine.GetDstFileName());
+			}
+		}
 		m_transcodingengine.Destroy();
 		m_pbpopup.Hide();
+
+		//if succeed
+		//media_content_scan_file (const char *path)
 	}
 	catch(const std::runtime_error& e)
 	{
@@ -261,7 +280,8 @@ void InfoView::clicked_start_cb(void *data, Evas_Object *obj, void *event_info)
 }
 void InfoView::cancel_cb(void *data)
 {
-	//stop trandcoding
+	InfoView* view = (InfoView*)data;
+	view->canceltranscoding();
 }
 Eina_Bool InfoView::timer_cb(void *data)
 {

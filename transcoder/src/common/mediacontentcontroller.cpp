@@ -64,6 +64,16 @@ void MediaContent::DisconnectDB()
 
 }
 
+void MediaContent::ScanFile(const char* filename)
+{
+	assert_ifnot(m_isconnected == true);
+	int ret = media_content_scan_file(filename);
+	if(ret != MEDIA_CONTENT_ERROR_NONE)
+	{
+		dlog_print(DLOG_ERROR, "MediaContent", "fail to media_content_scan_file [%d]", ret);
+	}
+}
+
 void MediaContent::GetItem(const MediaContentParam& param, std::vector<MediaContentItem>* itemlist)
 {
 	assert_ifnot(m_isconnected == true);

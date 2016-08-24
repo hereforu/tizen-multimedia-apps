@@ -27,6 +27,21 @@ void TranscoderModel::RebuildContentsList()
 	buildcontentslist();
 }
 
+void TranscoderModel::AddFileToDB(const char* filename)
+{
+	MediaContent db;
+	try
+	{
+		db.ConnectDB();
+		db.ScanFile(filename);
+		db.DisconnectDB();
+	}
+	catch(const std::runtime_error& e)
+	{
+		dlog_print(DLOG_ERROR, "TranscoderModel", e.what());
+	}
+}
+
 void TranscoderModel::SetSelectedContentIndex(int index)
 {
 	assert_ifnot(0 <= index && index < m_contents.size());

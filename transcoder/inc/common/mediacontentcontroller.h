@@ -66,6 +66,7 @@ public:
 	void DisconnectDB();
 	bool IsConnected(){return m_isconnected;}
 
+	void ScanFile(const char* filename);
 	void GetItem(const MediaContentParam& param, std::vector<MediaContentItem>* itemlist);
 
 private:
