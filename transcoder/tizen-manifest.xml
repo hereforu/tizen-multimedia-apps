@@ -8,6 +8,7 @@
     <privileges>
         <privilege>http://tizen.org/privilege/mediastorage</privilege>
         <privilege>http://tizen.org/privilege/mediacontroller.client</privilege>
+        <privilege>http://tizen.org/privilege/display</privilege>
         <privilege>http://tizen.org/privilege/recorder</privilege>
         <privilege>http://tizen.org/privilege/externalstorage</privilege>
         <privilege>http://tizen.org/privilege/content.write</privilege>

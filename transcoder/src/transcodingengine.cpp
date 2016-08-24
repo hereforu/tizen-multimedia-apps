@@ -11,6 +11,7 @@
 
 #include "muxer.h"
 #include <stdexcept>
+#include <device/power.h>
 
 #define IMAGE_RESIZER_ON
 
@@ -230,11 +231,13 @@ void TranscodingEngine::transcoding()
 }
 void TranscodingEngine::Start()
 {
+	device_power_request_lock(POWER_LOCK_CPU, 0);
 	m_demuxer.Start();
 	m_muxer.Start();
 	transcoding();
 	m_muxer.Stop();
 	m_demuxer.Stop();
+	device_power_release_lock(POWER_LOCK_CPU);
 }
 
 void TranscodingEngine::Stop()
