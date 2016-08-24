@@ -45,13 +45,14 @@ void ImageResizer::Destroy()
 	m_handle = NULL;
 	eina_condition_free(&m_cond);
 	eina_lock_free(&m_mutex);
-
 }
 
 bool ImageResizer::Resize(media_packet_h packet, media_packet_h* resized_packet)
 {
 	dlog_print(DLOG_DEBUG, "ImageResizer", "========================original packet===========================");
 	print_packet_info(packet);
+	bool is_eos = false;
+	media_packet_is_end_of_stream(packet, &is_eos);
 	int ret = image_util_transform_run(m_handle, packet, ImageResizer::resize_completed_cb, (void*)this);
 	dlog_print(DLOG_DEBUG, "ImageResizer", "image_util_transform_run[%d]", ret);
 	if(ret != IMAGE_UTIL_ERROR_NONE)
@@ -61,6 +62,10 @@ bool ImageResizer::Resize(media_packet_h packet, media_packet_h* resized_packet)
 	eina_condition_wait(&m_cond);
 	*resized_packet = m_result;
 	dlog_print(DLOG_DEBUG, "ImageResizer", "========================resized packet=================[%p], [%p]", *resized_packet, m_result);
+	if(is_eos)
+	{
+		media_packet_set_flags(*resized_packet, MEDIA_PACKET_END_OF_STREAM);
+	}
 	print_packet_info(*resized_packet);
 	dlog_print(DLOG_DEBUG, "ImageResizer", "image_util_transform_run signaled");
 	return true;
