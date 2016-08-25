@@ -103,11 +103,7 @@ Evas_Object* PopupProgress::createcancelbtn(Evas_Object* parent)
 }
 void PopupProgress::cancel()
 {
-	//ToDO::
-#if 0
-	Hide();
 	m_cancelcb(m_data);
-#endif
 }
 void PopupProgress::clicked_cancel_cb(void *data, Evas_Object *obj, void *event_info)
 {

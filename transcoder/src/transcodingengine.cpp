@@ -52,6 +52,7 @@ void TranscodingEngine::Create(const char* srcfilename, unsigned int duration, C
 
 void TranscodingEngine::Destroy()
 {
+	dlog_print(DLOG_DEBUG, "TranscodingEngine", "enter into destroy");
 	m_muxer.Destroy();
 	m_demuxer.Destroy();
 	m_vdecoder.Destroy();
@@ -65,6 +66,7 @@ void TranscodingEngine::Destroy()
 	m_resizer.Destroy();
 #endif
 	m_bcreated = false;
+	dlog_print(DLOG_DEBUG, "TranscodingEngine", "exit from destroy");
 }
 
 bool TranscodingEngine::IsCreated()

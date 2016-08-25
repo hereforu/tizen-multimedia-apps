@@ -178,7 +178,8 @@ void InfoView::ontime()
 
 void InfoView::canceltranscoding()
 {
-
+	dlog_print(DLOG_DEBUG, "InfoView", "cancel button is pressed");
+	m_transcodingengine.Cancel();
 }
 
 void InfoView::update_progress()

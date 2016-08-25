@@ -39,11 +39,13 @@ void Muxer::Destroy()
 	if(m_muxer == NULL)
 		return;
 
+	dlog_print(DLOG_DEBUG, "Muxer", "enter into destroy");
 	int ret = mediamuxer_destroy(m_muxer);
 	if(ret != MEDIAMUXER_ERROR_NONE)
 		dlog_print(DLOG_ERROR, "Muxer", "fail to mediamuxer_destroy:%d", ret);
 
 	m_muxer = NULL;
+	dlog_print(DLOG_DEBUG, "Muxer", "exit destroy");
 }
 
 int Muxer::AddTrack(media_format_h media_format)

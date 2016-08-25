@@ -50,23 +50,29 @@ void Demuxer::Destroy()
 {
 	if(m_demuxer == NULL)
 		return;
+	dlog_print(DLOG_DEBUG, "Demuxer", "enter into destroy");
 	for(int i= 0; i < m_tracks.size(); ++i)
 	{
 		if(m_tracks[i].info.fmt)
 			media_format_unref(m_tracks[i].info.fmt);
 	}
+	dlog_print(DLOG_DEBUG, "Demuxer", "complete media_format_unref");
 	m_tracks.clear();
 	mediademuxer_unset_eos_cb(m_demuxer);
 	mediademuxer_unset_error_cb(m_demuxer);
+	dlog_print(DLOG_DEBUG, "Demuxer", "complete mediademuxer_unset_xxxx");
 	//if ready state
 	int ret = mediademuxer_unprepare(m_demuxer);
+	dlog_print(DLOG_DEBUG, "Demuxer", "complete mediademuxer_unprepare");
 	if(ret != MEDIAMUXER_ERROR_NONE)
 		dlog_print(DLOG_ERROR, "Demuxer", "fail to mediademuxer_unprepare:%d", ret);
 
 	ret = mediademuxer_destroy(m_demuxer);
+	dlog_print(DLOG_DEBUG, "Demuxer", "complete mediademuxer_destroy");
 	if(ret != MEDIAMUXER_ERROR_NONE)
 		dlog_print(DLOG_ERROR, "Demuxer", "fail to mediademuxer_destroy:%d", ret);
 	m_demuxer = NULL;
+	dlog_print(DLOG_DEBUG, "Demuxer", "exit from destroy");
 }
 
 
@@ -145,9 +151,13 @@ void Demuxer::Stop()
 {
 	iferror_throw(mediademuxer_stop(m_demuxer), "fail to mediademuxer_stop: ");
 	if(m_videotrackindex != -1)
+	{
 		iferror_throw(mediademuxer_unselect_track(m_demuxer, m_videotrackindex), "fail to mediademuxer_unselect_track for video: ");
+	}
 	if(m_audiotrackindex != -1)
+	{
 		iferror_throw(mediademuxer_unselect_track(m_demuxer, m_audiotrackindex), "fail to mediademuxer_unselect_track for audio: ");
+	}
 }
 
 

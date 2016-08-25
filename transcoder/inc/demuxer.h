@@ -48,6 +48,7 @@ public:
 
 
 private:
+
 	void prefetch_sample();
 	int read_sample(int track_index, media_packet_h* packet);
 	void iferror_throw(int ret, const char* msg);

@@ -54,6 +54,7 @@ void CodecBase::Destroy()
 {
 	if(m_mediacodec == NULL)
 		return;
+	dlog_print(DLOG_DEBUG, "CodecBase", "enter into destroy");
 	destroy();
 	//iferror_throw(mediacodec_flush_buffers(m_mediacodec), "fail to mediacodec_flush_buffers [%s]");
 	int ret = mediacodec_unprepare(m_mediacodec);
@@ -67,6 +68,7 @@ void CodecBase::Destroy()
 	m_out.count = 0;
 	m_out.eos = false;
 	m_out.queue.ClearAll();
+	dlog_print(DLOG_DEBUG, "CodecBase", "exit from destroy");
 }
 
 bool CodecBase::GetPacket(media_packet_h& packet)
