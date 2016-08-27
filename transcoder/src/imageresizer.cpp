@@ -17,7 +17,7 @@ ImageResizer::ImageResizer()
 
 ImageResizer::~ImageResizer()
 {
-
+	Destroy();
 }
 
 void ImageResizer::Create(int target_width, int target_height)
@@ -41,6 +41,8 @@ void ImageResizer::Create(int target_width, int target_height)
 
 void ImageResizer::Destroy()
 {
+	if(m_handle == NULL)
+		return;
 	dlog_print(DLOG_DEBUG, "ImageResizer", "enter into destroy");
 	image_util_transform_destroy(m_handle);
 	m_handle = NULL;

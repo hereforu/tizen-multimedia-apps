@@ -18,7 +18,7 @@ Muxer::Muxer()
 }
 Muxer::~Muxer()
 {
-
+	Destroy();
 }
 
 void Muxer::Create(const char* dstfilepath, mediamuxer_output_format_e format)

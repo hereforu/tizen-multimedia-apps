@@ -13,9 +13,10 @@
 #include "common/listctrl.h"
 #include "transcodermodel.h"
 #include "common/buttonpack.h"
-#include "videoplayer.h"
 #include "popupprogress.h"
 #include "transcodingengine.h"
+#include "videoplayer.h"
+#include <memory>
 
 
 class InfoView : public View
@@ -34,6 +35,8 @@ protected:
 
 
 private:
+	void fill_encoderinfo(CodecInfo& venc, CodecInfo& aenc);
+	void process_after_transcoding(bool iscanceled, const char* outfilename);
 	void getresolutionbycode(unsigned int code, int& width, int& height);
 	void getoriginalvideoinfo(const char* path, VideoInfo& info);
 	Evas_Object* createdisplay(Evas_Object* box);
@@ -72,15 +75,11 @@ private:
 	Evas_Object* m_msgbox;
 	Ecore_Timer* m_timer;
 	Ecore_Thread* m_transcodingthread;
+	TranscodingEngine* m_transcodingengine;
 	ListCtrl m_list;
 	ButtonPack m_btnpack;
 	PopupProgress m_pbpopup;
-	TranscodingEngine m_transcodingengine;
 
-#ifdef SUPPORT_PLAYER
-	Evas_Object* m_display;
-	VideoPlayer m_player;
-#endif
 };
 
 

@@ -21,13 +21,13 @@
 	}\
 
 CodecBase::CodecBase()
-:m_mediacodec(NULL), m_in_count(0)
+:m_mediacodec(NULL), m_in_count(0), m_format(NULL)
 {
 
 }
 CodecBase::~CodecBase()
 {
-
+	Destroy();
 }
 
 void CodecBase::Create(const CodecInfo& codecinfo)
@@ -35,6 +35,8 @@ void CodecBase::Create(const CodecInfo& codecinfo)
 	iferror_throw(mediacodec_create(&m_mediacodec), "fail to create mediacodec_create");
 	if(create(m_mediacodec, codecinfo) == false)//codec info setting
 		throw_error_and_destroy_codec(m_mediacodec, "fail to create specific codec", 0)
+	if((m_format = create_format(codecinfo)) == NULL)//create format info
+		throw_error_and_destroy_codec(m_mediacodec, "fail to create format", 0)
 	int ret = MEDIACODEC_ERROR_NONE;
 	if((ret = mediacodec_set_eos_cb(m_mediacodec, mc_eos_cb, (void*)this)) != MEDIACODEC_ERROR_NONE)
 		throw_error_and_destroy_codec(m_mediacodec, "fail to mediacodec_set_eos_cb", ret);
@@ -56,7 +58,8 @@ void CodecBase::Destroy()
 		return;
 	dlog_print(DLOG_DEBUG, "CodecBase", "enter into destroy");
 	destroy();
-	//iferror_throw(mediacodec_flush_buffers(m_mediacodec), "fail to mediacodec_flush_buffers [%s]");
+	if(m_format)
+		media_format_unref(m_format);
 	int ret = mediacodec_unprepare(m_mediacodec);
 	if(ret != MEDIAMUXER_ERROR_NONE)
 		dlog_print(DLOG_ERROR, "CodecBase", "fail to mediacodec_unprepare:%d", ret);
@@ -71,6 +74,10 @@ void CodecBase::Destroy()
 	dlog_print(DLOG_DEBUG, "CodecBase", "exit from destroy");
 }
 
+media_format_h CodecBase::GetMediaFormat()
+{
+	return m_format;
+}
 bool CodecBase::GetPacket(media_packet_h& packet)
 {
 	if(m_out.queue.IsEmpty())

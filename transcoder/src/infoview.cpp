@@ -10,19 +10,12 @@
 #include "common/multimediaapp.h"
 #include <stdexcept>
 #include "common/mediacontentcontroller.h"
-#include "transcodingengine.h"
 
-//#define SUPPORT_PLAYER
-#ifdef __cplusplus
-extern "C" {
-#endif
-void muxer_only();
-#ifdef __cplusplus
-}
-#endif
+
+
 
 InfoView::InfoView()
-:m_msgbox(NULL), m_timer(NULL), m_transcodingthread(NULL)
+:m_msgbox(NULL), m_timer(NULL), m_transcodingthread(NULL), m_transcodingengine(NULL)
 {
 
 }
@@ -43,12 +36,6 @@ void InfoView::decorateview(Evas_Object* box)
 	{
 		m_list.Create(box, change_optionview_cb, (void*)this);
 		setinfo_tolist(m_list, ((TranscoderModel*)getmodel())->GetSelectedContent());
-#ifdef SUPPORT_PLAYER
-		m_display = createdisplay(box);
-		m_player.Create();
-		m_player.SetMediaAndPrepare(((TranscoderModel*)getmodel())->GetSelectedContent().path.c_str(), m_display);
-		m_player.Play();
-#endif
 		m_btnpack.Create(box);
 		add_defaultbtns(m_btnpack);
 		m_pbpopup.Create(box, cancel_cb, (void*)this);
@@ -72,17 +59,12 @@ void InfoView::destroyremains()
 	dlog_print(DLOG_DEBUG, "InfoView", "destroyremains #1");
 	ecore_timer_del(m_timer);
 	dlog_print(DLOG_DEBUG, "InfoView", "destroyremains #2");
-	if(m_transcodingengine.IsCreated())
-	{
-		m_transcodingengine.Destroy();
-	}
-	dlog_print(DLOG_DEBUG, "InfoView", "destroyremains #3");
 	m_list.Destroy();
-	dlog_print(DLOG_DEBUG, "InfoView", "destroyremains #4");
+	dlog_print(DLOG_DEBUG, "InfoView", "destroyremains #3");
 	m_btnpack.Destroy();
-	dlog_print(DLOG_DEBUG, "InfoView", "destroyremains #5");
+	dlog_print(DLOG_DEBUG, "InfoView", "destroyremains #4");
 	m_pbpopup.Destroy();
-	dlog_print(DLOG_DEBUG, "InfoView", "destroyremains #6");
+	dlog_print(DLOG_DEBUG, "InfoView", "destroyremains #5");
 }
 
 
@@ -171,15 +153,19 @@ void InfoView::move_prev()
 }
 void InfoView::ontime()
 {
-	double progress = m_transcodingengine.GetProgress();
-	dlog_print(DLOG_DEBUG, "InfoView", "ontime is called and current position is %f", (float)progress);
-	m_pbpopup.SetValue(progress);
+	if(m_transcodingengine)
+	{
+		double progress = m_transcodingengine->GetProgress();
+		m_pbpopup.SetValue(progress);
+	}
 }
 
 void InfoView::canceltranscoding()
 {
-	dlog_print(DLOG_DEBUG, "InfoView", "cancel button is pressed");
-	m_transcodingengine.Cancel();
+	if(m_transcodingengine)
+	{
+		m_transcodingengine->Cancel();
+	}
 }
 
 void InfoView::update_progress()
@@ -205,52 +191,54 @@ void InfoView::getresolutionbycode(unsigned int code, int& width, int& height)
 void InfoView::long_func_transcoding(Ecore_Thread *thread)
 {
 	dlog_print(DLOG_DEBUG, "InfoView", "long_func_transcoding has been called");
-	CodecInfo venc, aenc;
+	try
+	{
+		CodecInfo venc, aenc;
+		fill_encoderinfo(venc, aenc);
+		ecore_timer_thaw(m_timer);
+		m_transcodingengine = new TranscodingEngine;
+		m_transcodingengine->Transcoding(((TranscoderModel*)getmodel())->GetSelectedContent().path.c_str(), ((TranscoderModel*)getmodel())->GetSelectedContent().duration, venc, aenc);
+		ecore_timer_freeze(m_timer);
+		process_after_transcoding(m_transcodingengine->IsCanceled(), m_transcodingengine->GetDstFileName());
+	}
+	catch(const std::runtime_error& e)
+	{
+		dlog_print(DLOG_ERROR, "InfoView", e.what());
+	}
+	delete m_transcodingengine;
+	m_transcodingengine = NULL;
+	m_pbpopup.Hide();
+}
+
+void InfoView::fill_encoderinfo(CodecInfo& venc, CodecInfo& aenc)
+{
 	venc.venc.codecid = (mediacodec_codec_type_e)((TranscoderModel*)getmodel())->GetSelectedOption(VIDEO_CODEC_OPTION);
 	getresolutionbycode(((TranscoderModel*)getmodel())->GetSelectedOption(RESOLUTION_OPTION), venc.venc.width, venc.venc.height);
 	venc.venc.fps = 30;
 	venc.venc.target_bits =(int)((double)venc.venc.width*(double)venc.venc.height*(double)venc.venc.fps*0.20);
-
 
 	aenc.aenc.codecid = (mediacodec_codec_type_e)((TranscoderModel*)getmodel())->GetSelectedOption(AUDIO_CODEC_OPTION);
 	aenc.aenc.channel = ORIGINAL_FEATURE;
 	aenc.aenc.samplerate = ORIGINAL_FEATURE;
 	aenc.aenc.bit = ORIGINAL_FEATURE;
 	aenc.aenc.bitrate = ORIGINAL_FEATURE;
-
-	try
-	{
-		m_transcodingengine.Create(((TranscoderModel*)getmodel())->GetSelectedContent().path.c_str(), ((TranscoderModel*)getmodel())->GetSelectedContent().duration, venc, aenc);
-		ecore_timer_thaw(m_timer);
-		m_transcodingengine.Transcoding();
-		ecore_timer_freeze(m_timer);
-		if(m_transcodingengine.IsCanceled()==false)
-		{
-			((TranscoderModel*)getmodel())->AddFileToDB(m_transcodingengine.GetDstFileName());
-		}
-		else
-		{
-			if(access(m_transcodingengine.GetDstFileName(), F_OK) != -1)
-			{
-				remove(m_transcodingengine.GetDstFileName());
-			}
-		}
-		m_transcodingengine.Destroy();
-		m_pbpopup.Hide();
-
-		//if succeed
-		//media_content_scan_file (const char *path)
-	}
-	catch(const std::runtime_error& e)
-	{
-		m_transcodingengine.Destroy();
-		m_pbpopup.Hide();
-		dlog_print(DLOG_ERROR, "InfoView", e.what());
-	//	showmsgbox(e.what());
-	}
-
-
 }
+
+void InfoView::process_after_transcoding(bool iscanceled, const char* outfilename)
+{
+	if(iscanceled==false)
+	{
+		((TranscoderModel*)getmodel())->AddFileToDB(outfilename);
+	}
+	else
+	{
+		if(access(outfilename, F_OK) != -1)
+		{
+			remove(outfilename);
+		}
+	}
+}
+
 void InfoView::end_func_transcoding(Ecore_Thread *thread)
 {
 	dlog_print(DLOG_DEBUG, "InfoView", "end_func_transcoding has been called");

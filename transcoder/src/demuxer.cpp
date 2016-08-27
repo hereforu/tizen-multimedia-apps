@@ -28,7 +28,7 @@ Demuxer::Demuxer()
 
 Demuxer::~Demuxer()
 {
-
+	Destroy();
 }
 
 void Demuxer::Create(const char* srcfilename)
@@ -222,6 +222,7 @@ int Demuxer::GetVideoTrackIndex()
 
 int Demuxer::GetAudioTrackIndex()
 {
+
 	return m_audiotrackindex;
 }
 

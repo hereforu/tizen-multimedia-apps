@@ -34,6 +34,22 @@ bool AudioDecoder::create(mediacodec_h mediacodec, const CodecInfo& codecinfo)
 	}
 	return true;
 }
+media_format_h AudioDecoder::create_format(const CodecInfo& codecinfo)
+{
+	media_format_h format = NULL;
+	int ret = MEDIACODEC_ERROR_NONE;
+	if((ret = media_format_create(&format)) != MEDIACODEC_ERROR_NONE)
+	{
+		dlog_print(DLOG_ERROR, "CodecBase", "fail to media_format_create [%d]", ret);
+		return NULL;
+	}
+	media_format_set_audio_mime(format, (media_format_mimetype_e)(MEDIA_FORMAT_AUDIO | MEDIA_FORMAT_ENCODED | codecinfo.adec.codecid));
+	media_format_set_audio_channel(format, codecinfo.adec.channel);
+	media_format_set_audio_samplerate(format, codecinfo.adec.samplerate);
+	media_format_set_audio_bit(format, codecinfo.adec.bit);
+	//media_format_set_audio_avg_bps(format, codecinfo.aenc.bitrate);
+	return format;
+}
 void AudioDecoder::destroy()
 {
 

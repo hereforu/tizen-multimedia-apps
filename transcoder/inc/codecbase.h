@@ -30,6 +30,7 @@ public:
 	bool GetPacket(media_packet_h& packet);
 	bool InsertPacket(media_packet_h packet);
 	bool IsEoS();
+	media_format_h GetMediaFormat();
 
 protected:
 	virtual const char* getname() = 0;
@@ -37,6 +38,7 @@ protected:
 	bool pushpacket_to_outputqueue(const media_packet_h& packet);
 	virtual bool create(mediacodec_h mediacodec, const CodecInfo& codecinfo) = 0;
 	virtual void destroy() = 0;
+	virtual media_format_h create_format(const CodecInfo& codecinfo) = 0;
 
 
 private:
@@ -55,6 +57,7 @@ private:
 	mediacodec_h m_mediacodec;
 	ProcessingProperty m_out;
 	unsigned int m_in_count;
+	media_format_h m_format;
 };
 
 #endif /* CDEDCBASE_H_ */

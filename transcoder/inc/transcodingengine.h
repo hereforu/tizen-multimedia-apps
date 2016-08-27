@@ -16,8 +16,11 @@
 #include "audiodecoder.h"
 #include "audioencoder.h"
 #include "imageresizer.h"
+#include <memory>
 
-
+/*
+ * this class supports only the video file which has both one video track and one audio track.
+ */
 class TranscodingEngine
 {
 public:
@@ -30,53 +33,51 @@ public:
 	};
 	enum
 	{
-		VIDEO_TRACK = 0,
-		AUDIO_TRACK,
-		MAX_TRACKS
+		VIDEO_DECODER = 0,
+		VIDEO_ENCODER,
+		AUDIO_DECODER,
+		AUDIO_ENCODER,
+		MAX_CODEC,
 	};
+
 	TranscodingEngine();
 	~TranscodingEngine();
-	void Create(const char* srcfilename, unsigned int duration, CodecInfo& venc, CodecInfo& aenc);
+
 	void Destroy();
-	bool IsCreated();
-	void Transcoding();
+
+	void Transcoding(const char* srcfilename, unsigned int duration, const CodecInfo& venc, const CodecInfo& aenc);
 	void Cancel();
 	double GetProgress();
 	const char* GetDstFileName();
 	bool IsCanceled();
 
 private:
+	void prepare(const char* srcfilename, unsigned int duration, const CodecInfo& venc, const CodecInfo& aenc);
+	void unprepare();
 	void transcoding();
 	void process_track(int track_index, int muxer_track_index, CodecBase* decoder, CodecBase* encoder, int counter[], unsigned int& pts);
 	bool feed_decoder_with_packet(CodecBase* decoder, int track_index, int& count, unsigned int& pts);
 	bool feed_encoder_with_packet(CodecBase* decoder, CodecBase* encoder, int& count);
 	bool feed_muxer_with_packet(CodecBase* encoder,int muxer_track_index, int& count);
 	const char* generatedstfilename(const char* srcfilename);
-	void createdemuxer(const char* srcfilename);
-	void createvideocodec(CodecInfo& venc);
-	void createaudiocodec(CodecInfo& aenc);
-	void createmuxer(const char* srcfilename);
-	bool isaudioavailable();
+	void create_demuxer(const char* srcfilename);
+	void fill_and_get_codec_info(CodecInfo& vdec, CodecInfo& adec, CodecInfo& venc, CodecInfo& aenc);
+	void create_codec(int codectype, const CodecInfo& codecinfo);
+	void create_muxer(const char* srcfilename);
+	void create_resizer(int target_width, int target_height);
 	void print_errorcode_for_debug();
 
 private:
-	Demuxer m_demuxer;
-	Muxer m_muxer;
-	VideoDecoder m_vdecoder;
-	VideoEncoder m_vencoder;
-	AudioDecoder m_adecoder;
-	AudioEncoder m_aencoder;
-	ImageResizer m_resizer;
-
+	std::auto_ptr<Demuxer> m_demuxer;
+	std::auto_ptr<Muxer> m_muxer;
+	std::auto_ptr<ImageResizer> m_resizer;
+	std::auto_ptr<CodecBase> m_codec[MAX_CODEC];
 	std::string m_dstfilename; //auto generation
-	CodecInfo m_vencinfo;
-	CodecInfo m_aencinfo;
 
 	int m_progress_count;
 	int m_estimated_packets;
 	int m_muxer_video_track_index;
 	int m_muxer_audio_track_index;
-	bool m_bcreated;
 	bool m_bcanceled;
 };
 //void start_transcoding(const char* srcfilename, CodecInfo& venc, CodecInfo& aenc);
