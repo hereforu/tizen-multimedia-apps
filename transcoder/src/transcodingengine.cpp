@@ -15,14 +15,20 @@
 
 
 
-
+#define SAFE_DELETE(x)\
+	if(x){\
+		delete x;\
+		x = NULL;\
+	}\
 
 TranscodingEngine::TranscodingEngine()
-:m_progress_count(0), m_estimated_packets(0),
+:m_demuxer(NULL),m_muxer(NULL),m_resizer(NULL),
+ m_progress_count(0), m_estimated_packets(0),
  m_muxer_video_track_index(-1), m_muxer_audio_track_index(-1),
  m_bcanceled(false)
 {
-
+	for(int i = 0; i < MAX_CODEC; ++i)
+		m_codec[i] = NULL;
 }
 
 TranscodingEngine::~TranscodingEngine()
@@ -39,6 +45,7 @@ void TranscodingEngine::Transcoding(const char* srcfilename, unsigned int durati
 	transcoding();
 	m_muxer->Stop();
 	m_demuxer->Stop();
+	unprepare();
 	device_power_release_lock(POWER_LOCK_CPU);
 }
 
@@ -81,12 +88,12 @@ void TranscodingEngine::prepare(const char* srcfilename, unsigned int duration, 
 void TranscodingEngine::unprepare()
 {
 	dlog_print(DLOG_DEBUG, "TranscodingEngine", "enter into destroy");
-	m_muxer->Destroy();
-	m_demuxer->Destroy();
-	m_resizer->Destroy();
+	SAFE_DELETE(m_muxer);
+	SAFE_DELETE(m_demuxer);
+	SAFE_DELETE(m_resizer);
 	for(int i = 0; i < MAX_CODEC; ++i)
 	{
-		m_codec[i]->Destroy();
+		SAFE_DELETE(m_codec[i]);
 	}
 	dlog_print(DLOG_DEBUG, "TranscodingEngine", "exit from destroy");
 }
@@ -211,10 +218,10 @@ void TranscodingEngine::transcoding()
 	while(!m_bcanceled)
 	{
 		dlog_print(DLOG_DEBUG, "TranscodingEngine", "%dth iteration for transcoding", iteration++);
-		process_track(m_demuxer->GetVideoTrackIndex(), m_muxer_video_track_index, m_codec[VIDEO_DECODER].get(), m_codec[VIDEO_ENCODER].get(), video_counter, video_pts);
-		process_track(m_demuxer->GetAudioTrackIndex(), m_muxer_audio_track_index, m_codec[AUDIO_DECODER].get(), m_codec[AUDIO_ENCODER].get(), audio_counter, audio_pts);
+		process_track(m_demuxer->GetVideoTrackIndex(), m_muxer_video_track_index, m_codec[VIDEO_DECODER], m_codec[VIDEO_ENCODER], video_counter, video_pts);
+		process_track(m_demuxer->GetAudioTrackIndex(), m_muxer_audio_track_index, m_codec[AUDIO_DECODER], m_codec[AUDIO_ENCODER], audio_counter, audio_pts);
 		if(audio_pts < video_pts)
-			process_track(m_demuxer->GetAudioTrackIndex(), m_muxer_audio_track_index, m_codec[AUDIO_DECODER].get(),  m_codec[AUDIO_ENCODER].get(), audio_counter, audio_pts);
+			process_track(m_demuxer->GetAudioTrackIndex(), m_muxer_audio_track_index, m_codec[AUDIO_DECODER],  m_codec[AUDIO_ENCODER], audio_counter, audio_pts);
 		if(m_codec[VIDEO_ENCODER]->IsEoS() == true && m_codec[AUDIO_ENCODER]->IsEoS() == true)
 			break;
 		m_progress_count = video_counter[ENCODE_COUNTER];
@@ -232,7 +239,7 @@ void TranscodingEngine::create_demuxer(const char* srcfilename)
 	std::auto_ptr<Demuxer> demuxer(new Demuxer);
 	demuxer->Create(srcfilename);
 	demuxer->ExtractTrackinfo();
-	m_demuxer = demuxer;
+	m_demuxer = demuxer.release();
 }
 
 void TranscodingEngine::create_muxer(const char* srcfilename)
@@ -241,13 +248,13 @@ void TranscodingEngine::create_muxer(const char* srcfilename)
 	muxer->Create(generatedstfilename(srcfilename), MEDIAMUXER_CONTAINER_FORMAT_MP4);
 	m_muxer_video_track_index = muxer->AddTrack(m_codec[VIDEO_ENCODER]->GetMediaFormat());
 	m_muxer_audio_track_index = muxer->AddTrack(m_codec[AUDIO_ENCODER]->GetMediaFormat());
-	m_muxer = muxer;
+	m_muxer = muxer.release();
 }
 void TranscodingEngine::create_resizer(int target_width, int target_height)
 {
 	std::auto_ptr<ImageResizer> resizer(new ImageResizer);
 	resizer->Create(target_width, target_height);
-	m_resizer = resizer;
+	m_resizer = resizer.release();
 }
 
 
@@ -275,7 +282,7 @@ void TranscodingEngine::create_codec(int codectype, const CodecInfo& codecinfo)
 	}
 	std::auto_ptr<CodecBase> codec(p);
 	codec->Create(codecinfo);
-	m_codec[codectype] = codec;
+	m_codec[codectype] = codec.release();
 }
 
 

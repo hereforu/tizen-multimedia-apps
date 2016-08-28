@@ -30,7 +30,6 @@ void ImageResizer::Create(int target_width, int target_height)
 	{
 		throw std::runtime_error("fail to create eina_lock_new");
 	}
-
 	int ret = image_util_transform_create(&m_handle);
 	if(ret != IMAGE_UTIL_ERROR_NONE)
 	{
@@ -53,8 +52,6 @@ void ImageResizer::Destroy()
 
 bool ImageResizer::Resize(media_packet_h packet, media_packet_h* resized_packet)
 {
-//	dlog_print(DLOG_DEBUG, "ImageResizer", "========================original packet===========================");
-//	print_packet_info(packet);
 	bool is_eos = false;
 	media_packet_is_end_of_stream(packet, &is_eos);
 	uint64_t	pts = 0;
@@ -68,13 +65,11 @@ bool ImageResizer::Resize(media_packet_h packet, media_packet_h* resized_packet)
 	}
 	eina_condition_wait(&m_cond);
 	*resized_packet = m_result;
-//	dlog_print(DLOG_DEBUG, "ImageResizer", "========================resized packet=================[%p], [%p]", *resized_packet, m_result);
 	if(is_eos)
 	{
 		media_packet_set_flags(*resized_packet, MEDIA_PACKET_END_OF_STREAM);
 	}
 	media_packet_set_pts(*resized_packet, pts);
-//	print_packet_info(*resized_packet);
 	dlog_print(DLOG_DEBUG, "ImageResizer", "image_util_transform_run signaled");
 	return true;
 }

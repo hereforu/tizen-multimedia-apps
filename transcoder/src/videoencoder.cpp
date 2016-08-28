@@ -52,10 +52,7 @@ media_format_h VideoEncoder::create_format(const CodecInfo& codecinfo)
 	media_format_set_video_frame_rate(format, codecinfo.venc.fps);
 	return format;
 }
-void VideoEncoder::destroy()
-{
 
-}
 const char* VideoEncoder::getname()
 {
 	return "video encoder";

@@ -37,14 +37,12 @@ public:
 		VIDEO_ENCODER,
 		AUDIO_DECODER,
 		AUDIO_ENCODER,
-		MAX_CODEC,
+		MAX_CODEC
 	};
 
 	TranscodingEngine();
 	~TranscodingEngine();
-
 	void Destroy();
-
 	void Transcoding(const char* srcfilename, unsigned int duration, const CodecInfo& venc, const CodecInfo& aenc);
 	void Cancel();
 	double GetProgress();
@@ -68,10 +66,10 @@ private:
 	void print_errorcode_for_debug();
 
 private:
-	std::auto_ptr<Demuxer> m_demuxer;
-	std::auto_ptr<Muxer> m_muxer;
-	std::auto_ptr<ImageResizer> m_resizer;
-	std::auto_ptr<CodecBase> m_codec[MAX_CODEC];
+	Demuxer* m_demuxer;
+	Muxer* m_muxer;
+	ImageResizer* m_resizer;
+	CodecBase* m_codec[MAX_CODEC];
 	std::string m_dstfilename; //auto generation
 
 	int m_progress_count;

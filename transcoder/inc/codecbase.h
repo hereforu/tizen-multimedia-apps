@@ -34,14 +34,12 @@ public:
 
 protected:
 	virtual const char* getname() = 0;
-	mediacodec_h getmediacodec();
-	bool pushpacket_to_outputqueue(const media_packet_h& packet);
 	virtual bool create(mediacodec_h mediacodec, const CodecInfo& codecinfo) = 0;
-	virtual void destroy() = 0;
 	virtual media_format_h create_format(const CodecInfo& codecinfo) = 0;
 
 
 private:
+	bool pushpacket_to_outputqueue(const media_packet_h& packet);
 	void analyze_packet_for_debug(media_packet_h pkt);
 	void handle_input_buffer_used(media_packet_h pkt);
 	void handle_output_buffer_available(media_packet_h pkt);

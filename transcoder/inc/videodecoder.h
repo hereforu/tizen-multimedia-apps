@@ -18,7 +18,7 @@ public:
 
 protected:
 	bool create(mediacodec_h mediacodec, const CodecInfo& codecinfo);
-	void destroy();
+
 	const char* getname();
 	media_format_h create_format(const CodecInfo& codecinfo);
 

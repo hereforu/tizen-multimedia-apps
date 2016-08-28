@@ -50,10 +50,8 @@ media_format_h VideoDecoder::create_format(const CodecInfo& codecinfo)
 //	media_format_set_video_frame_rate(format, codecinfo.venc.fps);
 	return format;
 }
-void VideoDecoder::destroy()
-{
 
-}
+
 
 const char* VideoDecoder::getname()
 {

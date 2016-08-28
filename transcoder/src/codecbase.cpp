@@ -57,15 +57,21 @@ void CodecBase::Destroy()
 	if(m_mediacodec == NULL)
 		return;
 	dlog_print(DLOG_DEBUG, "CodecBase", "enter into destroy");
-	destroy();
+
 	if(m_format)
+	{
 		media_format_unref(m_format);
+		m_format = NULL;
+	}
+
 	int ret = mediacodec_unprepare(m_mediacodec);
 	if(ret != MEDIAMUXER_ERROR_NONE)
 		dlog_print(DLOG_ERROR, "CodecBase", "fail to mediacodec_unprepare:%d", ret);
+
 	ret = mediacodec_destroy(m_mediacodec);
 	if(ret != MEDIAMUXER_ERROR_NONE)
 		dlog_print(DLOG_ERROR, "CodecBase", "fail to mediacodec_destroy:%d", ret);
+
 	m_mediacodec = NULL;
 	m_in_count = 0;
 	m_out.count = 0;

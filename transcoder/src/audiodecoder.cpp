@@ -50,10 +50,7 @@ media_format_h AudioDecoder::create_format(const CodecInfo& codecinfo)
 	//media_format_set_audio_avg_bps(format, codecinfo.aenc.bitrate);
 	return format;
 }
-void AudioDecoder::destroy()
-{
 
-}
 const char* AudioDecoder::getname()
 {
 	return "audio decoder";
