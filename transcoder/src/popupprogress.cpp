@@ -22,19 +22,11 @@ void PopupProgress::Create(Evas_Object* parent, Porgress_Cancel_Cb cancel_cb, vo
 {
 	m_cancelcb = cancel_cb;
 	m_data = data;
-	try
-	{
-		m_popup = createpopup(parent);
-		m_pb = createpb(m_popup);
-		m_cancelbtn = createcancelbtn(m_popup);
-		elm_object_part_content_set(m_popup, "default", m_pb);
-		elm_object_part_content_set(m_popup, "button2", m_cancelbtn);
-	}
-	catch(const std::runtime_error& e)
-	{
-		dlog_print(DLOG_ERROR, "InfoView", e.what());
-		throw std::runtime_error(std::string("fail to create popup list control")+e.what());
-	}
+	m_popup = createpopup(parent);
+	m_pb = createpb(m_popup);
+	m_cancelbtn = createcancelbtn(m_popup);
+	elm_object_part_content_set(m_popup, "default", m_pb);
+	elm_object_part_content_set(m_popup, "button2", m_cancelbtn);
 	m_parent = parent;
 }
 
@@ -77,8 +69,6 @@ Evas_Object* PopupProgress::createpb(Evas_Object* parent)
 	{
 		throw std::runtime_error("fail to create Progress");
 	}
-//	evas_object_size_hint_weight_set(pb, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-//	evas_object_size_hint_align_set(pb, EVAS_HINT_FILL, EVAS_HINT_FILL);
 	elm_object_style_set(pb, "default");
 	elm_object_text_set(pb, "Transcoding...");
 	elm_progressbar_value_set(pb, 0.0);

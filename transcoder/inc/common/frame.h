@@ -19,21 +19,14 @@ class FrameWindow
 public:
 	FrameWindow();
 	~FrameWindow();
-
 	void Create();
 	void Destroy();
-
 	void AddView(View* view);
-
-
 	View* GetCurrentView();
 	void MoveNextView();
 	void MovePrevView();
 	void ActivateFirstView();
-
 	void Show();
-
-
 private:
 	void pushview(View* view);
 	void popview(View* view);

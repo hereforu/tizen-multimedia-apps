@@ -130,8 +130,8 @@ bool Demuxer::ReadSeample(int track_index, media_packet_h* packet)
 	{
 		*packet = m_tracks[track_index].packet;
 		m_tracks[track_index].packet = NULL;
-		read_sample(track_index, &m_tracks[track_index].packet); //there's no next sample, i.e. EoS
-		if(m_tracks[track_index].packet == NULL)
+		int ret = read_sample(track_index, &m_tracks[track_index].packet);
+		if(ret != MEDIADEMUXER_ERROR_NONE && m_tracks[track_index].packet == NULL) //there's no next sample, i.e. EoS
 		{
 			int ret = media_packet_set_flags(*packet, MEDIA_PACKET_END_OF_STREAM);
 			m_tracks[track_index].info.eos = true;

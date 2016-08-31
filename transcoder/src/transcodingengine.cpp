@@ -15,11 +15,7 @@
 
 
 
-#define SAFE_DELETE(x)\
-	if(x){\
-		delete x;\
-		x = NULL;\
-	}\
+
 
 TranscodingEngine::TranscodingEngine()
 :m_demuxer(NULL),m_muxer(NULL),m_resizer(NULL),
@@ -82,7 +78,8 @@ void TranscodingEngine::prepare(const char* srcfilename, unsigned int duration, 
 	for(int i = 0; i < MAX_CODEC; ++i)
 		create_codec(i, option[i]);
 	create_muxer(srcfilename);
-	create_resizer(option[VIDEO_ENCODER].venc.width, option[VIDEO_ENCODER].venc.height);
+	if(option[VIDEO_ENCODER].venc.width != option[VIDEO_DECODER].vdec.width || option[VIDEO_ENCODER].venc.height != option[VIDEO_DECODER].vdec.height)
+		create_resizer(option[VIDEO_ENCODER].venc.width, option[VIDEO_ENCODER].venc.height);
 }
 
 void TranscodingEngine::unprepare()
@@ -101,66 +98,72 @@ void TranscodingEngine::unprepare()
 
 bool TranscodingEngine::feed_decoder_with_packet(CodecBase* decoder, int track_index, int& count, unsigned int& pts)
 {
-	media_packet_h demux_packet;
-	if(m_demuxer->IsEoS(track_index) == false)
+	media_packet_h demux_packet = NULL;
+	if(m_demuxer->IsEoS(track_index) == true)
+		return true;
+	if(m_demuxer->ReadSeample(track_index, &demux_packet))
 	{
-		if(m_demuxer->ReadSeample(track_index, &demux_packet))
+		++count;
+		pts = get_pts_in_msec(demux_packet);
+		dlog_print(DLOG_DEBUG, "TranscodingEngine", "%dth demuxed packet [pts:%u]", count, pts);
+		if(!decoder->InsertPacket(demux_packet))
 		{
-			++count;
-			uint64_t temp_pts = 0;
-			media_packet_get_pts(demux_packet, &temp_pts);
-			pts = (unsigned int)(temp_pts/1000000);
-			dlog_print(DLOG_DEBUG, "TranscodingEngine", "%dth demuxed packet [pts:%llu]", count, pts);
-			if(decoder == NULL)
-			{
-				media_packet_destroy(demux_packet);
-			}
-			else
-			{
-				if(!decoder->InsertPacket(demux_packet))
-				{
-					dlog_print(DLOG_ERROR, "TranscodingEngine", "while putting the %d th packet to the decoder", count);
-					return false;
-				}
-			}
+			dlog_print(DLOG_ERROR, "TranscodingEngine", "while putting the %d th packet to the decoder", count);
+			return false;
 		}
 	}
 	return true;
 }
 
+unsigned int TranscodingEngine::get_pts_in_msec(media_packet_h packet)
+{
+	uint64_t temp_pts = 0;
+	media_packet_get_pts(packet, &temp_pts);
+	return (unsigned int)(temp_pts/1000000);
+}
+
 bool TranscodingEngine::feed_encoder_with_packet(CodecBase* decoder, CodecBase* encoder, int& count)
 {
-	if(decoder == NULL || encoder == NULL)
-		return false;
-	media_packet_h decoded_packet;
-
-	if(decoder->IsEoS()==false)
+	media_packet_h decoded_packet = NULL;
+	if(decoder->IsEoS()==true)
+		return true;
+	if(decoder->GetPacket(decoded_packet))
 	{
-		if(decoder->GetPacket(decoded_packet))
+		++count;
+		dlog_print(DLOG_DEBUG, "TranscodingEngine", "%dth decoded packet", count);
+		if(m_resizer) //there will be no resizer object if the resolutions of a source and a target video are identical
 		{
-			++count;
-			dlog_print(DLOG_DEBUG, "TranscodingEngine", "%dth decoded packet", count);
-
-			bool isvideo = false;
-			if(media_packet_is_video(decoded_packet, &isvideo) == MEDIA_PACKET_ERROR_NONE && isvideo==true)
+			if(resize_resolution_if_image(&decoded_packet)==false)
 			{
-				media_packet_h resized_packet;
-				if(m_resizer->Resize(decoded_packet, &resized_packet)==true)
-				{
-					media_packet_destroy(decoded_packet);
-					decoded_packet = resized_packet;
-				}
-				else
-				{
-					dlog_print(DLOG_ERROR, "TranscodingEngine", "fail to resize");
-				}
-			}
-
-			if(!encoder->InsertPacket(decoded_packet))
-			{
-				dlog_print(DLOG_ERROR, "TranscodingEngine", "while putting the %d th packet to the encoder", count);
+				dlog_print(DLOG_ERROR, "TranscodingEngine", "while resizing the %d th packet", count);
 				return false;
 			}
+		}
+		if(encoder->InsertPacket(decoded_packet)==false)
+		{
+			dlog_print(DLOG_ERROR, "TranscodingEngine", "while putting the %d th packet to the encoder", count);
+			return false;
+		}
+	}
+	return true;
+}
+
+//it returns false when the resize function has been failed!
+bool TranscodingEngine::resize_resolution_if_image(media_packet_h* packet)
+{
+	bool isvideo = false;
+	if(media_packet_is_video(*packet, &isvideo) == MEDIA_PACKET_ERROR_NONE && isvideo==true)
+	{
+		media_packet_h resized_packet;
+		if(m_resizer->Resize(*packet, &resized_packet)==true)
+		{
+			media_packet_destroy(*packet);
+			*packet = resized_packet;
+		}
+		else
+		{
+			dlog_print(DLOG_ERROR, "TranscodingEngine", "fail to resize");
+			return false;
 		}
 	}
 	return true;
@@ -168,6 +171,7 @@ bool TranscodingEngine::feed_encoder_with_packet(CodecBase* decoder, CodecBase* 
 
 bool TranscodingEngine::feed_muxer_with_packet(CodecBase* encoder, int muxer_track_index, int& count)
 {
+	bool bret = true;
 	if(encoder == NULL)
 		return false;
 	media_packet_h encoded_packet;
@@ -176,16 +180,12 @@ bool TranscodingEngine::feed_muxer_with_packet(CodecBase* encoder, int muxer_tra
 		if(encoder->GetPacket(encoded_packet))
 		{
 			++count;
-			if(m_muxer->WriteSample(muxer_track_index, encoded_packet)==false)
-			{
-				media_packet_destroy(encoded_packet);
-				return false;
-			}
+			bret = m_muxer->WriteSample(muxer_track_index, encoded_packet);
 			media_packet_destroy(encoded_packet);
 			dlog_print(DLOG_DEBUG, "TranscodingEngine", "%dth encoded packet", count);
 		}
 	}
-	return true;
+	return bret;
 }
 
 
@@ -219,13 +219,16 @@ void TranscodingEngine::transcoding()
 	{
 		dlog_print(DLOG_DEBUG, "TranscodingEngine", "%dth iteration for transcoding", iteration++);
 		process_track(m_demuxer->GetVideoTrackIndex(), m_muxer_video_track_index, m_codec[VIDEO_DECODER], m_codec[VIDEO_ENCODER], video_counter, video_pts);
-		process_track(m_demuxer->GetAudioTrackIndex(), m_muxer_audio_track_index, m_codec[AUDIO_DECODER], m_codec[AUDIO_ENCODER], audio_counter, audio_pts);
-		if(audio_pts < video_pts)
-			process_track(m_demuxer->GetAudioTrackIndex(), m_muxer_audio_track_index, m_codec[AUDIO_DECODER],  m_codec[AUDIO_ENCODER], audio_counter, audio_pts);
+		do
+		{
+			process_track(m_demuxer->GetAudioTrackIndex(), m_muxer_audio_track_index, m_codec[AUDIO_DECODER], m_codec[AUDIO_ENCODER], audio_counter, audio_pts);
+		}while(audio_pts <= video_pts && m_codec[AUDIO_ENCODER]->IsEoS()==false);
 		if(m_codec[VIDEO_ENCODER]->IsEoS() == true && m_codec[AUDIO_ENCODER]->IsEoS() == true)
+		{
 			break;
+		}
 		m_progress_count = video_counter[ENCODE_COUNTER];
-		usleep(50000);
+		usleep(500000);
 	}
 	dlog_print(DLOG_DEBUG, "TranscodingEngine", "the end of transcoding");
 	m_muxer->CloseTrack(m_muxer_video_track_index);
@@ -245,7 +248,7 @@ void TranscodingEngine::create_demuxer(const char* srcfilename)
 void TranscodingEngine::create_muxer(const char* srcfilename)
 {
 	std::auto_ptr<Muxer> muxer(new Muxer);
-	muxer->Create(generatedstfilename(srcfilename), MEDIAMUXER_CONTAINER_FORMAT_MP4);
+	muxer->Create(m_dstfilename.c_str(), MEDIAMUXER_CONTAINER_FORMAT_MP4);
 	m_muxer_video_track_index = muxer->AddTrack(m_codec[VIDEO_ENCODER]->GetMediaFormat());
 	m_muxer_audio_track_index = muxer->AddTrack(m_codec[AUDIO_ENCODER]->GetMediaFormat());
 	m_muxer = muxer.release();
@@ -296,7 +299,6 @@ void TranscodingEngine::fill_and_get_codec_info(CodecInfo& vdec, CodecInfo& adec
 	{
 		throw std::runtime_error("fail to get audio info from demuxer");
 	}
-
 	if(venc.venc.codecid == 0)//ORIGINAL_FEATURE
 		venc.venc.codecid = vdec.vdec.codecid;
 	if(aenc.aenc.codecid == 0)//ORIGINAL_FEATURE

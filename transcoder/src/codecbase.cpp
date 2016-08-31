@@ -48,7 +48,6 @@ void CodecBase::Create(const CodecInfo& codecinfo)
 		throw_error_and_destroy_codec(m_mediacodec, "fail to mediacodec_set_output_buffer_available_cb", ret);
 	if((ret = mediacodec_prepare(m_mediacodec)) != MEDIACODEC_ERROR_NONE)
 		throw_error_and_destroy_codec(m_mediacodec, "fail to mediacodec_prepare", ret);
-
 	m_out.queue.SetName(getname());
 }
 
@@ -133,6 +132,7 @@ void CodecBase::handle_output_buffer_available(media_packet_h pkt)
 	if(ret != MEDIACODEC_ERROR_NONE)
 	{
 		dlog_print(DLOG_ERROR, "CodecBase", "fail to mediacodec_get_output %d [%s]", ret, getname());
+		return;
 	}
 	pushpacket_to_outputqueue(output_buf);
 }

@@ -15,7 +15,7 @@
 
 
 InfoView::InfoView()
-:m_msgbox(NULL), m_timer(NULL), m_transcodingthread(NULL), m_transcodingengine(NULL)
+:m_videoplayer(NULL), m_display(NULL), m_msgbox(NULL), m_timer(NULL), m_transcodingthread(NULL), m_transcodingengine(NULL)
 {
 
 }
@@ -51,6 +51,18 @@ void InfoView::decorateview(Evas_Object* box)
 
 void InfoView::destroyremains()
 {
+	if(m_videoplayer)
+	{
+		m_videoplayer->Destroy();
+		delete m_videoplayer;
+		m_videoplayer = NULL;
+	}
+
+	if(m_display)
+	{
+		evas_object_del(m_display);
+		m_display = NULL;
+	}
 	if(m_msgbox)
 	{
 		evas_object_del(m_msgbox);

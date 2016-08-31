@@ -16,10 +16,8 @@ class Model{
 public:
 	Model();
 	virtual ~Model();
-
 	void Create();
 	void Destroy();
-
 protected:
 	virtual void creatspecifics() = 0;
 	virtual void destroyspecifics() = 0;

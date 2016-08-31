@@ -17,12 +17,10 @@ class View
 public:
 	View();
 	virtual ~View();
-
 	void Create(Evas_Object* naviframe, Evas_Object* conformant);
 	virtual void UpdateView() = 0; // ex. view_1 -> view_2 -> view_1, update view_1 if needed
 	void Destroy();
 	bool IsCreated();
-
 protected:
 	Model* getmodel();
 	virtual void decorateview(Evas_Object* box) = 0;

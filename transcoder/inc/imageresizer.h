@@ -10,8 +10,7 @@
 
 #include "sharedqueue.h"
 #include <image_util.h>
-#include "eina_lock.h"
-
+#include "common/conditionalwaiter.h"
 class ImageResizer
 {
 public:
@@ -29,9 +28,10 @@ private:
 	static void resize_completed_cb(media_packet_h *dst, int error_code, void *user_data);
 
 private:
+	int m_target_width;
+	int m_target_height;
 	transformation_h m_handle;
-	Eina_Lock m_mutex;
-	Eina_Condition m_cond;
+	ConditionalWaiter* m_conditionalwaiter;
 	media_packet_h m_result;
 
 

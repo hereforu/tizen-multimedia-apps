@@ -10,7 +10,7 @@
 #include <stdexcept>
 
 ImageResizer::ImageResizer()
-:m_handle(NULL), m_result(NULL)
+:m_handle(NULL), m_result(NULL), m_conditionalwaiter(NULL)
 {
 
 }
@@ -22,20 +22,22 @@ ImageResizer::~ImageResizer()
 
 void ImageResizer::Create(int target_width, int target_height)
 {
-	if(eina_lock_new(&m_mutex)==EINA_FALSE)
+	int ret = IMAGE_UTIL_ERROR_NONE;
+	m_conditionalwaiter = new ConditionalWaiter;
+	if((ret = image_util_transform_create(&m_handle)) != IMAGE_UTIL_ERROR_NONE)
 	{
-		throw std::runtime_error("fail to create eina_lock_new");
-	}
-	if(eina_condition_new(&m_cond, &m_mutex)==EINA_FALSE)
-	{
-		throw std::runtime_error("fail to create eina_lock_new");
-	}
-	int ret = image_util_transform_create(&m_handle);
-	if(ret != IMAGE_UTIL_ERROR_NONE)
-	{
+		SAFE_DELETE(m_conditionalwaiter);
 		throw std::runtime_error(std::string("fail to image_util_transform_create: ")+to_string(ret));
 	}
-	ret = image_util_transform_set_resolution(m_handle, target_width, target_height);
+	if((ret = image_util_transform_set_resolution(m_handle, target_width, target_height))!= IMAGE_UTIL_ERROR_NONE)
+	{
+		image_util_transform_destroy(m_handle);
+		m_handle = NULL;
+		SAFE_DELETE(m_conditionalwaiter);
+		throw std::runtime_error(std::string("fail to image_util_transform_set_resolution: ")+to_string(ret));
+	}
+	m_target_width = target_width;
+	m_target_height = target_height;
 }
 
 void ImageResizer::Destroy()
@@ -45,25 +47,23 @@ void ImageResizer::Destroy()
 	dlog_print(DLOG_DEBUG, "ImageResizer", "enter into destroy");
 	image_util_transform_destroy(m_handle);
 	m_handle = NULL;
-	eina_condition_free(&m_cond);
-	eina_lock_free(&m_mutex);
+	SAFE_DELETE(m_conditionalwaiter);
 	dlog_print(DLOG_DEBUG, "ImageResizer", "exit from destroy");
 }
 
 bool ImageResizer::Resize(media_packet_h packet, media_packet_h* resized_packet)
 {
 	bool is_eos = false;
-	media_packet_is_end_of_stream(packet, &is_eos);
 	uint64_t	pts = 0;
+	media_packet_is_end_of_stream(packet, &is_eos);
 	media_packet_get_pts(packet, &pts);
-
 	int ret = image_util_transform_run(m_handle, packet, ImageResizer::resize_completed_cb, (void*)this);
-	dlog_print(DLOG_DEBUG, "ImageResizer", "image_util_transform_run[%d]", ret);
 	if(ret != IMAGE_UTIL_ERROR_NONE)
 	{
+		dlog_print(DLOG_ERROR, "ImageResizer", "fail to image_util_transform_run[%d]", ret);
 		return false;
 	}
-	eina_condition_wait(&m_cond);
+	m_conditionalwaiter->Wait();
 	*resized_packet = m_result;
 	if(is_eos)
 	{
@@ -78,7 +78,7 @@ void ImageResizer::resize_completed(media_packet_h *dst, int error_code)
 {
 	m_result = *dst;
 	dlog_print(DLOG_DEBUG, "ImageResizer", "condition signal dst[%p], error_code[%d]", *dst, error_code);
-	eina_condition_signal(&m_cond);
+	m_conditionalwaiter->Signal();
 }
 
 void ImageResizer::resize_completed_cb(media_packet_h *dst, int error_code, void *user_data)
@@ -87,6 +87,8 @@ void ImageResizer::resize_completed_cb(media_packet_h *dst, int error_code, void
 	ImageResizer* resizer = (ImageResizer*)user_data;
 	resizer->resize_completed(dst, error_code);
 }
+
+
 
 void ImageResizer::print_packet_info(media_packet_h packet)
 {

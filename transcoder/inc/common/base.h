@@ -12,6 +12,12 @@
 #include <string>
 #include <sstream>
 
+#define SAFE_DELETE(x)\
+	if(x){\
+		delete x;\
+		x = NULL;\
+	}\
+
 namespace AppTool
 {
 	template <typename Type>

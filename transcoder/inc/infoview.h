@@ -72,6 +72,8 @@ private:
 	static void end_func_transcoding_cb(void *data, Ecore_Thread *thread);
 	static void cancel_func_transcoding_cb	(void *data, Ecore_Thread *thread);
 private:
+	VideoPlayer* m_videoplayer;
+	Evas_Object* m_display;
 	Evas_Object* m_msgbox;
 	Ecore_Timer* m_timer;
 	Ecore_Thread* m_transcodingthread;

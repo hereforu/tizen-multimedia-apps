@@ -26,7 +26,6 @@ public:
 	const std::vector<MediaContentItem>& GetContentsList();
 	void SetSelectedContentIndex(int index);
 	const MediaContentItem& GetSelectedContent();
-
 	void SelectTypeofOptions(TranscodingOptionType type);
 	TranscodingOptionType GetSelectedTypeofOptions();
 	std::vector<TranscodingOption>& GetOptionSet(TranscodingOptionType type);

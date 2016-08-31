@@ -55,6 +55,7 @@ private:
 	void transcoding();
 	void process_track(int track_index, int muxer_track_index, CodecBase* decoder, CodecBase* encoder, int counter[], unsigned int& pts);
 	bool feed_decoder_with_packet(CodecBase* decoder, int track_index, int& count, unsigned int& pts);
+	bool resize_resolution_if_image(media_packet_h* packet);
 	bool feed_encoder_with_packet(CodecBase* decoder, CodecBase* encoder, int& count);
 	bool feed_muxer_with_packet(CodecBase* encoder,int muxer_track_index, int& count);
 	const char* generatedstfilename(const char* srcfilename);
@@ -64,6 +65,7 @@ private:
 	void create_muxer(const char* srcfilename);
 	void create_resizer(int target_width, int target_height);
 	void print_errorcode_for_debug();
+	unsigned int get_pts_in_msec(media_packet_h packet);
 
 private:
 	Demuxer* m_demuxer;
