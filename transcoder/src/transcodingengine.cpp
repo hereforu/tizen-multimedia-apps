@@ -228,7 +228,7 @@ void TranscodingEngine::transcoding()
 			break;
 		}
 		m_progress_count = video_counter[ENCODE_COUNTER];
-		usleep(100000);
+		usleep(200000);
 	}
 	dlog_print(DLOG_DEBUG, "TranscodingEngine", "the end of transcoding");
 	m_muxer->CloseTrack(m_muxer_video_track_index);
