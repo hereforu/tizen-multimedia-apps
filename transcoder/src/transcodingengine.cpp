@@ -11,7 +11,7 @@
 
 #include "muxer.h"
 #include <stdexcept>
-#include <device/power.h>
+
 
 
 
@@ -34,7 +34,7 @@ TranscodingEngine::~TranscodingEngine()
 
 void TranscodingEngine::Transcoding(const char* srcfilename, unsigned int duration, const CodecInfo& venc, const CodecInfo& aenc)
 {
-	device_power_request_lock(POWER_LOCK_DISPLAY, 0);
+
 	prepare(srcfilename, duration, venc, aenc);
 	m_demuxer->Start();
 	m_muxer->Start();
@@ -42,7 +42,7 @@ void TranscodingEngine::Transcoding(const char* srcfilename, unsigned int durati
 	m_muxer->Stop();
 	m_demuxer->Stop();
 	unprepare();
-	device_power_release_lock(POWER_LOCK_DISPLAY);
+
 }
 
 void TranscodingEngine::Cancel()
@@ -228,7 +228,7 @@ void TranscodingEngine::transcoding()
 			break;
 		}
 		m_progress_count = video_counter[ENCODE_COUNTER];
-		usleep(500000);
+		usleep(100000);
 	}
 	dlog_print(DLOG_DEBUG, "TranscodingEngine", "the end of transcoding");
 	m_muxer->CloseTrack(m_muxer_video_track_index);

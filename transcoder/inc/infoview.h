@@ -80,6 +80,7 @@ private:
 	ListCtrl m_list;
 	ButtonPack m_btnpack;
 	PopupProgress m_pbpopup;
+	std::string m_outfilename;
 
 };
 

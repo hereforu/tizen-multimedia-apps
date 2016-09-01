@@ -10,6 +10,7 @@
 #include "common/multimediaapp.h"
 #include <stdexcept>
 #include "common/mediacontentcontroller.h"
+#include <device/power.h>
 
 
 
@@ -42,6 +43,7 @@ void InfoView::decorateview(Evas_Object* box)
 		m_timer = ecore_timer_add(1.0, InfoView::timer_cb, (void*)this);
 		ecore_timer_freeze(m_timer);
 		m_msgbox = createmsgbox(box);
+		device_power_request_lock(POWER_LOCK_DISPLAY, 0);
 	}
 	catch(const std::runtime_error& e)
 	{
@@ -65,6 +67,7 @@ void InfoView::destroyremains()
 	dlog_print(DLOG_DEBUG, "InfoView", "destroyremains #4");
 	m_pbpopup.Destroy();
 	dlog_print(DLOG_DEBUG, "InfoView", "destroyremains #5");
+	device_power_release_lock(POWER_LOCK_DISPLAY);
 }
 
 
@@ -200,6 +203,7 @@ void InfoView::long_func_transcoding(Ecore_Thread *thread)
 	delete m_transcodingengine;
 	m_transcodingengine = NULL;
 	m_pbpopup.Hide();
+
 }
 
 void InfoView::fill_encoderinfo(CodecInfo& venc, CodecInfo& aenc)
@@ -220,11 +224,12 @@ void InfoView::process_after_transcoding(bool iscanceled, const char* outfilenam
 {
 	if(iscanceled==false)
 	{
+		m_outfilename = outfilename;
 		((TranscoderModel*)getmodel())->AddFileToDB(outfilename);
-		play_media(outfilename);
 	}
 	else
 	{
+		m_outfilename.clear();
 		if(access(outfilename, F_OK) != -1)
 		{
 			remove(outfilename);
@@ -237,11 +242,14 @@ void InfoView::end_func_transcoding(Ecore_Thread *thread)
 	dlog_print(DLOG_DEBUG, "InfoView", "end_func_transcoding has been called");
 	ecore_timer_freeze(m_timer);
 	m_transcodingthread = NULL;
+	play_media(m_outfilename.c_str());
+
 }
 void InfoView::cancel_func_transcoding(Ecore_Thread *thread)
 {
 	dlog_print(DLOG_DEBUG, "InfoView", "cancel_func_transcoding has been called");
 	ecore_timer_freeze(m_timer);
+
 }
 void InfoView::play_media(const char* filepath)
 {
@@ -265,6 +273,7 @@ void InfoView::play_media(const char* filepath)
 			dlog_print(DLOG_ERROR, "InfoView", "fail to app_control_set_uri[%d]", ret);
 			break;
 		}
+		dlog_print(DLOG_ERROR, "InfoView", "app_control_set_uri[%s]", filepath);
 		if((ret = app_control_send_launch_request(service, NULL, NULL)) != APP_CONTROL_ERROR_NONE)
 		{
 			dlog_print(DLOG_ERROR, "InfoView", "fail to app_control_send_launch_request[%d]", ret);
