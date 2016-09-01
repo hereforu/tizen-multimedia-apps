@@ -5,7 +5,7 @@
  *      Author: Jason
  */
 
-
+#include <app_control.h>
 #include "infoview.h"
 #include "common/multimediaapp.h"
 #include <stdexcept>
@@ -15,7 +15,7 @@
 
 
 InfoView::InfoView()
-:m_videoplayer(NULL), m_display(NULL), m_msgbox(NULL), m_timer(NULL), m_transcodingthread(NULL), m_transcodingengine(NULL)
+:m_msgbox(NULL), m_timer(NULL), m_transcodingthread(NULL), m_transcodingengine(NULL)
 {
 
 }
@@ -51,18 +51,6 @@ void InfoView::decorateview(Evas_Object* box)
 
 void InfoView::destroyremains()
 {
-	if(m_videoplayer)
-	{
-		m_videoplayer->Destroy();
-		delete m_videoplayer;
-		m_videoplayer = NULL;
-	}
-
-	if(m_display)
-	{
-		evas_object_del(m_display);
-		m_display = NULL;
-	}
 	if(m_msgbox)
 	{
 		evas_object_del(m_msgbox);
@@ -80,21 +68,13 @@ void InfoView::destroyremains()
 }
 
 
-Evas_Object* InfoView::createdisplay(Evas_Object* box)
-{
-	Evas *evas = evas_object_evas_get(box);
-	Evas_Object *image = evas_object_image_filled_add(evas);
-	evas_object_size_hint_weight_set(image, EVAS_HINT_EXPAND, 0.7);
-	evas_object_size_hint_align_set(image, EVAS_HINT_FILL, EVAS_HINT_FILL);
-	elm_box_pack_end(box,image);
-	evas_object_show(image);
-	return image;
-}
+
 
 void InfoView::add_defaultbtns(ButtonPack& btnpack)
 {
 	std::vector<BTPackParam> functionbtn_params;
 	functionbtn_params.push_back(BTPackParam(NULL, "images/exit.png", InfoView::clicked_prev_cb, (void*)this));
+	functionbtn_params.push_back(BTPackParam(NULL, "images/play.png", InfoView::clicked_play_cb, (void*)this));
 	functionbtn_params.push_back(BTPackParam(NULL, "images/transcoder.png", InfoView::clicked_start_cb, (void*)this));
 	btnpack.AddPacksHorizontally(functionbtn_params);
 }
@@ -241,6 +221,7 @@ void InfoView::process_after_transcoding(bool iscanceled, const char* outfilenam
 	if(iscanceled==false)
 	{
 		((TranscoderModel*)getmodel())->AddFileToDB(outfilename);
+		play_media(outfilename);
 	}
 	else
 	{
@@ -262,11 +243,55 @@ void InfoView::cancel_func_transcoding(Ecore_Thread *thread)
 	dlog_print(DLOG_DEBUG, "InfoView", "cancel_func_transcoding has been called");
 	ecore_timer_freeze(m_timer);
 }
+void InfoView::play_media(const char* filepath)
+{
+
+	int ret = APP_CONTROL_ERROR_NONE;
+	app_control_h service = NULL;
+	if((ret = app_control_create(&service)) != APP_CONTROL_ERROR_NONE)
+	{
+		dlog_print(DLOG_ERROR, "InfoView", "fail to app_control_create[%d]", ret);
+		return;
+	}
+	do
+	{
+		if((ret = app_control_set_operation(service, APP_CONTROL_OPERATION_VIEW)) != APP_CONTROL_ERROR_NONE)
+		{
+			dlog_print(DLOG_ERROR, "InfoView", "fail to app_control_set_operation[%d]", ret);
+			break;
+		}
+		if((ret = app_control_set_uri(service, filepath)) != APP_CONTROL_ERROR_NONE)
+		{
+			dlog_print(DLOG_ERROR, "InfoView", "fail to app_control_set_uri[%d]", ret);
+			break;
+		}
+		if((ret = app_control_send_launch_request(service, NULL, NULL)) != APP_CONTROL_ERROR_NONE)
+		{
+			dlog_print(DLOG_ERROR, "InfoView", "fail to app_control_send_launch_request[%d]", ret);
+			break;
+		}
+	}while(0);
+	if((ret = app_control_destroy(service)) != APP_CONTROL_ERROR_NONE)
+	{
+		dlog_print(DLOG_ERROR, "InfoView", "fail to app_control_destroy[%d]", ret);
+	}
+}
+void InfoView::play()
+{
+	play_media(((TranscoderModel*)getmodel())->GetSelectedContent().path.c_str());
+}
 
 void InfoView::clicked_prev_cb(void *data, Evas_Object *obj, void *event_info)
 {
 	InfoView* view = (InfoView*)data;
 	view->move_prev();
+}
+
+
+void InfoView::clicked_play_cb(void *data, Evas_Object *obj, void *event_info)
+{
+	InfoView* view = (InfoView*)data;
+	view->play();
 }
 
 void InfoView::change_optionview_cb(void *data, int id)
@@ -314,7 +339,6 @@ void InfoView::cancel_func_transcoding_cb(void *data, Ecore_Thread *thread)
 
 void InfoView::starttranscoding()
 {
-
 	if(m_transcodingthread)
 	{
 		dlog_print(DLOG_ERROR, "InfoView", "transcoding thread is alive!!");

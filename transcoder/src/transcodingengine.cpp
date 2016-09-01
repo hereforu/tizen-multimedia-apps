@@ -34,7 +34,7 @@ TranscodingEngine::~TranscodingEngine()
 
 void TranscodingEngine::Transcoding(const char* srcfilename, unsigned int duration, const CodecInfo& venc, const CodecInfo& aenc)
 {
-	device_power_request_lock(POWER_LOCK_CPU, 0);
+	device_power_request_lock(POWER_LOCK_DISPLAY, 0);
 	prepare(srcfilename, duration, venc, aenc);
 	m_demuxer->Start();
 	m_muxer->Start();
@@ -42,7 +42,7 @@ void TranscodingEngine::Transcoding(const char* srcfilename, unsigned int durati
 	m_muxer->Stop();
 	m_demuxer->Stop();
 	unprepare();
-	device_power_release_lock(POWER_LOCK_CPU);
+	device_power_release_lock(POWER_LOCK_DISPLAY);
 }
 
 void TranscodingEngine::Cancel()

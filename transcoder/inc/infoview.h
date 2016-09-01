@@ -35,17 +35,18 @@ protected:
 
 
 private:
+	void play_media(const char* filepath);
 	void fill_encoderinfo(CodecInfo& venc, CodecInfo& aenc);
 	void process_after_transcoding(bool iscanceled, const char* outfilename);
 	void getresolutionbycode(unsigned int code, int& width, int& height);
 	void getoriginalvideoinfo(const char* path, VideoInfo& info);
-	Evas_Object* createdisplay(Evas_Object* box);
 	std::string getresiconpath(const char* iconname);
 	void add_defaultbtns(ButtonPack& btnpack);
 	void setinfo_tolist(ListCtrl& list, const MediaContentItem& content);
 	void starttranscoding();
 	void change_optionview(int id);
 	void move_prev();
+	void play();
 	void ontime();
 	void canceltranscoding();
 	Evas_Object* createmsgbox(Evas_Object* box);
@@ -58,9 +59,9 @@ private:
 	void end_func_transcoding(Ecore_Thread *thread);
 	void cancel_func_transcoding(Ecore_Thread *thread);
 
-
 	static void clicked_prev_cb(void *data, Evas_Object *obj, void *event_info);
 	static void clicked_start_cb(void *data, Evas_Object *obj, void *event_info);
+	static void clicked_play_cb(void *data, Evas_Object *obj, void *event_info);
 	static void change_optionview_cb(void *data, int id);
 	static void cancel_cb(void *data);
 	static Eina_Bool timer_cb(void *data);
@@ -72,8 +73,6 @@ private:
 	static void end_func_transcoding_cb(void *data, Ecore_Thread *thread);
 	static void cancel_func_transcoding_cb	(void *data, Ecore_Thread *thread);
 private:
-	VideoPlayer* m_videoplayer;
-	Evas_Object* m_display;
 	Evas_Object* m_msgbox;
 	Ecore_Timer* m_timer;
 	Ecore_Thread* m_transcodingthread;
