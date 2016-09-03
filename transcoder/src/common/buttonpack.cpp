@@ -88,10 +88,10 @@ void ButtonPack::ResetAllButtons()
 	{
 		for(unsigned int btnidx = 0; btnidx < m_btpacks[packidx].btns.size(); ++btnidx)
 		{
-			evas_object_del(m_btpacks[packidx].btns[btnidx]);
+			SAFE_EVAS_DELETE(m_btpacks[packidx].btns[btnidx]);
 		}
 		m_btpacks[packidx].btns.clear();
-		evas_object_del(m_btpacks[packidx].box);
+		SAFE_EVAS_DELETE(m_btpacks[packidx].box);
 	}
 	m_btpacks.clear();
 }

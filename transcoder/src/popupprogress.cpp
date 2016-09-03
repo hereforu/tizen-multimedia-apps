@@ -32,9 +32,9 @@ void PopupProgress::Create(Evas_Object* parent, Porgress_Cancel_Cb cancel_cb, vo
 
 void PopupProgress::Destroy()
 {
-	evas_object_del(m_pb);
-	evas_object_del(m_cancelbtn);
-	evas_object_del(m_popup);
+	SAFE_EVAS_DELETE(m_pb);
+	SAFE_EVAS_DELETE(m_cancelbtn);
+	SAFE_EVAS_DELETE(m_popup);
 }
 
 void PopupProgress::Popup()

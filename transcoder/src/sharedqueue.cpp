@@ -20,15 +20,18 @@ SharedQueue::SharedQueue()
 		throw std::runtime_error("fail to create eina_lock_new");
 	}
 }
+
 SharedQueue::~SharedQueue()
 {
 	ClearAll();
 	eina_lock_free(&m_mutex);
 }
+
 void SharedQueue::SetName(const char* queuename)
 {
 	m_name = queuename;
 }
+
 void SharedQueue::SetMaxQueueSize(unsigned int size)
 {
 	m_max_size = size;

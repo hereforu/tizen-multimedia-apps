@@ -191,7 +191,7 @@ bool TranscodingEngine::feed_muxer_with_packet(CodecBase* encoder, int muxer_tra
 
 void TranscodingEngine::process_track(int track_index, int muxer_track_index, CodecBase* decoder, CodecBase* encoder, int counter[], unsigned int& pts)
 {
-	if(encoder->IsEoS()==true)
+	if(encoder && encoder->IsEoS()==true)
 		return;
 	if(feed_decoder_with_packet(decoder, track_index, counter[DEMUX_COUNTER], pts)==false)
 	{

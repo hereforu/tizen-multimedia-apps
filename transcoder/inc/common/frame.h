@@ -14,11 +14,11 @@
 
 
 
-class FrameWindow
+class Frame
 {
 public:
-	FrameWindow();
-	~FrameWindow();
+	Frame();
+	~Frame();
 	void Create();
 	void Destroy();
 	void AddView(View* view);

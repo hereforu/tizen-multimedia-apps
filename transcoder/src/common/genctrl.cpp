@@ -37,7 +37,7 @@ void GenCtrl::Destroy()
 {
 	m_itemmap.clear();
 	cleancbdatastore();
-	evas_object_del(m_ctrl);
+	SAFE_EVAS_DELETE(m_ctrl);
 }
 
 Evas_Object* GenCtrl::GetCtrl()

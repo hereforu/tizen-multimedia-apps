@@ -39,7 +39,7 @@ private:
 	void destroymodel();
 	void destroyframe();
 private:
-	FrameWindow* m_frame;
+	Frame* m_frame;
 	Model* m_model;
 
 };

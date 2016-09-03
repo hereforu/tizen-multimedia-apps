@@ -56,7 +56,6 @@ public:
 	void Destroy();
 	int GetDataSize();
 	int GetFormat(short numChannels, short bitsPerSample);
-
 	bool GenerateBuffer(std::string waveFilePath);
 	ALuint GetBufferID();
 

@@ -47,27 +47,26 @@ void InfoView::decorateview(Evas_Object* box)
 	}
 	catch(const std::runtime_error& e)
 	{
-		dlog_print(DLOG_ERROR, "InfoView", e.what());
+		destroyremains();
+		std::string msg = "fail to create InfoView because ";
+		msg += e.what();
+		throw std::runtime_error(msg);
 	}
 }
 
 void InfoView::destroyremains()
 {
+	//TODO: check power function!!!!
+	device_power_release_lock(POWER_LOCK_DISPLAY);
 	if(m_msgbox)
 	{
-		evas_object_del(m_msgbox);
+		SAFE_EVAS_DELETE(m_msgbox);
 		m_msgbox = NULL;
 	}
-	dlog_print(DLOG_DEBUG, "InfoView", "destroyremains #1");
 	ecore_timer_del(m_timer);
-	dlog_print(DLOG_DEBUG, "InfoView", "destroyremains #2");
 	m_list.Destroy();
-	dlog_print(DLOG_DEBUG, "InfoView", "destroyremains #3");
 	m_btnpack.Destroy();
-	dlog_print(DLOG_DEBUG, "InfoView", "destroyremains #4");
 	m_pbpopup.Destroy();
-	dlog_print(DLOG_DEBUG, "InfoView", "destroyremains #5");
-	device_power_release_lock(POWER_LOCK_DISPLAY);
 }
 
 
@@ -99,7 +98,6 @@ void InfoView::setinfo_tolist(ListCtrl& list, const MediaContentItem& content)
 		std::vector<GenCtrlItem> items;
 		VideoInfo info;
 		getoriginalvideoinfo(content.path.c_str(), info);
-
 		unsigned int video_option = ((TranscoderModel*)getmodel())->GetSelectedOption(VIDEO_CODEC_OPTION);
 		unsigned int audio_option = ((TranscoderModel*)getmodel())->GetSelectedOption(AUDIO_CODEC_OPTION);
 		unsigned int resolution_option = ((TranscoderModel*)getmodel())->GetSelectedOption(RESOLUTION_OPTION);
@@ -125,8 +123,6 @@ std::string InfoView::getresiconpath(const char* iconname)
 	return std::string(app_get_resource_path()) + iconname;
 }
 
-
-
 void InfoView::UpdateView()
 {
 	m_list.RemoveAllItems();
@@ -141,6 +137,7 @@ void InfoView::change_optionview(int id)
 		MOVE_NEXTVIEW;
 	}
 }
+
 void InfoView::move_prev()
 {
 	if(m_transcodingthread == NULL)
@@ -211,7 +208,7 @@ void InfoView::fill_encoderinfo(CodecInfo& venc, CodecInfo& aenc)
 	venc.venc.codecid = (mediacodec_codec_type_e)((TranscoderModel*)getmodel())->GetSelectedOption(VIDEO_CODEC_OPTION);
 	getresolutionbycode(((TranscoderModel*)getmodel())->GetSelectedOption(RESOLUTION_OPTION), venc.venc.width, venc.venc.height);
 	venc.venc.fps = 30;
-	venc.venc.target_bits =(int)((double)venc.venc.width*(double)venc.venc.height*(double)venc.venc.fps*0.20);
+	venc.venc.target_bits =(int)((double)venc.venc.width*(double)venc.venc.height*(double)venc.venc.fps*0.5*8);
 
 	aenc.aenc.codecid = (mediacodec_codec_type_e)((TranscoderModel*)getmodel())->GetSelectedOption(AUDIO_CODEC_OPTION);
 	aenc.aenc.channel = ORIGINAL_FEATURE;
@@ -388,7 +385,9 @@ void InfoView::showmsgbox(const char* str)
 void InfoView::hidemsgbox()
 {
 	if(m_msgbox)
+	{
 		evas_object_hide(m_msgbox);
+	}
 }
 
 

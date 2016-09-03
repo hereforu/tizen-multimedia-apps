@@ -10,19 +10,19 @@
 #include <stdexcept>
 
 
-FrameWindow::FrameWindow()
+Frame::Frame()
 :m_framewnd(NULL), m_conformant(NULL),  m_naviframe(NULL), m_currentviewindex(-1)
 {
 
 }
 
-FrameWindow::~FrameWindow()
+Frame::~Frame()
 {
 	//delete frame window & conformant
-	deleteallviews();
+	Destroy();
 }
 
-void FrameWindow::Create()
+void Frame::Create()
 {
 	try
 	{
@@ -37,28 +37,31 @@ void FrameWindow::Create()
 	}
 }
 
-void FrameWindow::Destroy()
+void Frame::Destroy()
 {
-
+	SAFE_EVAS_DELETE(m_naviframe);
+	SAFE_EVAS_DELETE(m_conformant);
+	SAFE_EVAS_DELETE(m_framewnd);
+	deleteallviews();
 }
 
-void FrameWindow::AddView(View* view)
+void Frame::AddView(View* view)
 {
 	assert_ifnot(m_framewnd!= NULL && m_conformant!=NULL);
 	m_views.push_back(view);
 
 }
 
-View* FrameWindow::GetCurrentView()
+View* Frame::GetCurrentView()
 {
 	return m_views[m_currentviewindex];
 }
 
-void FrameWindow::ActivateFirstView()
+void Frame::ActivateFirstView()
 {
 	if(m_views.size()==0 || m_currentviewindex != -1)
 	{
-		dlog_print(DLOG_DEBUG, "FrameWindow", "no view or m_currentviewindex is -1");
+		dlog_print(DLOG_DEBUG, "Frame", "no view or m_currentviewindex is -1");
 		return;
 	}
 
@@ -69,11 +72,11 @@ void FrameWindow::ActivateFirstView()
 	}
 	catch(const std::runtime_error& e)
 	{
-		dlog_print(DLOG_FATAL, "FrameWindow", e.what());
+		dlog_print(DLOG_ERROR, "Frame", e.what());
 	}
 }
 
-void FrameWindow::MoveNextView()
+void Frame::MoveNextView()
 {
 	try
 	{
@@ -86,15 +89,15 @@ void FrameWindow::MoveNextView()
 			}
 		}
 		else
-			dlog_print(DLOG_FATAL, "FrameWindow", "No more views");
+			dlog_print(DLOG_DEBUG, "Frame", "No more views");
 	}
 	catch(const std::runtime_error& e)
 	{
-		dlog_print(DLOG_FATAL, "FrameWindow", e.what());
+		dlog_print(DLOG_ERROR, "Frame", e.what());
 	}
 }
 
-void FrameWindow::MovePrevView()
+void Frame::MovePrevView()
 {
 	if(m_currentviewindex > 0)
 	{
@@ -105,37 +108,37 @@ void FrameWindow::MovePrevView()
 	}
 	else
 	{
-		dlog_print(DLOG_FATAL, "FrameWindow", "this is the first view");
+		dlog_print(DLOG_DEBUG, "Frame", "this is the first view");
 		elm_win_lower(m_framewnd);
 	}
 }
 
-void FrameWindow::Show()
+void Frame::Show()
 {
 	evas_object_show(m_framewnd);
 }
-void FrameWindow::pushview(View* view)
+void Frame::pushview(View* view)
 {
 	if(view->IsCreated())
 	{
-		dlog_print(DLOG_FATAL, "FrameWindow", "this view is already activated");
+		dlog_print(DLOG_ERROR, "Frame", "this view is already activated");
 		assert_ifnot(false);
 
 	}
 	view->Create(m_naviframe, m_conformant);
 }
 
-void FrameWindow::popview(View* view)
+void Frame::popview(View* view)
 {
 	if(!view->IsCreated())
 	{
-		dlog_print(DLOG_FATAL, "FrameWindow", "this view is already deactivated");
+		dlog_print(DLOG_ERROR, "Frame", "this view is already deactivated");
 		assert_ifnot(false);
 
 	}
 	view->Destroy();
 }
-void FrameWindow::deleteallviews()
+void Frame::deleteallviews()
 {
 	for(unsigned int i= 0; i < m_views.size(); ++i)
 	{
@@ -144,7 +147,7 @@ void FrameWindow::deleteallviews()
 	m_views.clear();
 }
 
-Evas_Object* FrameWindow::createframewindow()
+Evas_Object* Frame::createframewindow()
 {
 	Evas_Object* pframewnd = NULL;
 	/* Create and initialize elm_win.
@@ -168,17 +171,17 @@ Evas_Object* FrameWindow::createframewindow()
 	return pframewnd;
 }
 
-void FrameWindow::on_backkeydown_cb(void *data, Evas_Object *obj, void *event_info)
+void Frame::on_backkeydown_cb(void *data, Evas_Object *obj, void *event_info)
 {
-	FrameWindow* framewnd = static_cast<FrameWindow*>(data);
+	Frame* framewnd = static_cast<Frame*>(data);
 	if(framewnd == NULL)
 		return;
 
 	framewnd->MovePrevView();
 }
-void FrameWindow::delete_request_cb(void *data, Evas_Object *obj, void *event_info)
+void Frame::delete_request_cb(void *data, Evas_Object *obj, void *event_info)
 {
-	FrameWindow* framewnd = static_cast<FrameWindow*>(data);
+	Frame* framewnd = static_cast<Frame*>(data);
 	if(framewnd != NULL)
 	{
 		framewnd->handledeleterequest(obj, event_info);
@@ -186,12 +189,12 @@ void FrameWindow::delete_request_cb(void *data, Evas_Object *obj, void *event_in
 	}
 	//assert
 }
-void FrameWindow::handledeleterequest(Evas_Object *obj, void *event_info)
+void Frame::handledeleterequest(Evas_Object *obj, void *event_info)
 {
 	ui_app_exit();
 }
 
-Evas_Object* FrameWindow::createconformation(Evas_Object* parentwnd)
+Evas_Object* Frame::createconformation(Evas_Object* parentwnd)
 {
 	Evas_Object* pconformation = NULL;
 	/* Create and initialize elm_conformant.
@@ -210,7 +213,7 @@ Evas_Object* FrameWindow::createconformation(Evas_Object* parentwnd)
 	return pconformation;
 }
 
-Evas_Object* FrameWindow::createnaviframe(Evas_Object* conformant)
+Evas_Object* Frame::createnaviframe(Evas_Object* conformant)
 {
 	Evas_Object* pNaviframe = elm_naviframe_add(conformant);
 	if(pNaviframe == NULL)

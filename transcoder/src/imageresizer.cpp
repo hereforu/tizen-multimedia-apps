@@ -10,7 +10,7 @@
 #include <stdexcept>
 
 ImageResizer::ImageResizer()
-:m_handle(NULL), m_result(NULL), m_conditionalwaiter(NULL)
+:m_target_width(0), m_target_height(0), m_handle(NULL), m_conditionalwaiter(NULL), m_result(NULL)
 {
 
 }

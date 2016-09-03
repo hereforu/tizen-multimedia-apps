@@ -44,7 +44,7 @@ bool MultimediaApp::HandlerAppCreate(Model* model, const std::vector<View*>& vie
 	{
 		m_model = model;
 		m_model->Create();
-		m_frame = new FrameWindow;
+		m_frame = new Frame;
 		m_frame->Create();
 		for(unsigned int i = 0; i < views.size(); ++i)
 		{
@@ -59,7 +59,7 @@ bool MultimediaApp::HandlerAppCreate(Model* model, const std::vector<View*>& vie
 		destroymodel();
 		std::string msg = "fail to create App because ";
 		msg += e.what();
-		dlog_print(DLOG_FATAL, "FrameWindow", msg.c_str());
+		dlog_print(DLOG_ERROR, "Frame", msg.c_str());
 		return false;
 	}
 	return true;

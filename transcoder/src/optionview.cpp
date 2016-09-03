@@ -40,7 +40,10 @@ void OptionView::decorateview(Evas_Object* box)
 	}
 	catch(const std::runtime_error& e)
 	{
-		dlog_print(DLOG_ERROR, "InfoView", e.what());
+		destroyremains();
+		std::string msg = "fail to create OptionView because ";
+		msg += e.what();
+		throw std::runtime_error(msg);
 	}
 }
 

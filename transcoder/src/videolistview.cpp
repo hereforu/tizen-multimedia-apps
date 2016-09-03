@@ -50,7 +50,10 @@ void VideoListView::decorateview(Evas_Object* box)
 	}
 	catch(const std::runtime_error& e)
 	{
-		dlog_print(DLOG_ERROR, "VideoListView", e.what());
+		destroyremains();
+		std::string msg = "fail to create VideoListView because ";
+		msg += e.what();
+		throw std::runtime_error(msg);
 	}
 }
 
@@ -67,8 +70,7 @@ void VideoListView::destroyremains()
 {
 	m_list.Destroy();
 	m_btnpack.Destroy();
-	evas_object_del(m_popup);
-	m_popup = NULL;
+	SAFE_EVAS_DELETE(m_popup);
 }
 
 void VideoListView::buildthelist(ListCtrl& list)
