@@ -4,25 +4,23 @@
  *  Created on: June 21, 2016
  *      Author: Hotak
  */
+#include "common/base.h"
 #include "buffer.h"
-
+#include <stdexcept>
 Buffer::Buffer()
+:m_waveBuf(NULL), m_waveFileSize(0), m_buffer(0)
 {
-	m_waveBuf = NULL;
-	m_waveFileSize = 0;
-	m_buffer = 0;
+
 }
 
 Buffer::~Buffer()
 {
-
+	Destroy();
 }
 
 void Buffer::Destroy()
 {
-	alDeleteBuffers(1, &m_buffer);
-	delete[] m_waveBuf;
-	m_waveBuf = NULL;
+	release_resources();
 }
 
 int Buffer::GetDataSize()
@@ -30,140 +28,161 @@ int Buffer::GetDataSize()
 	return m_waveFileSize;
 }
 
+void Buffer::release_resources()
+{
+	if(m_buffer != 0)
+	{
+		alDeleteBuffers(1, &m_buffer);
+		m_buffer = 0;
+	}
+	SAFE_ARRAY_DELETE(m_waveBuf);
+}
 //stereo sample does not support spatial differences
 int Buffer::getFormat(short numChannels, short bitsPerSample)
 {
 	int format = 0;
-	if (numChannels == 1) {
+	if (numChannels == 1)
+	{
 		if (bitsPerSample == 8 )
 		{
 			format = AL_FORMAT_MONO8;
-			dlog_print(DLOG_FATAL, "ALContext", "AL_FORMAT_MONO8");
+			dlog_print(DLOG_DEBUG, "Buffer", "AL_FORMAT_MONO8");
 		}
 		else if (bitsPerSample == 16)
 		{
 			format = AL_FORMAT_MONO16;
-			dlog_print(DLOG_FATAL, "ALContext", "AL_FORMAT_MONO16");
+			dlog_print(DLOG_DEBUG, "Buffer", "AL_FORMAT_MONO16");
 		}
-	} else if (numChannels == 2) {
+	}
+	else if (numChannels == 2)
+	{
 		if (bitsPerSample == 8 )
 		{
 			format = AL_FORMAT_STEREO8;
-			dlog_print(DLOG_FATAL, "ALContext", "AL_FORMAT_STEREO8");
+			dlog_print(DLOG_DEBUG, "Buffer", "AL_FORMAT_STEREO8");
 		}
 		else if (bitsPerSample == 16)
 		{
 			format = AL_FORMAT_STEREO16;
-			dlog_print(DLOG_FATAL, "ALContext", "AL_FORMAT_STEREO16");
+			dlog_print(DLOG_DEBUG, "Buffer", "AL_FORMAT_STEREO16");
 		}
 	}
 	return format;
 }
 
-void Buffer::readRiffHeader(FILE* waveFile)
+bool Buffer::readRiffHeader(FILE* waveFile)
 {
 	struct RIFF_Header riffHeader;
-	fread(&riffHeader, sizeof(struct RIFF_Header), 1, waveFile);
-	if ((riffHeader.chunkID[0] != 'R' ||
-		riffHeader.chunkID[1] != 'I' ||
-		riffHeader.chunkID[2] != 'F' ||
-		riffHeader.chunkID[3] != 'F') ||
-		(riffHeader.format[0] != 'W' ||
-		riffHeader.format[1] != 'A' ||
-		riffHeader.format[2] != 'V' ||
-		riffHeader.format[3] != 'E'))
+	if(fread(&riffHeader, sizeof(struct RIFF_Header), 1, waveFile)==1)
 	{
-		throw std::runtime_error("Invalid RIFF or WAVE Header");
+		if ((riffHeader.chunkID[0] == 'R' &&
+			riffHeader.chunkID[1] == 'I' &&
+			riffHeader.chunkID[2] == 'F' &&
+			riffHeader.chunkID[3] == 'F') &&
+			(riffHeader.format[0] == 'W' &&
+			riffHeader.format[1] == 'A' &&
+			riffHeader.format[2] == 'V' &&
+			riffHeader.format[3] == 'E'))
+		{
+			return true;
+		}
 	}
+	dlog_print(DLOG_ERROR, "Buffer", "fail to readRiffHeader");
+	return false;
 }
 
-int Buffer::readWaveFormat(SUB_FORMAT_INFO* formatInfo, FILE* waveFile)
+int Buffer::readwaveformat_and_get_chunksize(SUB_FORMAT_INFO* formatInfo, FILE* waveFile)
 {
 	struct WAVE_Format waveFormat;
-	fread(&waveFormat, sizeof(struct WAVE_Format), 1, waveFile);
-	if (waveFormat.subChunkID[0] != 'f' ||
-		waveFormat.subChunkID[1] != 'm' ||
-		waveFormat.subChunkID[2] != 't' ||
-		waveFormat.subChunkID[3] != ' ')
+	if(fread(&waveFormat, sizeof(struct WAVE_Format), 1, waveFile)==1)
 	{
-		throw std::runtime_error("Invalid Wave Format");
+		if (waveFormat.subChunkID[0] == 'f' &&
+			waveFormat.subChunkID[1] == 'm' &&
+			waveFormat.subChunkID[2] == 't' &&
+			waveFormat.subChunkID[3] == ' ')
+		{
+			formatInfo->sampleRate = waveFormat.sampleRate;
+			formatInfo->format = getFormat(waveFormat.numChannels, waveFormat.bitsPerSample);
+			return waveFormat.subChunkSize;
+		}
 	}
-	formatInfo->sampleRate = waveFormat.sampleRate;
-	formatInfo->format = getFormat(waveFormat.numChannels, waveFormat.bitsPerSample);
-	return waveFormat.subChunkSize;
+	dlog_print(DLOG_ERROR, "Buffer", "fail to readWaveFormat");
+	return 0;
 }
 
-void Buffer::readWaveDataInfo(int subChunkSize, FILE* waveFile)
+int Buffer::readwavedatainfo_and_get_wavefilesize(int subChunkSize, FILE* waveFile)
 {
 	struct WAVE_Data waveData;
-	std::string msg;
 	if (subChunkSize > 16)
+	{
 		fseek(waveFile, sizeof(short), SEEK_CUR);
-	fread(&waveData, sizeof(struct WAVE_Data), 1, waveFile);
-	if (waveData.subChunkID[0] != 'd' ||
-		waveData.subChunkID[1] != 'a' ||
-		waveData.subChunkID[2] != 't' ||
-		waveData.subChunkID[3] != 'a')
-	{
-		throw std::runtime_error("Invalid data header");
 	}
-	m_waveFileSize = waveData.subChunk2Size;
-}
-
-void Buffer::readWaveData(void* buf, FILE* waveFile)
-{
-	fread(buf, m_waveFileSize, 1, waveFile);
-}
-
-bool Buffer::parseWave(SUB_FORMAT_INFO* formatInfo, std::string waveFilePath)
-{
-	try
+	if(fread(&waveData, sizeof(struct WAVE_Data), 1, waveFile)==1)
 	{
-		FILE* waveFile = fopen(waveFilePath.c_str(), "rb");
-		if (waveFile == NULL)
+		if (waveData.subChunkID[0] == 'd' &&
+			waveData.subChunkID[1] == 'a' &&
+			waveData.subChunkID[2] == 't' &&
+			waveData.subChunkID[3] == 'a')
 		{
-			std::string msg = "fail to open file ";
-			msg += waveFilePath;
-			throw std::runtime_error(msg);
+			return waveData.subChunk2Size;
 		}
-		readRiffHeader(waveFile);
-		int subChunkSize = readWaveFormat(formatInfo, waveFile);
-		readWaveDataInfo(subChunkSize, waveFile);
-
-		m_waveBuf = new unsigned char[m_waveFileSize];
-		readWaveData((void*)m_waveBuf, waveFile);
-		fclose(waveFile);
 	}
-	catch(const std::runtime_error& e)
-	{
-		std::string msg = "fail to parse wave because ";
-		msg += e.what();
-		dlog_print(DLOG_FATAL, "Buffer::parseWave", msg.c_str());
-		return false;
-	}
-	return true;
+	dlog_print(DLOG_ERROR, "Buffer", "fail to readWaveDataInfo");
+	return 0;
 }
 
-bool Buffer::GenerateBuffer(std::string waveFilePath)
+
+bool Buffer::parseWave(SUB_FORMAT_INFO* formatInfo, const char* wavefilepath)
+{
+	FILE* fp = NULL;
+	do
+	{
+		FILE* fp = NULL;
+		if ((fp = fopen(wavefilepath, "rb")) == NULL)
+			break;
+		if(readRiffHeader(fp) == false)
+			break;
+		if((m_waveFileSize = readwavedatainfo_and_get_wavefilesize(readwaveformat_and_get_chunksize(formatInfo, fp), fp))==0)
+			break;
+		m_waveBuf = new unsigned char[m_waveFileSize];
+		if(fread(m_waveBuf, m_waveFileSize, 1, fp)!= 1)
+		{
+			SAFE_ARRAY_DELETE(m_waveBuf);
+			break;
+		}
+		return true;
+	}while(0);
+
+	if(fp)
+		fclose(fp);
+	dlog_print(DLOG_ERROR, "Buffer", "fail to parse %s", wavefilepath);
+	return false;
+}
+
+bool Buffer::GenerateBuffer(const char* wavefilepath)
 {
 	SUB_FORMAT_INFO formatInfo = {0, 0};
-	if(!parseWave(&formatInfo, waveFilePath))
+	if(!parseWave(&formatInfo, wavefilepath))
 	{
-		std::string msg = "audio file is not good.";
-		dlog_print(DLOG_FATAL, "Buffer", msg.c_str());
 		return false;
 	}
-	ALuint buffer;
-	alGenBuffers(1, &buffer);
-	dlog_print(DLOG_DEBUG, "ALContext", "alGenBuffers id:%u", buffer);
-	ALenum ret = alGetError();
-	if (ret != AL_NO_ERROR)
+
+	ALenum ret = 0;
+	alGenBuffers(1, &m_buffer);
+	if ((ret=alGetError()) != AL_NO_ERROR)
 	{
-		dlog_print(DLOG_FATAL, "ALContext", "alGenBuffers error:%d", ret);
+		dlog_print(DLOG_ERROR, "Buffer", "alGenBuffers error:%d", ret);
+		release_resources();
 		return false;
 	}
-	m_buffer = buffer;
+
 	alBufferData(m_buffer, formatInfo.format, m_waveBuf, m_waveFileSize, formatInfo.sampleRate);
+	if ((ret=alGetError()) != AL_NO_ERROR)
+	{
+		dlog_print(DLOG_ERROR, "Buffer", "alBufferData error:%d", ret);
+		release_resources();
+		return false;
+	}
 	return true;
 }
 

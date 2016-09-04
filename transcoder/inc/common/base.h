@@ -18,6 +18,12 @@
 		x = NULL;\
 	}\
 
+#define SAFE_ARRAY_DELETE(x)\
+	if(x){\
+		delete[] x;\
+		x = NULL;\
+	}\
+
 #define SAFE_EVAS_DELETE(x)\
 	if(x){\
 		evas_object_del(x);\

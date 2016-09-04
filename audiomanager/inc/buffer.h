@@ -14,7 +14,7 @@
 #include <stdio.h>
 #include <audio_io.h>
 #include <string>
-#include <stdexcept>
+
 
 #define AL_FORMAT_MONO8                           0x1100
 #define AL_FORMAT_MONO16                          0x1101
@@ -56,18 +56,18 @@ public:
 	void Destroy();
 	int GetDataSize();
 	int GetFormat(short numChannels, short bitsPerSample);
-	bool GenerateBuffer(std::string waveFilePath);
+	bool GenerateBuffer(const char* wavefilepath);
 	ALuint GetBufferID();
 
 protected:
 
 private:
-	void readRiffHeader(FILE* waveFile);
-	int readWaveFormat(SUB_FORMAT_INFO* formatInfo, FILE* waveFile);
+	void release_resources();
+	bool readRiffHeader(FILE* waveFile);
+	int readwaveformat_and_get_chunksize(SUB_FORMAT_INFO* formatInfo, FILE* waveFile);
 	int getFormat(short numChannels, short bitsPerSample);
-	void readWaveDataInfo(int subChunkSize, FILE* waveFile);
-	void readWaveData(void* buf, FILE* waveFile);
-	bool parseWave(SUB_FORMAT_INFO* formatInfo, std::string waveFilePath);
+	int readwavedatainfo_and_get_wavefilesize(int subChunkSize, FILE* waveFile);
+	bool parseWave(SUB_FORMAT_INFO* formatInfo, const char* wavefilepath);
 
 	int m_waveFileSize;
 	unsigned char* m_waveBuf;
