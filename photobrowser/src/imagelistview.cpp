@@ -74,16 +74,14 @@ void ImageListView::PrintExif(const char* imagefilename)
 {
 	EXIF* exif = new EXIF;
 	dlog_print(DLOG_DEBUG, "EXIF", "EXIF: %s", imagefilename);
-	if(exif->Create(imagefilename))
+	if(exif->Open(imagefilename))
 	{
-		std::vector<ExifTagID_Name>& taglist = exif->GetSupportedTagList();
-		for(int i = 0; i < taglist.size(); ++i)
+		int num_tags = exif->GetNumTags();
+		for(int i = 0; i < num_tags; ++i)
 		{
-
-			std::string value = exif->GetValue(taglist[i]);
-			dlog_print(DLOG_DEBUG, "EXIF", "Tag: %s, Value:%s", taglist[i].name.c_str(), value.c_str());
+			dlog_print(DLOG_DEBUG, "EXIF", "Tag: %s, Value:%s", exif->GetTagName(i), exif->GetValue(i));
 		}
-		exif->Destroy();
+		exif->Close();
 	}
 	delete exif;
 }

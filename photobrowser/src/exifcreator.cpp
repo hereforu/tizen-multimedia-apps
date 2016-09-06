@@ -8,6 +8,8 @@
 #include "common/base.h"
 #include "exifcreator.h"
 #include <stdexcept>
+#include <iostream>
+#include <fstream>
 
 EXIFCreator::EXIFCreator()
 :m_data(NULL)
@@ -23,7 +25,6 @@ bool EXIFCreator::Create(const char* jpegfilename)
 {
 	if((m_data = create_exifdata())==NULL)
 		return false;
-
 	m_jpegfilename = jpegfilename;
 	return true;
 }
@@ -58,9 +59,28 @@ void EXIFCreator::AddComment(const char* text)
 	setdata(comment_entry->data, mem, 8+len);
 	delete[] mem;
 }
-void EXIFCreator::WriteExif()
+
+bool EXIFCreator::WriteExif()
 {
-	write_exif_to_file(m_jpegfilename.c_str(), m_jpegfilename.c_str());
+	unsigned char* exif_data = NULL;
+	unsigned int exif_data_len = 0;
+	unsigned char* image_data = NULL;
+	unsigned int image_data_len = 0;
+	bool ret = true;
+	try
+	{
+		readjpegfile(m_jpegfilename.c_str(), &image_data, &image_data_len);
+		getexifblock(&exif_data, &exif_data_len);
+		writejpegfile_with_exif(m_jpegfilename.c_str(), exif_data, exif_data_len, image_data, image_data_len);
+	}
+	catch(const std::runtime_error& e)
+	{
+		dlog_print(DLOG_ERROR, "EXIF", e.what());
+		ret =  false;
+	}
+	SAFE_FREE(exif_data);
+	SAFE_ARRAY_DELETE(image_data);
+	return ret;
 }
 
 void EXIFCreator::getexifblock(unsigned char** exif_data, unsigned int* length)
@@ -70,112 +90,75 @@ void EXIFCreator::getexifblock(unsigned char** exif_data, unsigned int* length)
 		throw std::runtime_error("fail to exif_data_save_data");
 }
 
+long EXIFCreator::get_file_length(FILE* fp)
+{
+	long cur_pos = ftell(fp);
+	fseek(fp, 0, SEEK_END);
+	long file_length = ftell(fp);
+	fseek(fp, cur_pos, SEEK_SET);
+	return file_length;
+}
+
+int EXIFCreator::read_data_from_to(FILE* fp, long from, long to, unsigned char** buffer)
+{
+	int length = to - from+1;
+	*buffer = new unsigned char[length];
+	if(fseek(fp, from, SEEK_SET)!=0)
+	{
+		SAFE_ARRAY_DELETE(*buffer);
+		return 0;
+	}
+	if(fread(*buffer, 1, length, fp) != length)
+	{
+		SAFE_ARRAY_DELETE(*buffer);
+		return 0;
+	}
+	return length;
+}
+
 void EXIFCreator::readjpegfile(const char* jpegfilename, unsigned char** jpeg_data, unsigned int* length)
 {
+	const int image_start_offset = 20; //from SOI (FF D8)!! offset is 20 generally
+	*jpeg_data = NULL;
 	FILE* fp = fopen(jpegfilename, "rb");
 	if(fp == NULL)
 	{
 		throw std::runtime_error("fail to open a file for reading");
 	}
-	if(fseek(fp, 0, SEEK_END) != 0)
-	{
-		fclose(fp);
-		throw std::runtime_error("fail to fseek to the end ");
-	}
-	const int image_start_offset = 20; //from SOI (FF D8)!! offset is 20 generally
-	*length = ftell(fp)-image_start_offset;
-	if(fseek(fp, image_start_offset, SEEK_SET) != 0)
-	{
-		fclose(fp);
-		throw std::runtime_error("fail to fseek to the first of the file");
-	}
-	*jpeg_data = (unsigned char*)malloc(*length);
-	if(*jpeg_data == NULL)
-	{
-		fclose(fp);
-		throw std::runtime_error("out of memory to make the buffer");
-	}
-	if(fread(*jpeg_data, 1, *length, fp) != *length)
-	{
-		fclose(fp);
-		throw std::runtime_error("fail to read the content");
-	}
+	int file_length = get_file_length(fp);
+	*length = read_data_from_to(fp, image_start_offset, file_length-1, jpeg_data);
 	fclose(fp);
+	if(*length == 0)
+	{
+		throw std::runtime_error("fail to readjpegfile");
+	}
 }
 
-void EXIFCreator::writejpegfile_with_exif(const char* dstjpegfilename, unsigned char* exif_data, int exif_data_length, unsigned char* image_data, int image_data_length)
+void EXIFCreator::writejpegfile_with_exif(const char* dstjpegfilename, const unsigned char* exif_data, int exif_data_length, const unsigned char* image_data, int image_data_length)
 {
-	const unsigned char exif_header[] = {
+	const char exif_header[] = { //exif
 	  0xff, 0xd8, 0xff, 0xe1
-	}; //exif
-
-	FILE* fp = fopen(dstjpegfilename, "wb");
-	if(fp == NULL)
-	{
-		throw std::runtime_error("fail to open file for writing");
-	}
-	if(fwrite(exif_header, 4, 1, fp) != 1)
-	{
-		fclose(fp);
-		throw std::runtime_error("fail to write exif header");
-	}
-	//big-endian according to exif spec
-	if (fputc((exif_data_length+2) >> 8, fp) < 0)
-	{
-		fclose(fp);
-		throw std::runtime_error("fail to write exif_data_length");
-	}
-	if (fputc((exif_data_length+2) & 0xff, fp) < 0)
-	{
-		fclose(fp);
-		throw std::runtime_error("fail to write exif_data_length");
-	}
-	if(fwrite(exif_data, exif_data_length, 1, fp) != 1)
-	{
-		fclose(fp);
-		throw std::runtime_error("fail to write exif data");
-	}
-
-	if(fwrite(image_data, image_data_length, 1, fp) != 1)
-	{
-		fclose(fp);
-		throw std::runtime_error("fail to write image data");
-	}
-}
-
-bool EXIFCreator::write_exif_to_file(const char* srcjpegfilename, const char* destjpegfilename)
-{
-	unsigned char* exif_data = NULL;
-	unsigned int exif_data_len = 0;
-	unsigned char* image_data = NULL;
-	unsigned int image_data_len = 0;
-
-	bool ret = true;
+	};
+	std::ofstream fout;
 	try
 	{
-		getexifblock(&exif_data, &exif_data_len);
-		readjpegfile(srcjpegfilename, &image_data, &image_data_len);
-		writejpegfile_with_exif(destjpegfilename, exif_data, exif_data_len, image_data, image_data_len);
+		fout.open(dstjpegfilename, std::ios::binary);
+		fout.write(exif_header, sizeof(exif_header));
+		//big-endian according to exif spec
+		fout.put((exif_data_length+2) >> 8);
+		fout.put((exif_data_length+2) & 0xff);
+		fout.write((const char*)exif_data, exif_data_length);
+		fout.write((const char*)image_data, image_data_length);
+		fout.close();
 	}
-	catch(const std::runtime_error& e)
+	catch(std::exception& e)
 	{
-
-		dlog_print(DLOG_ERROR, "EXIF", e.what());
-		ret =  false;
+		if(fout.is_open())
+			fout.close();
+		throw std::runtime_error("fail to writejpegfile_with_exif");
 	}
-	if(exif_data)
-	{
-		free(exif_data);
-		exif_data = NULL;
-	}
-	if(image_data)
-	{
-		free(image_data);
-		image_data = NULL;
-	}
-
-	return ret;
 }
+
 
 
 ExifData* EXIFCreator::create_exifdata()
@@ -228,7 +211,7 @@ ExifEntry* EXIFCreator::get_or_create_tag_ifnone(ExifData* data, ExifIfd ifd, Ex
 }
 void EXIFCreator::setdata(unsigned char* dest, const char* text, int length)
 {
-	memcpy(dest, (unsigned char*)text, length);
+	memcpy(dest, (char*)text, length);
 }
 
 void EXIFCreator::setdata(unsigned char* dest, ExifFormat format, int value)

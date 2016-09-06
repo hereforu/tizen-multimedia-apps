@@ -59,6 +59,7 @@ bool SharedQueue::Push(media_packet_h packet)
 		return false;
 	eina_lock_take(&m_mutex);
 	m_queue.push(packet);
+	dlog_print(DLOG_DEBUG, "SharedQueue", "current queue:%d [%s]", (int)m_queue.size(), m_name.c_str());
 	eina_lock_release(&m_mutex);
 	return true;
 }

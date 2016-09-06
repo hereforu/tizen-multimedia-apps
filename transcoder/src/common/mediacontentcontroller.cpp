@@ -44,6 +44,7 @@ void MediaContent::ConnectDB()
 	//register db update callback
 	if((ret = media_content_set_db_updated_cb(_noti_cb, NULL)) != MEDIA_CONTENT_ERROR_NONE)
 	{
+		DisconnectDB();
 		throw std::runtime_error(std::string("fail to media_content_set_db_updated_db with code:") + to_string<int>(ret));
 	}
 }
@@ -53,11 +54,7 @@ void MediaContent::DisconnectDB()
 	assert_ifnot(m_isconnected == true);
 
 	// deregister db update callback
-	int ret = media_content_unset_db_updated_cb();
-	if(ret != MEDIA_CONTENT_ERROR_NONE)
-	{
-		throw std::runtime_error(std::string("fail to media_content_unset_db_updated_cb with code:")+to_string<int>(ret));
-	}
+	media_content_unset_db_updated_cb();
 	media_content_disconnect();
 	m_isconnected = false;
 

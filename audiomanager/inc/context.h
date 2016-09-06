@@ -23,17 +23,14 @@ class Context
 public:
 	Context();
 	~Context();
-
 	void Create();
 	void Destroy();
-
-	void ResetSource();
-	void setSourcePos(ALuint source, float x, float y, float z);
-	void setListenerPos(float x, float y, float z);
+	void SetListenerPos(float x, float y, float z);
 	void Play();
 	void Stop();
 	void Push(Source* source);
 	void Pop(Source* source);
+	void ResetSource();
 
 private:
 	void convertVecToArr(ALuint* arr);

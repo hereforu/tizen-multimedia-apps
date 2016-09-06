@@ -18,9 +18,11 @@ public:
 	~Source();
 
 	void GenerateSource(ALuint buffer);
-	void Play();
+	void SetSourcePos(float x, float y, float z);
 	void Destroy();
+	void Play();
 	ALuint GetSourceId();
+
 protected:
 
 private:

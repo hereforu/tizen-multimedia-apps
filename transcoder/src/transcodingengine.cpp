@@ -106,9 +106,10 @@ bool TranscodingEngine::feed_decoder_with_packet(CodecBase* decoder, int track_i
 		++count;
 		pts = get_pts_in_msec(demux_packet);
 		dlog_print(DLOG_DEBUG, "TranscodingEngine", "%dth demuxed packet [pts:%u]", count, pts);
-		if(!decoder->InsertPacket(demux_packet))
+		if(decoder->InsertPacket(demux_packet) == false)
 		{
 			dlog_print(DLOG_ERROR, "TranscodingEngine", "while putting the %d th packet to the decoder", count);
+			media_packet_destroy(demux_packet);
 			return false;
 		}
 	}
@@ -136,12 +137,14 @@ bool TranscodingEngine::feed_encoder_with_packet(CodecBase* decoder, CodecBase* 
 			if(resize_resolution_if_image(&decoded_packet)==false)
 			{
 				dlog_print(DLOG_ERROR, "TranscodingEngine", "while resizing the %d th packet", count);
+				media_packet_destroy(decoded_packet);
 				return false;
 			}
 		}
 		if(encoder->InsertPacket(decoded_packet)==false)
 		{
 			dlog_print(DLOG_ERROR, "TranscodingEngine", "while putting the %d th packet to the encoder", count);
+			media_packet_destroy(decoded_packet);
 			return false;
 		}
 	}
@@ -228,7 +231,7 @@ void TranscodingEngine::transcoding()
 			break;
 		}
 		m_progress_count = video_counter[ENCODE_COUNTER];
-		usleep(200000);
+		usleep(400000);
 	}
 	dlog_print(DLOG_DEBUG, "TranscodingEngine", "the end of transcoding");
 	m_muxer->CloseTrack(m_muxer_video_track_index);

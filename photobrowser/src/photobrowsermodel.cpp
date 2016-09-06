@@ -68,9 +68,9 @@ EXIF& PhotoBrowserModel::GetExif_of_SelectedContent()
 
 bool PhotoBrowserModel::loadexif(const char* imagefilename)
 {
-	if(m_exif.IsCreated())
-		m_exif.Destroy();
-	return m_exif.Create(imagefilename);
+	if(m_exif.IsOpened())
+		m_exif.Close();
+	return m_exif.Open(imagefilename);
 }
 
 void PhotoBrowserModel::buildcontentslist()

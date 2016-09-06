@@ -78,13 +78,13 @@ void AudioManagerModel::LocateSource(unsigned int index, float x, float y, float
 	ALObject obj = getobjectbyindex(index);
 	if(obj.source)
 	{
-		m_context.setSourcePos(obj.source->GetSourceId(), x, y, z);
+		obj.source->SetSourcePos(x, y, z);
 	}
 }
 
 void AudioManagerModel::LocateListener(float x, float y, float z)
 {
-	m_context.setListenerPos(x, y, z);
+	m_context.SetListenerPos(x, y, z);
 }
 
 void AudioManagerModel::ResetSource()

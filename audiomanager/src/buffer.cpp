@@ -8,7 +8,7 @@
 #include "buffer.h"
 #include <stdexcept>
 Buffer::Buffer()
-:m_waveBuf(NULL), m_waveFileSize(0), m_buffer(0)
+:m_waveFileSize(0), m_waveBuf(NULL), m_buffer(0)
 {
 
 }
@@ -135,28 +135,36 @@ int Buffer::readwavedatainfo_and_get_wavefilesize(int subChunkSize, FILE* waveFi
 bool Buffer::parseWave(SUB_FORMAT_INFO* formatInfo, const char* wavefilepath)
 {
 	FILE* fp = NULL;
-	do
+	if ((fp = fopen(wavefilepath, "rb")) == NULL)
+		return false;
+	if(readRiffHeader(fp) == false)
 	{
-		FILE* fp = NULL;
-		if ((fp = fopen(wavefilepath, "rb")) == NULL)
-			break;
-		if(readRiffHeader(fp) == false)
-			break;
-		if((m_waveFileSize = readwavedatainfo_and_get_wavefilesize(readwaveformat_and_get_chunksize(formatInfo, fp), fp))==0)
-			break;
-		m_waveBuf = new unsigned char[m_waveFileSize];
-		if(fread(m_waveBuf, m_waveFileSize, 1, fp)!= 1)
-		{
-			SAFE_ARRAY_DELETE(m_waveBuf);
-			break;
-		}
-		return true;
-	}while(0);
-
-	if(fp)
 		fclose(fp);
-	dlog_print(DLOG_ERROR, "Buffer", "fail to parse %s", wavefilepath);
-	return false;
+		return false;
+	}
+	if((m_waveFileSize = readwavedatainfo_and_get_wavefilesize(readwaveformat_and_get_chunksize(formatInfo, fp), fp))==0)
+	{
+		fclose(fp);
+		return false;
+	}
+	if(readPCM(fp, m_waveFileSize, &m_waveBuf)==false)
+	{
+		fclose(fp);
+		return false;
+	}
+	fclose(fp);
+	return true;
+}
+
+bool Buffer::readPCM(FILE* fp, int PCMsize, unsigned char** buf)
+{
+	*buf = new unsigned char[PCMsize];
+	if(fread(*buf, PCMsize, 1, fp)!= 1)
+	{
+		SAFE_ARRAY_DELETE(*buf);
+		return false;
+	}
+	return true;
 }
 
 bool Buffer::GenerateBuffer(const char* wavefilepath)

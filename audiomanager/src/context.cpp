@@ -74,19 +74,7 @@ void Context::convertVecToArr(ALuint* arr)
 }
 
 
-
-void Context::setSourcePos(ALuint source, float x, float y, float z)
-{
-	alSource3f(source, AL_POSITION, x, y, z);
-	dlog_print(DLOG_DEBUG, "ALContext", "source:%u, (%f, %f, %f)", source, x, y, z);
-	ALenum ret = alGetError();
-	if (ret != AL_NO_ERROR)
-	{
-		dlog_print(DLOG_ERROR, "ALContext", "alSource3f error:%d", ret);
-	}
-}
-
-void Context::setListenerPos(float x, float y, float z)
+void Context::SetListenerPos(float x, float y, float z)
 {
 	alListener3f(AL_POSITION, x, y, z);
 	dlog_print(DLOG_DEBUG, "ALContext", "listener:(%f, %f, %f)", x, y, z);
@@ -125,7 +113,6 @@ void Context::Push(Source* source)
 {
 	m_ImportSourceIdx.push_back(source);
 }
-
 void Context::Pop(Source* source)
 {
 	for(int i = 0 ; i < m_ImportSourceIdx.size() ; i++)

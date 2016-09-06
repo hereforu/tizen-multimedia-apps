@@ -62,11 +62,12 @@ void ExifView::setinfo_tolist(ListCtrl& list, EXIF& exif)
 {
 	std::vector<GenCtrlItem> items;
 
-	std::vector<ExifTagID_Name>& taglist = exif.GetSupportedTagList();
-	for(int i = 0; i < taglist.size(); ++i)
+	int num_tags = exif.GetNumTags();
+	for(int i = 0; i < num_tags; ++i)
 	{
-		std::string value = taglist[i].name + " : ";
-		value += exif.GetValue(taglist[i]);
+		std::string value = exif.GetTagName(i);
+		value += " : ";
+		value += exif.GetValue(i);
 		items.push_back(GenCtrlItem(i, value.c_str(), "no media", getresiconpath("images/tag.png").c_str()));
 		dlog_print(DLOG_DEBUG, "EXIF", "%s", value.c_str());
 	}

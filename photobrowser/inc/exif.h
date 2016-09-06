@@ -13,28 +13,25 @@
 #include <map>
 #include <libexif/exif-data.h>
 
-typedef ExifEntry* TagHandle;
-
-typedef struct _ExifTagID_Name
+typedef struct _ExifTag_Value
 {
-	_ExifTagID_Name(TagHandle _htag, const char* _name)
-	:htag(_htag), name(_name)
+	_ExifTag_Value(const char* _name, const char* _value)
+	:name(_name), value(_value)
 	{}
-	TagHandle htag;
 	std::string name;
-}ExifTagID_Name;
+	std::string value;
+}ExifTag_Value;
 
-
-typedef struct _ExifC
+typedef struct _ExifTagCollection
 {
-	_ExifC(ExifContent* _content)
+	_ExifTagCollection(ExifContent* _content)
 	:content(_content)
 	{
 
 	}
 	ExifContent* content;
 	std::vector<ExifEntry*> entries;
-}ExifC;
+}ExifTagCollection;
 
 
 class EXIF
@@ -43,13 +40,15 @@ public:
 	EXIF();
 	~EXIF();
 
-	bool Create(const char* imagefilename);
-	void Destroy();
-	bool IsCreated();
+	bool Open(const char* imagefilename);
+	void Close();
+	bool IsOpened();
 
-	std::vector<ExifTagID_Name>& GetSupportedTagList();
-	std::string GetValue(ExifTagID_Name& tag);
-	void UpdateValue(int tagid, const char* value);
+	unsigned int GetNumTags();
+	const char* GetTagName(int index);
+	const char* GetValue(int index);
+
+	std::vector<ExifTag_Value>& GetTagAndValueList();
 
 
 private:
@@ -66,9 +65,9 @@ private:
 	static void foreach_entry_cb(ExifEntry* entry, void* data);
 
 private:
-	std::vector<ExifTagID_Name> m_supportedtags;
+	std::vector<ExifTag_Value> m_supported_tag_and_values;
 	ExifData* m_data;
-	std::vector<ExifC> m_contents;
+	std::vector<ExifTagCollection> m_contents;
 	std::map<int, std::string> m_ifdnamemap;
 
 

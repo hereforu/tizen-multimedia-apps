@@ -42,6 +42,17 @@ void Source::GenerateSource(ALuint buffer)
 	m_source = source;
 }
 
+void Source::SetSourcePos(float x, float y, float z)
+{
+	alSource3f(m_source, AL_POSITION, x, y, z);
+	dlog_print(DLOG_DEBUG, "Source", "source:%u, (%f, %f, %f)", m_source, x, y, z);
+	ALenum ret = alGetError();
+	if (ret != AL_NO_ERROR)
+	{
+		dlog_print(DLOG_ERROR, "Source", "alSource3f error:%d", ret);
+	}
+}
+
 void Source::Play()
 {
 	alSourcePlay(m_source);

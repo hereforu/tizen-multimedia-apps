@@ -53,15 +53,16 @@ class Buffer
 public:
 	Buffer();
 	~Buffer();
+	bool GenerateBuffer(const char* wavefilepath);
 	void Destroy();
 	int GetDataSize();
 	int GetFormat(short numChannels, short bitsPerSample);
-	bool GenerateBuffer(const char* wavefilepath);
 	ALuint GetBufferID();
 
 protected:
 
 private:
+	bool readPCM(FILE* fp, int PCMsize, unsigned char** buf);
 	void release_resources();
 	bool readRiffHeader(FILE* waveFile);
 	int readwaveformat_and_get_chunksize(SUB_FORMAT_INFO* formatInfo, FILE* waveFile);
