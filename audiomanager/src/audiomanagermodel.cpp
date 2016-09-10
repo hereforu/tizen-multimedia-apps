@@ -139,12 +139,18 @@ void AudioManagerModel::createSources(const std::vector<unsigned int>& selecteds
 		object.buffer = new Buffer();
 		if(!object.buffer->GenerateBuffer(m_audioList[selectedsourceindex[i]].path.c_str()))
 		{
-			dlog_print(DLOG_FATAL, "AudioManagerModel", "fail to create the buffer of %s",  m_audioList[selectedsourceindex[i]].path.c_str());
+			dlog_print(DLOG_ERROR, "AudioManagerModel", "fail to create the buffer of %s",  m_audioList[selectedsourceindex[i]].path.c_str());
 			delete object.buffer;
 			continue;
 		}
 		object.source = new Source();
-		object.source->GenerateSource(object.buffer->GetBufferID());
+		if(!object.source->GenerateSource(object.buffer->GetBufferID()))
+		{
+			dlog_print(DLOG_ERROR, "AudioManagerModel", "fail to create the GenerateSource of %s",  m_audioList[selectedsourceindex[i]].path.c_str());
+			delete object.source;
+			delete object.buffer;
+			continue;
+		}
 
 		m_objmap[selectedsourceindex[i]]=object;
 	}

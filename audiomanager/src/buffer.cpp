@@ -78,7 +78,8 @@ bool Buffer::readRiffHeader(FILE* waveFile)
 		if ((riffHeader.chunkID[0] == 'R' &&
 			riffHeader.chunkID[1] == 'I' &&
 			riffHeader.chunkID[2] == 'F' &&
-			riffHeader.chunkID[3] == 'F') &&
+			riffHeader.chunkID[3] == 'F')
+				&&
 			(riffHeader.format[0] == 'W' &&
 			riffHeader.format[1] == 'A' &&
 			riffHeader.format[2] == 'V' &&

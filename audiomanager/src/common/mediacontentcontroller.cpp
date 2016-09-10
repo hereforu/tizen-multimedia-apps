@@ -176,7 +176,6 @@ std::string MediaContent::createcondition(unsigned int mediatype)
 	if(mediatype & MC_MUSIC_TYPE)
 	{
 		condition += MAKE_MEDIATYPE_STRING(addor, MEDIA_CONTENT_TYPE_MUSIC);
-		addor = true;
 	}
 	return condition;
 }

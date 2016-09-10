@@ -17,7 +17,7 @@ public:
 	Source();
 	~Source();
 
-	void GenerateSource(ALuint buffer);
+	bool GenerateSource(ALuint buffer);
 	void SetSourcePos(float x, float y, float z);
 	void Destroy();
 	void Play();

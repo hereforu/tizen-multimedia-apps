@@ -14,10 +14,10 @@ Source::Source()
 
 Source::~Source()
 {
-
+	Destroy();
 }
 
-void Source::GenerateSource(ALuint buffer)
+bool Source::GenerateSource(ALuint buffer)
 {
 	ALuint source;
 	alGenSources(1, &source);
@@ -26,6 +26,7 @@ void Source::GenerateSource(ALuint buffer)
 	if (ret != AL_NO_ERROR)
 	{
 		dlog_print(DLOG_FATAL, "ALContext", "alGenSources error:%d", ret);
+		return false;
 	}
 
 	alGetSourcef(source, AL_MAX_GAIN, &m_max_gain);
@@ -40,6 +41,7 @@ void Source::GenerateSource(ALuint buffer)
 	alSourcei(source,AL_LOOPING,AL_TRUE);
 	alSourcei(source, AL_BUFFER, buffer);
 	m_source = source;
+	return true;
 }
 
 void Source::SetSourcePos(float x, float y, float z)
@@ -60,7 +62,11 @@ void Source::Play()
 
 void Source::Destroy()
 {
-	alDeleteSources(1, &m_source);
+	if(m_source != 0)
+	{
+		alDeleteSources(1, &m_source);
+		m_source = 0;
+	}
 }
 
 ALuint Source::GetSourceId()
