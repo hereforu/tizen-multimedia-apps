@@ -37,7 +37,11 @@ void Buffer::release_resources()
 	}
 	SAFE_ARRAY_DELETE(m_waveBuf);
 }
-//stereo sample does not support spatial differences
+
+
+/*
+ * stereo sample does not support spatial differences
+ */
 int Buffer::getFormat(short numChannels, short bitsPerSample)
 {
 	int format = 0;
@@ -70,6 +74,9 @@ int Buffer::getFormat(short numChannels, short bitsPerSample)
 	return format;
 }
 
+/*
+ * readRiffHeader verifies if the file content starts with a RIFFWAVE tag.
+ */
 bool Buffer::readRiffHeader(FILE* waveFile)
 {
 	struct RIFF_Header riffHeader;
@@ -92,6 +99,10 @@ bool Buffer::readRiffHeader(FILE* waveFile)
 	return false;
 }
 
+/*
+ * readwaveformat_and_get_chunksize checks the integrity of file format by inspecting the "fmt" tag, sample rate, and bits-per-sample data.
+ */
+
 int Buffer::readwaveformat_and_get_chunksize(SUB_FORMAT_INFO* formatInfo, FILE* waveFile)
 {
 	struct WAVE_Format waveFormat;
@@ -111,6 +122,10 @@ int Buffer::readwaveformat_and_get_chunksize(SUB_FORMAT_INFO* formatInfo, FILE* 
 	return 0;
 }
 
+/*
+ * readwavedatainfo_and_get_wavefilesize identifies the PCM data region within the file.
+ * It searches for the "data" tag and returns the PCM data chunk size.
+ */
 int Buffer::readwavedatainfo_and_get_wavefilesize(int subChunkSize, FILE* waveFile)
 {
 	struct WAVE_Data waveData;
@@ -132,6 +147,9 @@ int Buffer::readwavedatainfo_and_get_wavefilesize(int subChunkSize, FILE* waveFi
 	return 0;
 }
 
+/*
+ * parseWave function opens the specified input .WAV file and parses it for further exploitation.
+ */
 
 bool Buffer::parseWave(SUB_FORMAT_INFO* formatInfo, const char* wavefilepath)
 {
@@ -157,6 +175,9 @@ bool Buffer::parseWave(SUB_FORMAT_INFO* formatInfo, const char* wavefilepath)
 	return true;
 }
 
+/*
+ * The function 'readPCM' reads PCM data by the amount of data chunk size and stores it in 'm_waveBuf'.
+ */
 bool Buffer::readPCM(FILE* fp, int PCMsize, unsigned char** buf)
 {
 	*buf = new unsigned char[PCMsize];
@@ -168,6 +189,10 @@ bool Buffer::readPCM(FILE* fp, int PCMsize, unsigned char** buf)
 	return true;
 }
 
+/*
+ * The GenerateBuffer function takes a .WAV file for input and parses it.
+ * It is possible to play back mono audio, so if the audio is mono, a Buffer object is created.
+ */
 bool Buffer::GenerateBuffer(const char* wavefilepath)
 {
 	SUB_FORMAT_INFO formatInfo = {0, 0};
@@ -177,6 +202,7 @@ bool Buffer::GenerateBuffer(const char* wavefilepath)
 	}
 
 	ALenum ret = 0;
+	//create a buffer object
 	alGenBuffers(1, &m_buffer);
 	if ((ret=alGetError()) != AL_NO_ERROR)
 	{
@@ -185,6 +211,7 @@ bool Buffer::GenerateBuffer(const char* wavefilepath)
 		return false;
 	}
 
+	//copy the specified PCM data to the created buffer
 	alBufferData(m_buffer, formatInfo.format, m_waveBuf, m_waveFileSize, formatInfo.sampleRate);
 	if ((ret=alGetError()) != AL_NO_ERROR)
 	{

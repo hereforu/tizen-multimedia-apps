@@ -23,17 +23,25 @@
 #include <map>
 
 
+/*
+ * Basically, the relation between Source and Buffer is many to one in OpenAL.
+ * But, in this application, one Buffer is going to be assigned to only one Source
+ * i.e. the relation between two objects is one to one
+ */
 typedef struct _ALObject{
 	_ALObject()
 	:source(NULL), buffer(NULL)
-	{
-
-	}
+	{}
 	Source* source;
 	Buffer* buffer;
 }ALObject;
 
+/*
+ * the key of the ALObjectMap is source index
+ */
 typedef std::map<int, ALObject> ALObjectMap;
+
+
 
 class AudioManagerModel : public Model
 {
@@ -64,7 +72,6 @@ public:
 	where in a frontal default view X (thumb) points right,
 	Y (index finger) points up, and Z (middle finger) points towards the viewer/camera.
 	*/
-	//you put pixel value. func change pixel -> openal value(normalize)
 	void LocateSource(unsigned int index, float x, float y, float z);
 	void LocateListener(float x, float y, float z);
 
@@ -73,17 +80,15 @@ protected:
 	void destroyspecifics();
 
 private:
-	void getAudioListinDB();
-	void removeAllSources();
-	void createSources(const std::vector<unsigned int>& selectedsourceindex);
+	void getaudiolistinDB();
+	void removeallsources();
+	void createsources(const std::vector<unsigned int>& selectedsourceindex);
 	ALObject getobjectbyindex(int index);
 
 private:
 	Context m_context;
 	ALObjectMap m_objmap;
-	std::vector<MediaContentItem> m_audioList;
-
-
+	std::vector<MediaContentItem> m_audiolist;
 };
 
 #endif /* AUDIOMANAGERMODEL_H_ */

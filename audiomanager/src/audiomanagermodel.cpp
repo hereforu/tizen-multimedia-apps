@@ -7,6 +7,8 @@
 #include "common/base.h"
 #include "audioManagerModel.h"
 #include <app_common.h>
+
+
 AudioManagerModel::AudioManagerModel()
 {
 	//TODO:: initialize variables
@@ -19,32 +21,32 @@ AudioManagerModel::~AudioManagerModel()
 
 void AudioManagerModel::creatspecifics()
 {
-	getAudioListinDB();
+	getaudiolistinDB();
 	m_context.Create();
 }
 
 void AudioManagerModel::destroyspecifics()
 {
 	m_context.Destroy();
-	removeAllSources();
-	m_audioList.clear();
+	removeallsources();
+	m_audiolist.clear();
 }
 
 unsigned int AudioManagerModel::GetNumAllMediaItems()
 {
-	return m_audioList.size();
+	return m_audiolist.size();
 }
 
 MediaContentItem& AudioManagerModel::GetMediaInfo(int index)
 {
-	AppTool::Assert( index >= 0 && index <  m_audioList.size());
-	return m_audioList[index];
+	AppTool::Assert( index >= 0 && index <  m_audiolist.size());
+	return m_audiolist[index];
 }
 
 void AudioManagerModel::UpdateSource(const std::vector<unsigned int>& selectedsourceindex)
 {
-	removeAllSources();
-	createSources(selectedsourceindex);
+	removeallsources();
+	createsources(selectedsourceindex);
 	m_context.ResetSource();
 }
 
@@ -114,7 +116,7 @@ void AudioManagerModel::GetSelectedSourceIdx(std::vector<unsigned int>& selected
 		++iter;
 	}
 }
-void AudioManagerModel::removeAllSources()
+void AudioManagerModel::removeallsources()
 {
 	ALObjectMap::iterator iter = m_objmap.begin();
 	while(iter != m_objmap.end())
@@ -130,23 +132,23 @@ void AudioManagerModel::removeAllSources()
 	m_objmap.clear();
 }
 
-void AudioManagerModel::createSources(const std::vector<unsigned int>& selectedsourceindex)
+void AudioManagerModel::createsources(const std::vector<unsigned int>& selectedsourceindex)
 {
 	for(int i = 0 ; i < selectedsourceindex.size() ; i++)
 	{
 		ALObject object;
 
 		object.buffer = new Buffer();
-		if(!object.buffer->GenerateBuffer(m_audioList[selectedsourceindex[i]].path.c_str()))
+		if(!object.buffer->GenerateBuffer(m_audiolist[selectedsourceindex[i]].path.c_str()))
 		{
-			dlog_print(DLOG_ERROR, "AudioManagerModel", "fail to create the buffer of %s",  m_audioList[selectedsourceindex[i]].path.c_str());
+			dlog_print(DLOG_ERROR, "AudioManagerModel", "fail to create the buffer of %s",  m_audiolist[selectedsourceindex[i]].path.c_str());
 			delete object.buffer;
 			continue;
 		}
 		object.source = new Source();
 		if(!object.source->GenerateSource(object.buffer->GetBufferID()))
 		{
-			dlog_print(DLOG_ERROR, "AudioManagerModel", "fail to create the GenerateSource of %s",  m_audioList[selectedsourceindex[i]].path.c_str());
+			dlog_print(DLOG_ERROR, "AudioManagerModel", "fail to create the GenerateSource of %s",  m_audiolist[selectedsourceindex[i]].path.c_str());
 			delete object.source;
 			delete object.buffer;
 			continue;
@@ -156,7 +158,7 @@ void AudioManagerModel::createSources(const std::vector<unsigned int>& selecteds
 	}
 }
 
-void AudioManagerModel::getAudioListinDB()
+void AudioManagerModel::getaudiolistinDB()
 {
 	MediaContent mediaContent;
 	MediaContentParam param;
@@ -165,7 +167,7 @@ void AudioManagerModel::getAudioListinDB()
 	{
 		mediaContent.ConnectDB();
 	}
-	mediaContent.GetItem(param, &m_audioList);
+	mediaContent.GetItem(param, &m_audiolist);
 	mediaContent.DisconnectDB();
 }
 ALObject AudioManagerModel::getobjectbyindex(int index)

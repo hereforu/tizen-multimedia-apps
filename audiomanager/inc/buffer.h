@@ -16,10 +16,19 @@
 #include <string>
 
 
+/*
+ * The Buffer class creates a Buffer object by reading in PCM data from a given .WAV file.
+ */
+
 #define AL_FORMAT_MONO8                           0x1100
 #define AL_FORMAT_MONO16                          0x1101
 #define AL_FORMAT_STEREO8                         0x1102
 #define AL_FORMAT_STEREO16                        0x1103
+
+/*
+ * To understand these structures deeply, it is crucial to see the format of WAV file in advance.
+ * Please refer to the canonical WAVE file format in http://soundfile.sapp.org/doc/WaveFormat.
+ */
 
 struct RIFF_Header {
 	char chunkID[4];

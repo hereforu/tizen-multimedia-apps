@@ -109,7 +109,7 @@ bool TranscodingEngine::feed_decoder_with_packet(CodecBase* decoder, int track_i
 		if(decoder->InsertPacket(demux_packet) == false)
 		{
 			dlog_print(DLOG_ERROR, "TranscodingEngine", "while putting the %d th packet to the decoder", count);
-			media_packet_destroy(demux_packet);
+			media_packet_destroy_dbg(demux_packet);
 			return false;
 		}
 	}
@@ -137,14 +137,14 @@ bool TranscodingEngine::feed_encoder_with_packet(CodecBase* decoder, CodecBase* 
 			if(resize_resolution_if_image(&decoded_packet)==false)
 			{
 				dlog_print(DLOG_ERROR, "TranscodingEngine", "while resizing the %d th packet", count);
-				media_packet_destroy(decoded_packet);
+				media_packet_destroy_dbg(decoded_packet);
 				return false;
 			}
 		}
 		if(encoder->InsertPacket(decoded_packet)==false)
 		{
 			dlog_print(DLOG_ERROR, "TranscodingEngine", "while putting the %d th packet to the encoder", count);
-			media_packet_destroy(decoded_packet);
+			media_packet_destroy_dbg(decoded_packet);
 			return false;
 		}
 	}
@@ -160,7 +160,7 @@ bool TranscodingEngine::resize_resolution_if_image(media_packet_h* packet)
 		media_packet_h resized_packet;
 		if(m_resizer->Resize(*packet, &resized_packet)==true)
 		{
-			media_packet_destroy(*packet);
+			media_packet_destroy_dbg(*packet);
 			*packet = resized_packet;
 		}
 		else
@@ -184,7 +184,7 @@ bool TranscodingEngine::feed_muxer_with_packet(CodecBase* encoder, int muxer_tra
 		{
 			++count;
 			bret = m_muxer->WriteSample(muxer_track_index, encoded_packet);
-			media_packet_destroy(encoded_packet);
+			media_packet_destroy_dbg(encoded_packet);
 			dlog_print(DLOG_DEBUG, "TranscodingEngine", "%dth encoded packet", count);
 		}
 	}

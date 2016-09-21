@@ -113,8 +113,12 @@ bool CodecBase::IsEoS()
 
 bool CodecBase::pushpacket_to_outputqueue(const media_packet_h& packet)
 {
+	packet_created_dbg(packet);
 	if(m_out.queue.IsFull())
+	{
+		dlog_print(DLOG_ERROR, "CodecBase", "unhandled case[%s] queue is full", getname());
 		return false;
+	}
 	m_out.queue.Push(packet);
 	++m_out.count;
 	dlog_print(DLOG_DEBUG, "CodecBase", "mediacodec[%s]_get_output %d", getname(),m_out.count);
@@ -122,7 +126,7 @@ bool CodecBase::pushpacket_to_outputqueue(const media_packet_h& packet)
 }
 void CodecBase::handle_input_buffer_used(media_packet_h pkt)
 {
-	media_packet_destroy(pkt);
+	media_packet_destroy_dbg(pkt);
 }
 
 void CodecBase::handle_output_buffer_available(media_packet_h pkt)

@@ -44,7 +44,7 @@ void SharedQueue::ClearAll()
 		media_packet_h packet = m_queue.front();
 		if(packet != END_OF_STREAM)
 		{
-			media_packet_destroy(packet);
+			media_packet_destroy_dbg(packet);
 		}
 
 		m_queue.pop();

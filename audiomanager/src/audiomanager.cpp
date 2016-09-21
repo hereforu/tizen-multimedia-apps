@@ -86,8 +86,7 @@ ui_app_low_memory(app_event_info_h event_info, void *user_data)
 	app->HandleLowMemoryEvent();
 }
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
 	MultimediaApp* App = MultimediaApp::GetInstance();
 	int ret = 0;

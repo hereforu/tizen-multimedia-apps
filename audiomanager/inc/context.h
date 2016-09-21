@@ -11,10 +11,13 @@
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <AL/alext.h>
-
-
 #include "source.h"
 #include <vector>
+
+/*
+ * The Context class places Listener and Source objects within the given 3D space room
+ * and mixes audio sources that reflect their relative locations.
+ */
 
 #define MAXNUM 5
 

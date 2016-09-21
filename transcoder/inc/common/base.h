@@ -11,6 +11,7 @@
 #include "transcoder.h" //auto generated header by IDE
 #include <string>
 #include <sstream>
+#include "media_packet.h"
 
 #define SAFE_DELETE(x)\
 	if(x){\
@@ -43,6 +44,9 @@ namespace AppTool
 	void assert_ifnot(bool condition);
 
 	void iferror_throw(int ret, const char* msg);
+
+	void media_packet_destroy_dbg(media_packet_h pkt);
+	void packet_created_dbg(media_packet_h pkt);
 }
 
 using namespace AppTool;

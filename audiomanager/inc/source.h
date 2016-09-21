@@ -11,6 +11,10 @@
 #include <AL/al.h>
 #include <AL/alc.h>
 
+/*
+ * Source class creates a Source object linked to a specified Buffer object.
+ */
+
 class Source
 {
 public:

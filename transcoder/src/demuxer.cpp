@@ -248,6 +248,10 @@ int Demuxer::read_sample(int track_index, media_packet_h* packet)
 		dlog_print(DLOG_ERROR, "Demuxer", "mediademuxer_read_sample(%d)", ret);
 		*packet = NULL;
 	}
+	else
+	{
+		packet_created_dbg(*packet);
+	}
 	return ret;
 }
 

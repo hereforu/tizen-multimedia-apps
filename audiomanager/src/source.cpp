@@ -17,6 +17,10 @@ Source::~Source()
 	Destroy();
 }
 
+/*
+ * GenerateSource creates Source objects through algenSources and links them to Buffer objects.
+ * It also determines a few basic properties used in Application.
+ */
 bool Source::GenerateSource(ALuint buffer)
 {
 	ALuint source;
@@ -34,8 +38,9 @@ bool Source::GenerateSource(ALuint buffer)
 	alGetSourcef(source, AL_MAX_DISTANCE, &m_max_distance);
 	alGetSourcef(source, AL_REFERENCE_DISTANCE, &m_reference_distance);
 	dlog_print(DLOG_DEBUG, "ALContext", "MAX_GAIN:%f, MIN_GAIN:%f, MAX_DIST:%f, REF_DIST:%f ", m_max_gain, m_min_gain, m_max_distance, m_reference_distance);
-
 	alSourcef(source, AL_GAIN, m_max_gain);
+
+	//AL_MAX_DISTANCE is set for distance normalization within the 3D space room
 	alSourcef(source, AL_MAX_DISTANCE, 5.0f);
 	alSource3f(source, AL_POSITION, 0.0f, 0.0f, 0.0f);
 	alSourcei(source,AL_LOOPING,AL_TRUE);
@@ -43,6 +48,11 @@ bool Source::GenerateSource(ALuint buffer)
 	m_source = source;
 	return true;
 }
+
+/*
+ * The function SetSourcePos is used to specify the location of a Source object within the given 3D space.
+ * It uses AL_POSITION of alSource3f in OpenAL to achieve this goal.
+ */
 
 void Source::SetSourcePos(float x, float y, float z)
 {
@@ -55,6 +65,9 @@ void Source::SetSourcePos(float x, float y, float z)
 	}
 }
 
+/*
+ * This function can be used to play this source alone
+ */
 void Source::Play()
 {
 	alSourcePlay(m_source);
