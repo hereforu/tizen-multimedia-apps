@@ -44,9 +44,9 @@ void VideoListView::decorateview(Evas_Object* box)
 	{
 		m_list.Create(box, select_video_cb, (void*)this);
 		buildthelist(m_list);
-		m_popup = createpopup(box);
 		m_btnpack.Create(box);
 		add_defaultbtns(m_btnpack);
+		m_popup = createpopup(box);
 	}
 	catch(const std::runtime_error& e)
 	{
@@ -57,20 +57,18 @@ void VideoListView::decorateview(Evas_Object* box)
 	}
 }
 
+void VideoListView::destroyremains()
+{
+	m_list.Destroy();
+	m_btnpack.Destroy();
+	SAFE_EVAS_DELETE(m_popup);
+}
 
 void VideoListView::add_defaultbtns(ButtonPack& btnpack)
 {
 	std::vector<BTPackParam> functionbtn_params;
 	functionbtn_params.push_back(BTPackParam(NULL, "images/exit.png", VideoListView::clicked_exit_cb, (void*)this));
 	btnpack.AddPacksHorizontally(functionbtn_params);
-}
-
-
-void VideoListView::destroyremains()
-{
-	m_list.Destroy();
-	m_btnpack.Destroy();
-	SAFE_EVAS_DELETE(m_popup);
 }
 
 void VideoListView::buildthelist(ListCtrl& list)

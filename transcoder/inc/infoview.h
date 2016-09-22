@@ -35,6 +35,7 @@ protected:
 
 
 private:
+	Ecore_Timer* create_timer_and_freeze_for_progress();
 	void play_media(const char* filepath);
 	void fill_encoderinfo(CodecInfo& venc, CodecInfo& aenc);
 	void process_after_transcoding(bool iscanceled, const char* outfilename);

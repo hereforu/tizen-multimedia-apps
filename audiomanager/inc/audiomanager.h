@@ -12,6 +12,8 @@
 #endif
 #define LOG_TAG "audiomanager"
 
+#define MAX_DIST_PER_AXIS 5.0f
+
 #if !defined(PACKAGE)
 #define PACKAGE "org.example.audiomanager"
 #endif

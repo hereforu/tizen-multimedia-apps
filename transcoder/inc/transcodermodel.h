@@ -24,11 +24,14 @@ public:
 	void RebuildContentsList();
 	void AddFileToDB(const char* filename);
 	const std::vector<MediaContentItem>& GetContentsList();
+
 	void SetSelectedContentIndex(int index);
 	const MediaContentItem& GetSelectedContent();
+
 	void SelectTypeofOptions(TranscodingOptionType type);
 	TranscodingOptionType GetSelectedTypeofOptions();
 	std::vector<TranscodingOption>& GetOptionSet(TranscodingOptionType type);
+
 	void SelectOption(TranscodingOptionType type, unsigned int option);
 	unsigned int GetSelectedOption(TranscodingOptionType type);
 	const char* GetOptionName(TranscodingOptionType type, unsigned int id);

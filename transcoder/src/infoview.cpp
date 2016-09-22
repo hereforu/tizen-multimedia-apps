@@ -31,6 +31,11 @@ const char* InfoView::getedcfilename()
 	return ((TranscoderModel*)((TranscoderModel*)getmodel()))->GetSelectedContent().name.c_str();
 }
 
+void InfoView::UpdateView()
+{
+	m_list.RemoveAllItems();
+	setinfo_tolist(m_list, ((TranscoderModel*)getmodel())->GetSelectedContent());
+}
 void InfoView::decorateview(Evas_Object* box)
 {
 	try
@@ -40,8 +45,7 @@ void InfoView::decorateview(Evas_Object* box)
 		m_btnpack.Create(box);
 		add_defaultbtns(m_btnpack);
 		m_pbpopup.Create(box, cancel_cb, (void*)this);
-		m_timer = ecore_timer_add(1.0, InfoView::timer_cb, (void*)this);
-		ecore_timer_freeze(m_timer);
+		m_timer = create_timer_and_freeze_for_progress();
 		m_msgbox = createmsgbox(box);
 		device_power_request_lock(POWER_LOCK_DISPLAY, 0);
 	}
@@ -53,24 +57,28 @@ void InfoView::decorateview(Evas_Object* box)
 		throw std::runtime_error(msg);
 	}
 }
-
 void InfoView::destroyremains()
 {
 	//TODO: check power function!!!!
 	device_power_release_lock(POWER_LOCK_DISPLAY);
-	if(m_msgbox)
-	{
-		SAFE_EVAS_DELETE(m_msgbox);
-		m_msgbox = NULL;
-	}
-	ecore_timer_del(m_timer);
+	SAFE_EVAS_DELETE(m_msgbox);
+	SAFE_TIMER_DELETE(m_timer);
 	m_list.Destroy();
 	m_btnpack.Destroy();
 	m_pbpopup.Destroy();
 }
 
 
-
+Ecore_Timer* InfoView::create_timer_and_freeze_for_progress()
+{
+	Ecore_Timer* timer = ecore_timer_add(1.0, InfoView::timer_cb, (void*)this);
+	if(timer == NULL)
+	{
+		throw std::runtime_error("fail to create timer");
+	}
+	ecore_timer_freeze(timer);
+	return timer;
+}
 
 void InfoView::add_defaultbtns(ButtonPack& btnpack)
 {
@@ -123,11 +131,7 @@ std::string InfoView::getresiconpath(const char* iconname)
 	return std::string(app_get_resource_path()) + iconname;
 }
 
-void InfoView::UpdateView()
-{
-	m_list.RemoveAllItems();
-	setinfo_tolist(m_list, ((TranscoderModel*)getmodel())->GetSelectedContent());
-}
+
 
 void InfoView::change_optionview(int id)
 {

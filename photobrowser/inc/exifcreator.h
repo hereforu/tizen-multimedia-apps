@@ -13,6 +13,7 @@
 #include <map>
 #include <libexif/exif-data.h>
 
+//refer https://github.com/wang-bin/libexif-port/blob/master/contrib/examples/write-exif.c
 
 class EXIFCreator
 {
@@ -20,12 +21,11 @@ public:
 	EXIFCreator();
 	~EXIFCreator();
 
-	bool Create(const char* jpegfilename);
-	bool IsCreated();
+	void Create(const char* jpegfilename);
 	void Destroy();
 	void AddResolution(int width, int height);
 	void AddComment(const char* text);
-	bool WriteExif();
+	void WriteExif();
 
 private:
 	void getexifblock(unsigned char** exif_data, unsigned int* length);
@@ -45,5 +45,5 @@ private:
 };
 
 
-//refer https://github.com/wang-bin/libexif-port/blob/master/contrib/examples/write-exif.c
+
 #endif /* EXIFCREATOR_H_ */

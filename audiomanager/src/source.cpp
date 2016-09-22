@@ -4,6 +4,7 @@
  *  Created on: June 09, 2016
  *      Author: Hotak
  */
+#include "common/base.h"
 #include "source.h"
 #include <dlog.h>
 
@@ -41,7 +42,8 @@ bool Source::GenerateSource(ALuint buffer)
 	alSourcef(source, AL_GAIN, m_max_gain);
 
 	//AL_MAX_DISTANCE is set for distance normalization within the 3D space room
-	alSourcef(source, AL_MAX_DISTANCE, 5.0f);
+
+	alSourcef(source, AL_MAX_DISTANCE, sqrt(3*MAX_DIST_PER_AXIS*MAX_DIST_PER_AXIS));
 	alSource3f(source, AL_POSITION, 0.0f, 0.0f, 0.0f);
 	alSourcei(source,AL_LOOPING,AL_TRUE);
 	alSourcei(source, AL_BUFFER, buffer);

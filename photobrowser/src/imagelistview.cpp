@@ -113,14 +113,21 @@ void ImageListView::gotonextview(int id)
 
 void ImageListView::addexif_yes()
 {
-	MediaContentItem content = ((PhotoBrowserModel*)getmodel())->GetSelectedContent();
-	EXIFCreator ec;
-	ec.Create(content.path.c_str());
-	ec.AddResolution(content.width, content.height);
-	ec.AddComment("created by sogang university");
-	ec.WriteExif();
-	ec.Destroy();
 	evas_object_hide(m_popup);
+	MediaContentItem content = ((PhotoBrowserModel*)getmodel())->GetSelectedContent();
+	try
+	{
+		EXIFCreator ec;
+		ec.Create(content.path.c_str());
+		ec.AddResolution(content.width, content.height);
+		ec.AddComment("created by sogang university");
+		ec.WriteExif();
+		ec.Destroy();
+	}
+	catch(const std::runtime_error& e)
+	{
+		dlog_print(DLOG_ERROR, "EXIF", "fail to create exif [%s]", e.what());
+	}
 }
 
 void ImageListView::addexif_no()

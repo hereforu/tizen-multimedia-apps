@@ -41,7 +41,6 @@ private:
 private:
 	Frame* m_frame;
 	Model* m_model;
-
 };
 
 #define MOVE_NEXTVIEW MultimediaApp::GetInstance()->MoveNextView()

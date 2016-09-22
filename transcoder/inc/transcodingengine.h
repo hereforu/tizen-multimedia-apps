@@ -50,6 +50,7 @@ public:
 	bool IsCanceled();
 
 private:
+	bool is_resizer_required( const CodecInfo& vdec, const CodecInfo& venc);
 	void prepare(const char* srcfilename, unsigned int duration, const CodecInfo& venc, const CodecInfo& aenc);
 	void unprepare();
 	void transcoding();

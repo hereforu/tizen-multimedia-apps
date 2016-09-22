@@ -13,15 +13,6 @@
 #include <map>
 #include <libexif/exif-data.h>
 
-typedef struct _ExifTag_Value
-{
-	_ExifTag_Value(const char* _name, const char* _value)
-	:name(_name), value(_value)
-	{}
-	std::string name;
-	std::string value;
-}ExifTag_Value;
-
 typedef struct _ExifTagCollection
 {
 	_ExifTagCollection(ExifContent* _content)
@@ -33,7 +24,14 @@ typedef struct _ExifTagCollection
 	std::vector<ExifEntry*> entries;
 }ExifTagCollection;
 
-
+typedef struct _ExifTag_Value
+{
+	_ExifTag_Value(const char* _name, const char* _value)
+	:name(_name), value(_value)
+	{}
+	std::string name;
+	std::string value;
+}ExifTag_Value;
 class EXIF
 {
 public:

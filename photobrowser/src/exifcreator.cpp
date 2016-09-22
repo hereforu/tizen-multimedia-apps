@@ -18,28 +18,23 @@ EXIFCreator::EXIFCreator()
 }
 EXIFCreator::~EXIFCreator()
 {
-
+	Destroy();
 }
 
-bool EXIFCreator::Create(const char* jpegfilename)
+void EXIFCreator::Create(const char* jpegfilename)
 {
-	if((m_data = create_exifdata())==NULL)
-		return false;
+	m_data = create_exifdata();
 	m_jpegfilename = jpegfilename;
-	return true;
 }
 
-bool EXIFCreator::IsCreated()
-{
-	return (m_data)?true:false;
-}
 
 void EXIFCreator::Destroy()
 {
-	if(!IsCreated())
-		return;
-
-	exif_data_unref(m_data);
+	if(m_data)
+	{
+		exif_data_unref(m_data);
+		m_data = NULL;
+	}
 }
 
 void EXIFCreator::AddResolution(int width, int height)
@@ -52,21 +47,20 @@ void EXIFCreator::AddResolution(int width, int height)
 void EXIFCreator::AddComment(const char* text)
 {
 	int len = strlen(text);
+	ExifEntry* comment_entry = get_or_create_tag_with_memory_ifnone(m_data, EXIF_IFD_EXIF, EXIF_TAG_USER_COMMENT, 8+len);
 	char* mem = new char[8+len];
 	memcpy(mem, "ASCII\0\0\0", 8);
 	memcpy(mem+8, text, len);
-	ExifEntry* comment_entry = get_or_create_tag_with_memory_ifnone(m_data, EXIF_IFD_EXIF, EXIF_TAG_USER_COMMENT, 8+len);
 	setdata(comment_entry->data, mem, 8+len);
 	delete[] mem;
 }
 
-bool EXIFCreator::WriteExif()
+void EXIFCreator::WriteExif()
 {
 	unsigned char* exif_data = NULL;
 	unsigned int exif_data_len = 0;
 	unsigned char* image_data = NULL;
 	unsigned int image_data_len = 0;
-	bool ret = true;
 	try
 	{
 		readjpegfile(m_jpegfilename.c_str(), &image_data, &image_data_len);
@@ -75,12 +69,12 @@ bool EXIFCreator::WriteExif()
 	}
 	catch(const std::runtime_error& e)
 	{
-		dlog_print(DLOG_ERROR, "EXIF", e.what());
-		ret =  false;
+		SAFE_FREE(exif_data);
+		SAFE_ARRAY_DELETE(image_data);
+		throw e;
 	}
 	SAFE_FREE(exif_data);
 	SAFE_ARRAY_DELETE(image_data);
-	return ret;
 }
 
 void EXIFCreator::getexifblock(unsigned char** exif_data, unsigned int* length)
@@ -151,7 +145,7 @@ void EXIFCreator::writejpegfile_with_exif(const char* dstjpegfilename, const uns
 		fout.write((const char*)image_data, image_data_length);
 		fout.close();
 	}
-	catch(std::exception& e)
+	catch(const std::exception& e)
 	{
 		if(fout.is_open())
 			fout.close();
@@ -166,29 +160,41 @@ ExifData* EXIFCreator::create_exifdata()
 	ExifData *data = exif_data_new();
 	if(data == NULL)
 	{
-		dlog_print(DLOG_DEBUG, "EXIFCreator", "fail to exif_data_new");
-		return NULL;
+		throw std::runtime_error("fail to exif_data_new");
 	}
 	exif_data_set_option(data, EXIF_DATA_OPTION_FOLLOW_SPECIFICATION);
 	exif_data_set_data_type(data, EXIF_DATA_TYPE_COMPRESSED);
 	exif_data_set_byte_order(data, EXIF_BYTE_ORDER_INTEL); //little endian
 	exif_data_fix(data);
-
 	return data;
 }
 
+/* This is needed when exif_entry_initialize() isn't able to create
+ * this type of tag itself, or the default data length it creates isn't the
+ * correct length.
+ */
 ExifEntry* EXIFCreator::get_or_create_tag_with_memory_ifnone(ExifData* data, ExifIfd ifd, ExifTag tag, unsigned buflength)
 {
 	ExifEntry *entry = exif_content_get_entry(data->ifd[ifd], tag);
 	if(entry == NULL) //create one
 	{
+		 /* Create a memory allocator to manage this ExifEntry */
 		ExifMem *mem = exif_mem_new_default();
+		if(mem == NULL)
+			throw std::runtime_error("fail to exif_mem_new_default");
+		/* Create a new ExifEntry using our allocator */
 		entry = exif_entry_new_mem(mem);
+		if(entry == NULL)
+		{
+			exif_mem_unref(mem);
+			throw std::runtime_error("fail to exif_entry_new_mem");
+		}
 		entry->data = (unsigned char*)exif_mem_alloc(mem, buflength);
 		entry->size = (size_t)buflength;
 		entry->tag = tag;
 		entry->components = (size_t)buflength;
 		entry->format = EXIF_FORMAT_UNDEFINED;
+		 /* Attach the ExifEntry to an IFD */
 		exif_content_add_entry (data->ifd[ifd], entry);
 		exif_mem_unref(mem);
 		exif_entry_unref(entry);
@@ -201,10 +207,21 @@ ExifEntry* EXIFCreator::get_or_create_tag_ifnone(ExifData* data, ExifIfd ifd, Ex
 	ExifEntry *entry = exif_content_get_entry(data->ifd[ifd], tag);
 	if(entry == NULL) //create one
 	{
+		/* Allocate a new entry */
 		entry = exif_entry_new ();
+		if(entry == NULL)
+			throw std::runtime_error("fail to exif_entry_new");
 		entry->tag = tag;
+		/* Attach the ExifEntry to an IFD */
 		exif_content_add_entry (data->ifd[ifd], entry);
+		 /* Allocate memory for the entry and fill with default data */
 		exif_entry_initialize (entry, tag);
+		/* Ownership of the ExifEntry has now been passed to the IFD.
+		 * One must be very careful in accessing a structure after
+		 * unref'ing it; in this case, we know "entry" won't be freed
+		 * because the reference count was bumped when it was added to
+		 * the IFD.
+		 */
 		exif_entry_unref(entry);
 	}
 	return entry;

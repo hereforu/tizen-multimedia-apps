@@ -78,10 +78,16 @@ void TranscodingEngine::prepare(const char* srcfilename, unsigned int duration, 
 	for(int i = 0; i < MAX_CODEC; ++i)
 		create_codec(i, option[i]);
 	create_muxer(srcfilename);
-	if(option[VIDEO_ENCODER].venc.width != option[VIDEO_DECODER].vdec.width || option[VIDEO_ENCODER].venc.height != option[VIDEO_DECODER].vdec.height)
+	if(is_resizer_required(option[VIDEO_DECODER], option[VIDEO_ENCODER]))
 		create_resizer(option[VIDEO_ENCODER].venc.width, option[VIDEO_ENCODER].venc.height);
 }
 
+bool TranscodingEngine::is_resizer_required( const CodecInfo& vdec, const CodecInfo& venc)
+{
+	if(venc.venc.width != vdec.vdec.width || venc.venc.height != vdec.vdec.height)
+		return true;
+	return false;
+}
 void TranscodingEngine::unprepare()
 {
 	dlog_print(DLOG_DEBUG, "TranscodingEngine", "enter into destroy");
@@ -218,7 +224,8 @@ void TranscodingEngine::transcoding()
 	int iteration = 0;
 	unsigned int video_pts = 0, audio_pts = 0;
 	m_bcanceled = false;
-	while(!m_bcanceled)
+	while(m_bcanceled==false &&
+		(m_codec[VIDEO_ENCODER]->IsEoS() == false || m_codec[AUDIO_ENCODER]->IsEoS() == false))
 	{
 		dlog_print(DLOG_DEBUG, "TranscodingEngine", "%dth iteration for transcoding", iteration++);
 		process_track(m_demuxer->GetVideoTrackIndex(), m_muxer_video_track_index, m_codec[VIDEO_DECODER], m_codec[VIDEO_ENCODER], video_counter, video_pts);
@@ -226,10 +233,6 @@ void TranscodingEngine::transcoding()
 		{
 			process_track(m_demuxer->GetAudioTrackIndex(), m_muxer_audio_track_index, m_codec[AUDIO_DECODER], m_codec[AUDIO_ENCODER], audio_counter, audio_pts);
 		}while(audio_pts <= video_pts && m_codec[AUDIO_ENCODER]->IsEoS()==false);
-		if(m_codec[VIDEO_ENCODER]->IsEoS() == true && m_codec[AUDIO_ENCODER]->IsEoS() == true)
-		{
-			break;
-		}
 		m_progress_count = video_counter[ENCODE_COUNTER];
 		usleep(400000);
 	}

@@ -87,7 +87,9 @@ private:
 
 private:
 	Context m_context;
+	//m_objmap manages all pairs of Source and Buffer
 	ALObjectMap m_objmap;
+	//m_audiolist has the list of all music files stored in your target device
 	std::vector<MediaContentItem> m_audiolist;
 };
 

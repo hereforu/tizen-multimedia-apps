@@ -127,8 +127,8 @@ void MainView::add_defaultbtns()
 Posf MainView::convertrelativepos(const EvasCoordRect& rect, const Pos& pos)
 {
 	Posf posf;
-	const float max_x = 5.0f;
-	const float max_y = 5.0f*(float)rect.h / (float)rect.w;
+	const float max_x = MAX_DIST_PER_AXIS;
+	const float max_y = MAX_DIST_PER_AXIS*(float)rect.h / (float)rect.w;
 
 	posf.x = (float)(pos.x-rect.x);
 	posf.y = (float)(pos.y-rect.y);

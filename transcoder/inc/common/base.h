@@ -31,6 +31,12 @@
 		x = NULL;\
 	}\
 
+#define SAFE_TIMER_DELETE(x)\
+	if(x){\
+		ecore_timer_del(x);\
+		x = NULL;\
+	}\
+
 namespace AppTool
 {
 	template <typename Type>
