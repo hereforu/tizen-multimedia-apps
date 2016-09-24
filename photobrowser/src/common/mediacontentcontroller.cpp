@@ -41,7 +41,7 @@ void MediaContent::ConnectDB()
 		throw std::runtime_error(std::string("fail to connect to the media content DB with code:")+AppTool::ToString<int>(ret));
 	}
 	m_isconnected = true;
-	//register db update callback
+	//register db update callback, which is called to get notified for media DB update
 	if((ret = media_content_set_db_updated_cb(_noti_cb, NULL)) != MEDIA_CONTENT_ERROR_NONE)
 	{
 		throw std::runtime_error(std::string("fail to media_content_set_db_updated_db with code:") + AppTool::ToString<int>(ret));
@@ -52,7 +52,7 @@ void MediaContent::DisconnectDB()
 {
 	AppTool::Assert(m_isconnected == true);
 
-	// deregister db update callback
+	// deregister db update callback to stop receiving notifications for media DB updates
 	int ret = media_content_unset_db_updated_cb();
 	if(ret != MEDIA_CONTENT_ERROR_NONE)
 	{
@@ -64,6 +64,10 @@ void MediaContent::DisconnectDB()
 
 }
 
+/*
+ * param specifies conditions for searching media
+ * itemlist is the vector of structure to store content that meet specified conditions
+ */
 void MediaContent::GetItem(const MediaContentParam& param, std::vector<MediaContentItem>* itemlist)
 {
 	AppTool::Assert(m_isconnected == true);

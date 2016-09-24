@@ -200,7 +200,6 @@ bool Buffer::GenerateBuffer(const char* wavefilepath)
 	{
 		return false;
 	}
-
 	ALenum ret = 0;
 	//create a buffer object
 	alGenBuffers(1, &m_buffer);
@@ -210,7 +209,6 @@ bool Buffer::GenerateBuffer(const char* wavefilepath)
 		release_resources();
 		return false;
 	}
-
 	//copy the specified PCM data to the created buffer
 	alBufferData(m_buffer, formatInfo.format, m_waveBuf, m_waveFileSize, formatInfo.sampleRate);
 	if ((ret=alGetError()) != AL_NO_ERROR)

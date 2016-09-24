@@ -35,13 +35,11 @@ void Context::Create()
 	{
 		throw std::runtime_error("fail to alcOpenDevice");
 	}
-
 	/*
 	 * It creates a Context object used in the Default Device with the specified attributes
 	 * Head-Related Transfer Function (HRTF) is a method of mixing 3D audio for true 3D panning
 	 * typically using filters designed to simulate how sound is affected by a listener's head as the sound waves travel between the ears
 	 */
-
 	ALCint attribs[] = {ALC_HRTF_SOFT, ALC_TRUE, 0 };
 	m_context = alcCreateContext(m_device, attribs);
 	if(m_context == NULL)
@@ -49,7 +47,6 @@ void Context::Create()
 		Destroy();
 		throw std::runtime_error("fail to alcCreateContext");
 	}
-
 	//It activates the created Context object.
 	if(alcMakeContextCurrent(m_context) == ALC_FALSE)
 	{

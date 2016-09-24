@@ -32,11 +32,33 @@ CodecBase::~CodecBase()
 
 void CodecBase::Create(const CodecInfo& codecinfo)
 {
+	/*
+	 * A codec object is first created by calling mediacodec_create and the handle is received
+	 */
 	iferror_throw(mediacodec_create(&m_mediacodec), "fail to create mediacodec_create");
+
+	/*
+	 *create and create_format are pure functions so they should be implemented in derived classes
+	 *an audio decoder object is configured with mediacodec_set_adec_info
+	 *whereas an audio encoder is set with mediacodec_set_aenc_info.
+	 *a video decoder and a video encoder are set using mediacodec_set_vdec_info
+	 *and mediacodec_set_venc_info respectively
+	 */
 	if(create(m_mediacodec, codecinfo) == false)//codec info setting
 		throw_error_and_destroy_codec(m_mediacodec, "fail to create specific codec", 0)
 	if((m_format = create_format(codecinfo)) == NULL)//create format info
 		throw_error_and_destroy_codec(m_mediacodec, "fail to create format", 0)
+
+	/*
+	 * Essential callback functions are configured as follows.
+	 * First, mediacodec_set_eos_cb and mediacodec_set_error_cb are set up in order to take notifications for EOS and errors.
+	 * The callback function mediacodec_set_input_buffer_used_cb is called
+	 * when all of the input packets have been exhausted.
+	 * Once a set of packets have been all used, the packets are destroyed for efficient memory use.
+	 * The encoding/decoding results are received through the callback function specified with mediacodec_set_output_buffer_available_cb.
+	 * Note that the packet passed through the callback function is not the output packet,
+	 * and the output has to be collected using mediacodec_get_output at the point when the callback function is called.
+	 */
 	int ret = MEDIACODEC_ERROR_NONE;
 	if((ret = mediacodec_set_eos_cb(m_mediacodec, mc_eos_cb, (void*)this)) != MEDIACODEC_ERROR_NONE)
 		throw_error_and_destroy_codec(m_mediacodec, "fail to mediacodec_set_eos_cb", ret);
@@ -46,6 +68,10 @@ void CodecBase::Create(const CodecInfo& codecinfo)
 		throw_error_and_destroy_codec(m_mediacodec, "fail to mediacodec_set_input_buffer_used_cb", ret);
 	if((ret = mediacodec_set_output_buffer_available_cb(m_mediacodec, mc_output_buffer_available_cb, (void*)this)) != MEDIACODEC_ERROR_NONE)
 		throw_error_and_destroy_codec(m_mediacodec, "fail to mediacodec_set_output_buffer_available_cb", ret);
+
+	/*
+	 * After call prepare, packet encoding/decoding is ready for execution.
+	 */
 	if((ret = mediacodec_prepare(m_mediacodec)) != MEDIACODEC_ERROR_NONE)
 		throw_error_and_destroy_codec(m_mediacodec, "fail to mediacodec_prepare", ret);
 	m_out.queue.SetName(getname());
@@ -91,6 +117,9 @@ bool CodecBase::GetPacket(media_packet_h& packet)
 	return true;
 }
 
+/*
+ * Packets to encode/decode are pushed in sequence using mediacodec_process_input
+ */
 bool CodecBase::InsertPacket(media_packet_h packet)
 {
 	int ret = mediacodec_process_input(m_mediacodec, packet, 1000);
@@ -124,11 +153,23 @@ bool CodecBase::pushpacket_to_outputqueue(const media_packet_h& packet)
 	dlog_print(DLOG_DEBUG, "CodecBase", "mediacodec[%s]_get_output %d", getname(),m_out.count);
 	return true;
 }
+
+/*
+ * the callback funciton mc_input_buffer_used_cb is called
+ * when the input packets are no longer used in the codec.
+ * After the callback funciton is called, the existing packets are destroyed
+ */
 void CodecBase::handle_input_buffer_used(media_packet_h pkt)
 {
 	media_packet_destroy_dbg(pkt);
 }
 
+/*
+ * The callback function mc_output_buffer_available_cb is called
+ * after the output packets have been generated,
+ * which are ready for exploitation.
+ * In our sample code, the packets are turned to a file and inserted to an output queue
+ */
 void CodecBase::handle_output_buffer_available(media_packet_h pkt)
 {
 	media_packet_h output_buf = NULL;

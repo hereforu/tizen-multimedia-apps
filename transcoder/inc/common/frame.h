@@ -12,7 +12,10 @@
 #include <vector>
 #include "view.h"
 
-
+/*
+ *  Frame class manages a main window and its attached views
+ *  and it is also responsible for the navigation between the each views
+ */
 
 class Frame
 {

@@ -65,7 +65,6 @@ private:
 	void create_codec(int codectype, const CodecInfo& codecinfo);
 	void create_muxer(const char* srcfilename);
 	void create_resizer(int target_width, int target_height);
-	void print_errorcode_for_debug();
 	unsigned int get_pts_in_msec(media_packet_h packet);
 
 private:

@@ -9,6 +9,10 @@
 #include "demuxer.h"
 #include <stdexcept>
 
+/*
+ * macro that throws runtime error
+ * and destroys the demuxer object if the function fails to return MEDIADEMUXER_ERROR_NONE
+ */
 #define throw_error_and_destroy_demuxer(demuxer, msg, error_code)\
 	{\
 		if(demuxer)\
@@ -31,6 +35,12 @@ Demuxer::~Demuxer()
 	Destroy();
 }
 
+/*
+ * Create function constructs a demuxer using mediademuxer_create
+ * and registers callback functions that take EoS(End of Stream) and Error Events as mediademuxer_set_eos_cb and mediademuxer_set_error_cb, respectively.
+ * Afterwards,the source file is specified through mediademuxer_set_data_source
+ * and the state of the demuxer is changed from MEDIADEMUXER_STATE_IDLE to MEDIADEMUXER_STATE_READY using the mediademuxer_prepare function.
+ */
 void Demuxer::Create(const char* srcfilename)
 {
 	int ret = MEDIADEMUXER_ERROR_NONE;
@@ -46,6 +56,9 @@ void Demuxer::Create(const char* srcfilename)
 		throw_error_and_destroy_demuxer(m_demuxer, "fail to mediademuxer_prepare: ", ret);
 }
 
+/*
+ * Once demuxer session is completed, the reserved resources for the demuxer are released
+ */
 void Demuxer::Destroy()
 {
 	if(m_demuxer == NULL)
@@ -75,8 +88,10 @@ void Demuxer::Destroy()
 	dlog_print(DLOG_DEBUG, "Demuxer", "exit from destroy");
 }
 
-
-
+/*
+ * Once track data has been obtained,
+ * tracks for demuxing are started and the state is changed to MEDIADEMUXER_STATE_RUNNING by calling mediademuxer_start.
+ */
 void Demuxer::Start()
 {
 	//in this sample code, we support only one video track and one audio track!
@@ -85,11 +100,19 @@ void Demuxer::Start()
 	if(m_audiotrackindex != -1)
 		iferror_throw(mediademuxer_select_track(m_demuxer, m_audiotrackindex), "fail to mediademuxer_select_track for audio: ");
 	iferror_throw(mediademuxer_start(m_demuxer), "fail to mediademuxer_start: ");
+
 	//read a sample in advance to check the end of stream manually
 	//this code would be removed if demuxer set the EoS flag to the end packet
 	prefetch_sample();
 }
 
+/*
+ * Once the demuxer state is set to MEDIADEMUXER_STATE_READY,
+ * information on the tracks of the media file can be fetched.
+ * The number of tracks can be obtained with mediademuxer_get_track_count
+ * and media format for each track (as media_format_h) with mediademuxer_get_track_info.
+ * The fetched variable media_format_h has to be processed with media_format_unref to maintain reduced reference count
+ */
 void Demuxer::ExtractTrackinfo()
 {
 	int trackcount = 0;
@@ -124,6 +147,11 @@ void Demuxer::ExtractTrackinfo()
 	}
 }
 
+/*
+ * Get a sample in serial order.
+ * It also gets next sample to check if the current packet would be the end of stream or not.
+ * if there is no next sample, set the EOS flag to the current sample
+ */
 bool Demuxer::ReadSeample(int track_index, media_packet_h* packet)
 {
 	if(m_tracks[track_index].packet != NULL)
@@ -147,6 +175,11 @@ bool Demuxer::IsEoS(int track_index)
 	return m_tracks[track_index].info.eos;
 }
 
+/*
+ * Demuxing can be stopped by calling mediademuxer_stopto set the state as MEDIADEMUXER_STATE_READY.
+ * The selected track is deselected through mediademuxer_unselect_track.
+ * Without de-selection, mediamuxer_unprepare cannot be performed.
+ */
 void Demuxer::Stop()
 {
 	iferror_throw(mediademuxer_stop(m_demuxer), "fail to mediademuxer_stop: ");
@@ -236,6 +269,12 @@ void Demuxer::prefetch_sample()
 		iferror_throw(read_sample(m_audiotrackindex, &m_tracks[m_audiotrackindex].packet), "fail to read a sample in the prepare stage for audio: ");
 }
 
+/*
+ * When the state is MEDIADEMUXER_STATE_RUNNING,
+ * the packets that consist the selected tracks can be read sequentially through mediademuxer_read_sample.
+ * Note that the final packet is not marked with the EOS flag but EOS callback is made after the last packet is read.
+ * Tagging a packet with an EOS flag is accomplished in ReadSample function.
+ */
 int Demuxer::read_sample(int track_index, media_packet_h* packet)
 {
 	if(m_tracks[track_index].info.eos == true)
@@ -250,6 +289,7 @@ int Demuxer::read_sample(int track_index, media_packet_h* packet)
 	}
 	else
 	{
+		//record the address of a created packet to check the memory leak
 		packet_created_dbg(*packet);
 	}
 	return ret;

@@ -32,9 +32,13 @@ TranscodingEngine::~TranscodingEngine()
 	unprepare();
 }
 
+/*
+ * After the essential objects have been created and prepared the demuxer and the muxer are started for transcoding.
+ * Once all of the packets have been processed,
+ * the muxer and the demuxer are stopped and transcoding is finished.
+ */
 void TranscodingEngine::Transcoding(const char* srcfilename, unsigned int duration, const CodecInfo& venc, const CodecInfo& aenc)
 {
-
 	prepare(srcfilename, duration, venc, aenc);
 	m_demuxer->Start();
 	m_muxer->Start();
@@ -42,7 +46,6 @@ void TranscodingEngine::Transcoding(const char* srcfilename, unsigned int durati
 	m_muxer->Stop();
 	m_demuxer->Stop();
 	unprepare();
-
 }
 
 void TranscodingEngine::Cancel()
@@ -65,9 +68,12 @@ bool TranscodingEngine::IsCanceled()
 {
 	return m_bcanceled;
 }
+/*
+ * The prepare function creates objects of demuxer, muxer, codec, and image_resizer.
+ * if there is an error in creating the objects, it throws a run-time exception and exits the function
+ */
 void TranscodingEngine::prepare(const char* srcfilename, unsigned int duration, const CodecInfo& venc, const CodecInfo& aenc)
 {
-	print_errorcode_for_debug();
 	m_dstfilename = generatedstfilename(srcfilename);
 	m_estimated_packets = (int)(30.0*(double)duration)/1000.0;
 	create_demuxer(srcfilename);
@@ -101,7 +107,9 @@ void TranscodingEngine::unprepare()
 	dlog_print(DLOG_DEBUG, "TranscodingEngine", "exit from destroy");
 }
 
-
+/*
+ * Encoded packets are taken from the demuxer and inserted to the input queue of the decoder
+ */
 bool TranscodingEngine::feed_decoder_with_packet(CodecBase* decoder, int track_index, int& count, unsigned int& pts)
 {
 	media_packet_h demux_packet = NULL;
@@ -129,6 +137,10 @@ unsigned int TranscodingEngine::get_pts_in_msec(media_packet_h packet)
 	return (unsigned int)(temp_pts/1000000);
 }
 
+/*
+ * The decoded packets from the decoder are taken and inserted to the input queue of the encoder.
+ * If necessary, images are resized by using image transform.
+ */
 bool TranscodingEngine::feed_encoder_with_packet(CodecBase* decoder, CodecBase* encoder, int& count)
 {
 	media_packet_h decoded_packet = NULL;
@@ -178,6 +190,9 @@ bool TranscodingEngine::resize_resolution_if_image(media_packet_h* packet)
 	return true;
 }
 
+/*
+ * The output packets is taken from the encoder and sent to the muxer to produce output
+ */
 bool TranscodingEngine::feed_muxer_with_packet(CodecBase* encoder, int muxer_track_index, int& count)
 {
 	bool bret = true;
@@ -216,6 +231,12 @@ void TranscodingEngine::process_track(int track_index, int muxer_track_index, Co
 	}
 }
 
+/*
+ * The transcoder function considers PTS (presentation time stamp) for packets from each track.
+ * If this is not considered,
+ * the transcoder may slow down or even hang as packets may overflow within the demuxer.
+ * The transcoder function runs sleep for each iteration so that the demuxer, muxer, and the codec could run smoothly.
+ */
 
 void TranscodingEngine::transcoding()
 {
@@ -315,6 +336,12 @@ void TranscodingEngine::fill_and_get_codec_info(CodecInfo& vdec, CodecInfo& adec
 	aenc.aenc.bitrate = aenc.aenc.bit*aenc.aenc.channel*aenc.aenc.samplerate;
 }
 
+/*
+ * The generatedstfilename function appends the suffix "_trans" at the end of the source file name
+ * and uses it for the output file to store in the same directory so that files can be readily browsed.
+ * If a file already exists in the intended name,
+ * serial numbers are appended to the string "_trans"
+ */
 const char* TranscodingEngine::generatedstfilename(const char* srcfilename)
 {
 	int i = 0;
@@ -338,48 +365,6 @@ const char* TranscodingEngine::generatedstfilename(const char* srcfilename)
 	return m_dstfilename.c_str();
 }
 
-void TranscodingEngine::print_errorcode_for_debug()
-{
-	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIAMUXER_ERROR_OUT_OF_MEMORY:%d", MEDIAMUXER_ERROR_OUT_OF_MEMORY);
-	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIAMUXER_ERROR_INVALID_PARAMETER:%d", MEDIAMUXER_ERROR_INVALID_PARAMETER);
-	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIAMUXER_ERROR_INVALID_OPERATION:%d", MEDIAMUXER_ERROR_INVALID_OPERATION);
-	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIAMUXER_ERROR_NOT_SUPPORTED:%d", MEDIAMUXER_ERROR_NOT_SUPPORTED);
-	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIAMUXER_ERROR_PERMISSION_DENIED:%d", MEDIAMUXER_ERROR_PERMISSION_DENIED);
-	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIAMUXER_ERROR_INVALID_STATE:%d", MEDIAMUXER_ERROR_INVALID_STATE);
-	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIAMUXER_ERROR_INVALID_PATH:%d", MEDIAMUXER_ERROR_INVALID_PATH);
-	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIAMUXER_ERROR_RESOURCE_LIMIT:%d", MEDIAMUXER_ERROR_RESOURCE_LIMIT);
-
-	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIADEMUXER_ERROR_OUT_OF_MEMORY:%d", MEDIADEMUXER_ERROR_OUT_OF_MEMORY);
-	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIADEMUXER_ERROR_INVALID_PARAMETER:%d", MEDIADEMUXER_ERROR_INVALID_PARAMETER);
-	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIADEMUXER_ERROR_INVALID_OPERATION:%d", MEDIADEMUXER_ERROR_INVALID_OPERATION);
-	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIADEMUXER_ERROR_NOT_SUPPORTED:%d", MEDIADEMUXER_ERROR_NOT_SUPPORTED);
-	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIADEMUXER_ERROR_PERMISSION_DENIED:%d", MEDIADEMUXER_ERROR_PERMISSION_DENIED);
-	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIADEMUXER_ERROR_INVALID_STATE:%d", MEDIADEMUXER_ERROR_INVALID_STATE);
-	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIADEMUXER_ERROR_INVALID_PATH:%d", MEDIADEMUXER_ERROR_INVALID_PATH);
-	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIADEMUXER_ERROR_RESOURCE_LIMIT:%d", MEDIADEMUXER_ERROR_RESOURCE_LIMIT);
-	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIADEMUXER_ERROR_SEEK_FAILED:%d", MEDIADEMUXER_ERROR_SEEK_FAILED);
-	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIADEMUXER_ERROR_DRM_NOT_PERMITTED:%d", MEDIADEMUXER_ERROR_DRM_NOT_PERMITTED);
-
-	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIACODEC_ERROR_OUT_OF_MEMORY:%d", MEDIACODEC_ERROR_OUT_OF_MEMORY);
-	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIACODEC_ERROR_INVALID_PARAMETER:%d", MEDIACODEC_ERROR_INVALID_PARAMETER);
-	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIACODEC_ERROR_INVALID_OPERATION:%d", MEDIACODEC_ERROR_INVALID_OPERATION);
-	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIACODEC_ERROR_NOT_SUPPORTED_ON_DEVICE:%d", MEDIACODEC_ERROR_NOT_SUPPORTED_ON_DEVICE);
-	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIACODEC_ERROR_PERMISSION_DENIED:%d", MEDIACODEC_ERROR_PERMISSION_DENIED);
-	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIACODEC_ERROR_INVALID_STATE:%d", MEDIACODEC_ERROR_INVALID_STATE);
-	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIACODEC_ERROR_INVALID_INBUFFER:%d", MEDIACODEC_ERROR_INVALID_INBUFFER);
-	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIACODEC_ERROR_INVALID_OUTBUFFER:%d", MEDIACODEC_ERROR_INVALID_OUTBUFFER);
-	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIACODEC_ERROR_INTERNAL:%d", MEDIACODEC_ERROR_INTERNAL);
-	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIACODEC_ERROR_NOT_INITIALIZED:%d", MEDIACODEC_ERROR_NOT_INITIALIZED);
-	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIACODEC_ERROR_INVALID_STREAM:%d", MEDIACODEC_ERROR_INVALID_STREAM);
-	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIACODEC_ERROR_CODEC_NOT_FOUND:%d", MEDIACODEC_ERROR_CODEC_NOT_FOUND);
-	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIACODEC_ERROR_DECODE:%d", MEDIACODEC_ERROR_DECODE);
-	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIACODEC_ERROR_NO_FREE_SPACE:%d", MEDIACODEC_ERROR_NO_FREE_SPACE);
-	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIACODEC_ERROR_STREAM_NOT_FOUND:%d", MEDIACODEC_ERROR_STREAM_NOT_FOUND);
-	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIACODEC_ERROR_NOT_SUPPORTED_FORMAT:%d", MEDIACODEC_ERROR_NOT_SUPPORTED_FORMAT);
-	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIACODEC_ERROR_BUFFER_NOT_AVAILABLE:%d", MEDIACODEC_ERROR_BUFFER_NOT_AVAILABLE);
-	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIACODEC_ERROR_OVERFLOW_INBUFFER:%d", MEDIACODEC_ERROR_OVERFLOW_INBUFFER);
-	dlog_print(DLOG_DEBUG, "TranscodingEngine", "MEDIACODEC_ERROR_RESOURCE_OVERLOADED:%d", MEDIACODEC_ERROR_RESOURCE_OVERLOADED);
-}
 
 
 

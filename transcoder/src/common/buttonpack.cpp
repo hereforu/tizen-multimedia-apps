@@ -7,6 +7,7 @@
 
 #include "common/base.h"
 #include "common/buttonpack.h"
+#include <stdexcept>
 
 ButtonPack::ButtonPack()
 :m_parent(NULL)
@@ -34,6 +35,8 @@ void ButtonPack::AddPacksHorizontally(std::vector<BTPackParam>& params)
 	BTPack pack;
 
 	pack.box = elm_box_add(m_parent);
+	if(pack.box == NULL)
+		throw std::runtime_error("fail to create elm_box_add for button pack");
 	elm_box_horizontal_set(pack.box, EINA_TRUE);
 	elm_box_homogeneous_set(pack.box, EINA_TRUE);
 	evas_object_size_hint_weight_set(pack.box, 0.0, 0.0);

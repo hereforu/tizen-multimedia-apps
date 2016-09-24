@@ -21,6 +21,12 @@ EXIF::~EXIF()
 
 }
 
+/*
+ * It extracts tags and tagged data from images with EXIF data and constructs ExifTag_Value vector
+ * exif_data_new_from_file fetches ExifData struct from image files.
+ * The ExifData object is used to fetch ExifContent struct, so it is taken as a member variable.
+ * If ExifData is not created, it is implied that the specified image does not contain EXIF data.
+ */
 bool EXIF::Open(const char* imagefilename)
 {
 	m_data = exif_data_new_from_file(imagefilename);
@@ -119,10 +125,18 @@ void EXIF::clear_taglist()
 	m_supported_tag_and_values.clear();
 }
 
+/*
+ * build_contents_entries is a function that fetches ExifContent from ExifData and constructs ExifEntry.
+ * ExifTagCollection is used for managing them because ExifContent and ExifEntry are in a hierarchical relationship
+ */
 void EXIF::build_contents_entries()
 {
 	exif_data_foreach_content(m_data, foreach_content_cb, (void*)this);
 }
+
+/*
+ * foreach_content is a registered callback function used for relaying ExifContent, which triggers call to 'exif_content_foreach_entry' to extract ExifEntry from ExifContent.
+ */
 void EXIF::foreach_content(ExifContent* content)
 {
 	m_contents.push_back(ExifTagCollection(content));

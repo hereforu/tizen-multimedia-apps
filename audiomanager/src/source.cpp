@@ -33,16 +33,13 @@ bool Source::GenerateSource(ALuint buffer)
 		dlog_print(DLOG_FATAL, "ALContext", "alGenSources error:%d", ret);
 		return false;
 	}
-
 	alGetSourcef(source, AL_MAX_GAIN, &m_max_gain);
 	alGetSourcef(source, AL_MIN_GAIN, &m_min_gain);
 	alGetSourcef(source, AL_MAX_DISTANCE, &m_max_distance);
 	alGetSourcef(source, AL_REFERENCE_DISTANCE, &m_reference_distance);
 	dlog_print(DLOG_DEBUG, "ALContext", "MAX_GAIN:%f, MIN_GAIN:%f, MAX_DIST:%f, REF_DIST:%f ", m_max_gain, m_min_gain, m_max_distance, m_reference_distance);
 	alSourcef(source, AL_GAIN, m_max_gain);
-
 	//AL_MAX_DISTANCE is set for distance normalization within the 3D space room
-
 	alSourcef(source, AL_MAX_DISTANCE, sqrt(3*MAX_DIST_PER_AXIS*MAX_DIST_PER_AXIS));
 	alSource3f(source, AL_POSITION, 0.0f, 0.0f, 0.0f);
 	alSourcei(source,AL_LOOPING,AL_TRUE);

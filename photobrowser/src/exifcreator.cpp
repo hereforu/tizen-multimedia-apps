@@ -37,6 +37,12 @@ void EXIFCreator::Destroy()
 	}
 }
 
+/*
+ * When adding a value that corresponds to a tag in ExifData,
+ * the tag first has to be created and value assigned to it.
+ * The function AddResolution creates tags for ImageWidth,
+ * ImageLength and writes the proper values for each
+ */
 void EXIFCreator::AddResolution(int width, int height)
 {
 	ExifEntry* width_entry = get_or_create_tag_ifnone(m_data, EXIF_IFD_0, EXIF_TAG_IMAGE_WIDTH);
@@ -44,6 +50,14 @@ void EXIFCreator::AddResolution(int width, int height)
 	ExifEntry* length_entry = get_or_create_tag_ifnone(m_data, EXIF_IFD_0, EXIF_TAG_IMAGE_LENGTH);
 	setdata(length_entry->data, length_entry->format, height);
 }
+
+/*
+ * When inserting ASCII string such as adding comment,
+ * then memory has to be allocated for entry->data.
+ * The function get_or_create_tag_with_memory_ifnone can be called
+ * if the tag under consideration requires memory.
+ * To specify value, the string array can be copied directly in memory to entry->data
+ */
 void EXIFCreator::AddComment(const char* text)
 {
 	int len = strlen(text);
@@ -55,6 +69,9 @@ void EXIFCreator::AddComment(const char* text)
 	delete[] mem;
 }
 
+/*
+ * WriteExif constructs exif block and merges the two data blocks in the image
+ */
 void EXIFCreator::WriteExif()
 {
 	unsigned char* exif_data = NULL;
@@ -77,6 +94,9 @@ void EXIFCreator::WriteExif()
 	SAFE_ARRAY_DELETE(image_data);
 }
 
+/*
+ * getexifblock constructs data chunk, which can be readily added to the JPEG file via exif_data_save_data function of libExif
+ */
 void EXIFCreator::getexifblock(unsigned char** exif_data, unsigned int* length)
 {
 	exif_data_save_data(m_data, exif_data, length);
@@ -110,6 +130,10 @@ int EXIFCreator::read_data_from_to(FILE* fp, long from, long to, unsigned char**
 	return length;
 }
 
+/*
+ * readjpegfile opens the specified JPEG file and reads from Start of Image(SOI).
+ * The content is stored injpeg_data and passed to the caller of the function.
+ */
 void EXIFCreator::readjpegfile(const char* jpegfilename, unsigned char** jpeg_data, unsigned int* length)
 {
 	const int image_start_offset = 20; //from SOI (FF D8)!! offset is 20 generally
@@ -128,6 +152,10 @@ void EXIFCreator::readjpegfile(const char* jpegfilename, unsigned char** jpeg_da
 	}
 }
 
+/*
+ * exif heaer, exif data length, exif data, and the JPEG data from the source file
+ * are written in sequence in order to write as the resultant file.
+ */
 void EXIFCreator::writejpegfile_with_exif(const char* dstjpegfilename, const unsigned char* exif_data, int exif_data_length, const unsigned char* image_data, int image_data_length)
 {
 	const char exif_header[] = { //exif
@@ -153,7 +181,11 @@ void EXIFCreator::writejpegfile_with_exif(const char* dstjpegfilename, const uns
 	}
 }
 
-
+/*
+ * create_exifdata creates ExifData by using many of the functions provided by libExif
+ * and makes specifications for a few options.
+ * In the sample application, the JPEG image compression is set to 'comply' and EXIF block byte order to little endian
+ */
 
 ExifData* EXIFCreator::create_exifdata()
 {
@@ -202,6 +234,9 @@ ExifEntry* EXIFCreator::get_or_create_tag_with_memory_ifnone(ExifData* data, Exi
 	return entry;
 }
 
+/*
+ * It fetches a specific tag from ExifData or adds a specified tag to image.
+ */
 ExifEntry* EXIFCreator::get_or_create_tag_ifnone(ExifData* data, ExifIfd ifd, ExifTag tag)
 {
 	ExifEntry *entry = exif_content_get_entry(data->ifd[ifd], tag);

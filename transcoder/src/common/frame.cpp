@@ -22,6 +22,11 @@ Frame::~Frame()
 	Destroy();
 }
 
+/*
+ * It creates a window object with a standard setup using elm_win_util_standard_add first
+ * then add a conformant to the window object.
+ * Finally, a naviframe will be attached to the window object using create_naviframe
+ */
 void Frame::Create()
 {
 	try
@@ -45,11 +50,13 @@ void Frame::Destroy()
 	deleteallviews();
 }
 
+/*
+ * All views of an application should be registered by AddView function
+ */
 void Frame::AddView(View* view)
 {
 	assert_ifnot(m_framewnd!= NULL && m_conformant!=NULL);
 	m_views.push_back(view);
-
 }
 
 View* Frame::GetCurrentView()
@@ -64,7 +71,6 @@ void Frame::ActivateFirstView()
 		dlog_print(DLOG_DEBUG, "Frame", "no view or m_currentviewindex is -1");
 		return;
 	}
-
 	try
 	{
 		pushview(m_views[0]);
@@ -76,6 +82,9 @@ void Frame::ActivateFirstView()
 	}
 }
 
+/*
+ * MoveNextView function changes a view to the next view in the order of registration
+ */
 void Frame::MoveNextView()
 {
 	try
@@ -117,13 +126,13 @@ void Frame::Show()
 {
 	evas_object_show(m_framewnd);
 }
+
 void Frame::pushview(View* view)
 {
 	if(view->IsCreated())
 	{
 		dlog_print(DLOG_ERROR, "Frame", "this view is already activated");
 		assert_ifnot(false);
-
 	}
 	view->Create(m_naviframe, m_conformant);
 }
