@@ -15,10 +15,12 @@ GenCtrl::GenCtrl()
 {
 
 }
+
 GenCtrl::~GenCtrl()
 {
 
 }
+
 void GenCtrl::Create(Evas_Object* parent, GenCtrl_Select_Cb selectcb_toview, void* data, int iconsize)
 {
 	m_parent = parent;

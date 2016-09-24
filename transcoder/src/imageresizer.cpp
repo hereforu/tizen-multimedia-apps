@@ -12,7 +12,6 @@
 ImageResizer::ImageResizer()
 :m_target_width(0), m_target_height(0), m_handle(NULL), m_conditionalwaiter(NULL), m_result(NULL)
 {
-
 }
 
 ImageResizer::~ImageResizer()
@@ -55,6 +54,10 @@ bool ImageResizer::Resize(media_packet_h packet, media_packet_h* resized_packet)
 {
 	bool is_eos = false;
 	uint64_t	pts = 0;
+
+	/*
+	 * to restore the EOS flag and PTS after transform
+	 */
 	media_packet_is_end_of_stream(packet, &is_eos);
 	media_packet_get_pts(packet, &pts);
 	int ret = image_util_transform_run(m_handle, packet, ImageResizer::resize_completed_cb, (void*)this);
@@ -65,6 +68,9 @@ bool ImageResizer::Resize(media_packet_h packet, media_packet_h* resized_packet)
 	}
 	m_conditionalwaiter->Wait();
 	*resized_packet = m_result;
+	/*
+	 *after transform is done, some major properties of the packet should be restored
+	 */
 	if(is_eos)
 	{
 		media_packet_set_flags(*resized_packet, MEDIA_PACKET_END_OF_STREAM);
